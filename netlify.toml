@@ -1,8 +1,8 @@
 [build]
   command = "npm run build"
-  publish = ".next"
 
 [build.environment]
+  NODE_VERSION = "20"
   # La Firebase API Key (AIza...) es PUBLICA por diseño en Next.js con NEXT_PUBLIC_.
   # Se embebe en el bundle del cliente intencionalmente. Desactivamos la deteccion
   # inteligente para evitar falsos positivos en el build de Netlify.
