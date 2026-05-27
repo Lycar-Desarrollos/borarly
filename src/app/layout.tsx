@@ -13,8 +13,8 @@ export const metadata: Metadata = {
     template: '%s | Borarly Mayorista',
     default: 'Borarly | Mayorista Tecnológico en Seguridad y Redes',
   },
-  description: 'Distribuidor mayorista líder en equipo de seguridad electrónica, videovigilancia, redes, y cómputo. Encuentra las mejores marcas al mejor precio garantizado con Borarly.',
-  keywords: ['seguridad electrónica', 'mayorista de ciberseguridad', 'equipo de redes', 'Syscom', 'videovigilancia', 'computo', 'Borarly', 'telecomunicaciones'],
+  description: 'Distribuidor mayorista líder en equipo de seguridad electrónica, videovigilancia, redes, y cómputo. Encuentra las mejores marcas al mejor precio garantizado con BORARLY.',
+  keywords: ['mayorista tecnológico', 'seguridad electrónica', 'videovigilancia', 'redes', 'cómputo', 'telecomunicaciones', 'Borarly', 'distribuidora', 'México'],
   openGraph: {
     title: 'Borarly | Mayorista Tecnológico',
     description: 'Distribuidor mayorista líder en equipo de seguridad electrónica, videovigilancia, redes, y cómputo.',

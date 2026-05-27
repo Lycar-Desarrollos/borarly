@@ -165,7 +165,7 @@ export function Navbar() {
         {/* Left: Logo */}
         <div className="flex items-center md:flex-1 shrink-0 group invisible md:visible">
           <Link href="/" className="flex items-center gap-2 text-xl font-bold text-primary">
-            <span className="leading-none">BORARLY</span>
+            <span className="leading-none hidden sm:block">BORARLY</span>
           </Link>
         </div>
         

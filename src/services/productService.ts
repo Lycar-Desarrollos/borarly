@@ -1,5 +1,4 @@
 
-'use server';
 /**
  * @fileOverview Service functions for managing products and categories using Firestore.
  */
