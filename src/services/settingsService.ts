@@ -1,5 +1,4 @@
 
-'use server';
 /**
  * @fileOverview Service functions for managing app-wide settings in Firestore.
  */

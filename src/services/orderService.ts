@@ -1,5 +1,4 @@
 
-'use server';
 /**
  * @fileOverview Service functions for managing orders.
  *
