@@ -17,7 +17,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     categoryUrls = categories
       .filter(cat => cat.isVisible !== false)
       .map((cat) => ({
-        url: `https://BORARLY.com/?category=${cat.id}`,
+        url: `https://borarly.com/?category=${cat.id}`,
         lastModified: new Date(),
         changeFrequency: 'weekly' as const,
         priority: cat.level === 1 ? 0.9 : 0.7,
@@ -28,19 +28,19 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
 
   return [
     {
-      url: 'https://BORARLY.com',
+      url: 'https://borarly.com',
       lastModified: new Date(),
       changeFrequency: 'daily',
       priority: 1,
     },
     {
-      url: 'https://BORARLY.com/services/web',
+      url: 'https://borarly.com/services/web',
       lastModified: new Date(),
       changeFrequency: 'monthly',
       priority: 0.8,
     },
     {
-      url: 'https://BORARLY.com/feed.xml',
+      url: 'https://borarly.com/feed.xml',
       lastModified: new Date(),
       changeFrequency: 'hourly',
       priority: 0.5,

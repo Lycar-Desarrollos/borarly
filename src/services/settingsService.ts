@@ -212,10 +212,10 @@ export interface BankDetails {
 }
 
 const BANK_DETAILS_DEFAULTS: BankDetails = {
-  companyName: 'BORARLY',
-  email: 'contacto@BORARLY.com',
+  companyName: 'Borarly',
+  email: 'contacto@borarly.com',
   phone: '+52 999 310 1452',
-  beneficiary: 'BORARLY',
+  beneficiary: 'Borarly',
   clabe: '012 180 01576278534 6',
   bank: 'BBVA',
 };

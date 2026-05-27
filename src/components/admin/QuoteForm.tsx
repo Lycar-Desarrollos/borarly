@@ -70,10 +70,10 @@ export function QuoteForm({ quote: initialQuote }: { quote?: Quote }) {
   // ── Logo ──────────────────────────────────────
   const [logoUrl, setLogoUrl] = useState<string | null>(null);
   const [bankDetails, setBankDetails] = useState<BankDetails>({
-    companyName: 'BORARLY',
-    email: 'contacto@BORARLY.com',
+    companyName: 'Borarly',
+    email: 'contacto@borarly.com',
     phone: '+52 999 310 1452',
-    beneficiary: 'BORARLY',
+    beneficiary: 'Borarly',
     clabe: '012 180 01576278534 6',
     bank: 'BBVA',
   });

@@ -75,19 +75,19 @@ function productToXmlItem(product: Product, categoriaId: string): string {
 
   if (!product.price || isNaN(product.price)) return ''; // Precio inválido
   const price = product.price.toFixed(2);
-  const productUrl = `https://BORARLY.com/products/${product.id}`;
+  const productUrl = `https://borarly.com/products/${product.id}`;
   
   // Google requiere min. 150 caracteres en descripción
   let description = product.description?.trim() || '';
   if (description.length < 150) {
     // Enriquecer la descripción con contexto del producto
-    const brand = product.brand || 'BORARLY';
+    const brand = product.brand || 'Borarly';
     const model = product.line || product.id;
-    description = `${product.name}. Marca: ${brand}. Modelo: ${model}. ${description} Distribuido por BORARLY, tu mayorista de confianza en seguridad electrónica, videovigilancia, redes y telecomunicaciones en México. Producto nuevo con garantía de fábrica.`;
+    description = `${product.name}. Marca: ${brand}. Modelo: ${model}. ${description} Distribuido por Borarly, tu mayorista de confianza en seguridad electrónica, videovigilancia, redes y telecomunicaciones en México. Producto nuevo con garantía de fábrica.`;
   }
   description = description.substring(0, 5000).trim();
   
-  const brand = product.brand || 'BORARLY';
+  const brand = product.brand || 'Borarly';
   const model = product.line || product.id; // Modelo de fábrica real (no ID interno)
   const googleCategory = GOOGLE_CATEGORY_MAP[categoriaId] || 'Electronics';
 
@@ -208,8 +208,8 @@ export async function GET() {
     const xml = `<?xml version="1.0" encoding="UTF-8"?>
 <rss version="2.0" xmlns:g="http://base.google.com/ns/1.0">
   <channel>
-    <title>BORARLY Mayorista – Catálogo de Productos</title>
-    <link>https://BORARLY.com</link>
+    <title>Borarly Mayorista – Catálogo de Productos</title>
+    <link>https://borarly.com</link>
     <description>Distribuidor mayorista de seguridad electrónica, videovigilancia, redes y telecomunicaciones en México.</description>
     <language>es-mx</language>
     <lastBuildDate>${feedDate}</lastBuildDate>

@@ -17,7 +17,7 @@ export default function PrivacidadPage() {
       <div className="mb-8 font-bold text-primary">BORARLY</div>
       <h1 className="text-4xl font-extrabold tracking-tight mb-4">Aviso de Privacidad</h1>
       <p className="text-muted-foreground text-lg mb-8">
-        En BORARLY, respetamos tu privacidad y protegemos tus datos personales conforme a la Ley Federal de Protección de Datos Personales en Posesión de los Particulares.
+        En Borarly, respetamos tu privacidad y protegemos tus datos personales conforme a la Ley Federal de Protección de Datos Personales en Posesión de los Particulares.
       </p>
 
       <div className="space-y-10">
@@ -27,7 +27,7 @@ export default function PrivacidadPage() {
             <h2 className="text-2xl font-bold">Responsable de los Datos</h2>
           </div>
           <p className="text-muted-foreground">
-            BORARLY Mayorista Tecnológico, con domicilio comercial en Yucatán, México, es responsable de recabar sus datos personales, del uso que se le dé a los mismos y de su protección.
+            Borarly Mayorista Tecnológico, con domicilio comercial en Yucatán, México, es responsable de recabar sus datos personales, del uso que se le dé a los mismos y de su protección.
           </p>
         </section>
 
@@ -60,14 +60,14 @@ export default function PrivacidadPage() {
         <section className="bg-muted/30 p-8 rounded-3xl border">
           <h2 className="text-xl font-bold mb-4">Derechos ARCO</h2>
           <p className="text-muted-foreground text-sm">
-            Usted tiene derecho a Acceder, Rectificar, Cancelar u Oponerse al tratamiento de sus datos personales. Para ejercer estos derechos, puede enviar una solicitud por escrito a nuestro departamento de datos personales al correo: <strong>ventas@BORARLY.com</strong>.
+            Usted tiene derecho a Acceder, Rectificar, Cancelar u Oponerse al tratamiento de sus datos personales. Para ejercer estos derechos, puede enviar una solicitud por escrito a nuestro departamento de datos personales al correo: <strong>ventas@borarly.com</strong>.
           </p>
         </section>
       </div>
 
       <footer className="mt-12 pt-8 border-t text-sm text-muted-foreground text-center">
         <p>Última actualización: Abril 2024</p>
-        <p className="mt-2">&copy; BORARLY Mayorista Tecnológico.</p>
+        <p className="mt-2">&copy; Borarly Mayorista Tecnológico.</p>
       </footer>
     </div>
   );

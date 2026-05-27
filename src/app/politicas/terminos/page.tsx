@@ -16,7 +16,7 @@ export default function TerminosPage() {
 
       <h1 className="text-4xl font-extrabold tracking-tight mb-4">Términos y Condiciones de Uso</h1>
       <p className="text-muted-foreground text-lg mb-8">
-        Bienvenido a BORARLY. Al acceder y utilizar nuestro sitio web, usted acepta cumplir con los siguientes términos y condiciones.
+        Bienvenido a Borarly. Al acceder y utilizar nuestro sitio web, usted acepta cumplir con los siguientes términos y condiciones.
       </p>
 
       <div className="space-y-12">
@@ -26,7 +26,7 @@ export default function TerminosPage() {
             <h2 className="text-2xl font-bold">Registro y Uso de Cuenta</h2>
           </div>
           <p className="text-muted-foreground">
-            El acceso a ciertos servicios y precios de mayorista puede requerir la creación de una cuenta. Usted es responsable de mantener la confidencialidad de su cuenta y contraseña. BORARLY se reserva el derecho de rechazar servicios o cancelar cuentas a su discreción.
+            El acceso a ciertos servicios y precios de mayorista puede requerir la creación de una cuenta. Usted es responsable de mantener la confidencialidad de su cuenta y contraseña. Borarly se reserva el derecho de rechazar servicios o cancelar cuentas a su discreción.
           </p>
         </section>
 
@@ -46,7 +46,7 @@ export default function TerminosPage() {
             <h2 className="text-2xl font-bold">Limitación de Responsabilidad</h2>
           </div>
           <p className="text-muted-foreground">
-            BORARLY no será responsable por daños indirectos, incidentales o consecuentes que resulten del uso o la imposibilidad de uso de la tienda o de los productos adquiridos. La garantía de los productos es limitada a los términos ofrecidos por el fabricante.
+            Borarly no será responsable por daños indirectos, incidentales o consecuentes que resulten del uso o la imposibilidad de uso de la tienda o de los productos adquiridos. La garantía de los productos es limitada a los términos ofrecidos por el fabricante.
           </p>
         </section>
 
@@ -64,7 +64,7 @@ export default function TerminosPage() {
       <footer className="mt-12 pt-8 border-t text-sm text-muted-foreground text-center">
         <p>Última actualización: Abril 2024</p>
         <p className="mt-2 text-xs">Si tiene dudas sobre estos términos, por favor contáctenos antes de realizar su compra.</p>
-        <p className="mt-4">&copy; BORARLY Mayorista Tecnológico.</p>
+        <p className="mt-4">&copy; Borarly Mayorista Tecnológico.</p>
       </footer>
     </div>
   );

@@ -17,7 +17,7 @@ export default function EnviosPage() {
       <div className="mb-8 font-bold text-primary">BORARLY</div>
       <h1 className="text-4xl font-extrabold tracking-tight mb-4">Política de Envíos y Logística</h1>
       <p className="text-muted-foreground text-lg mb-8">
-        En BORARLY, nos esforzamos por que tus equipos lleguen de forma segura y rápida a cualquier rincón de México.
+        En Borarly, nos esforzamos por que tus equipos lleguen de forma segura y rápida a cualquier rincón de México.
       </p>
 
       <div className="grid gap-8">
@@ -84,7 +84,7 @@ export default function EnviosPage() {
 
       <footer className="mt-12 pt-8 border-t text-sm text-muted-foreground">
         <p>¿Necesitas una entrega urgente o recolección en sucursal? Contáctanos antes de realizar tu compra.</p>
-        <p className="mt-2">&copy; {new Date().getFullYear()} BORARLY Mayorista Tecnológico.</p>
+        <p className="mt-2">&copy; {new Date().getFullYear()} Borarly Mayorista Tecnológico.</p>
       </footer>
     </div>
   );

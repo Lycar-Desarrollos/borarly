@@ -78,7 +78,7 @@ function productToMLRow(product: Product, categoriaId: string) {
     'Foto 4':                         images[3] || '',
     'Foto 5':                         images[4] || '',
     'Foto 6':                         images[5] || '',
-    'URL producto (BORARLY.com)':   `https://BORARLY.com/products/${product.id}`,
+    'URL producto (Borarly.com)':   `https://borarly.com/products/${product.id}`,
   };
 }
 
@@ -186,7 +186,7 @@ export async function GET() {
       status: 200,
       headers: {
         'Content-Type': 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-        'Content-Disposition': `attachment; filename="BORARLY_ML_${fecha}_${rows.length}productos.xlsx"`,
+        'Content-Disposition': `attachment; filename="Borarly_ML_${fecha}_${rows.length}productos.xlsx"`,
         'X-Product-Count': String(rows.length),
       },
     });

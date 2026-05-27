@@ -25,7 +25,7 @@ User-agent: MJ12bot
 User-agent: Baiduspider
 Disallow: /
 
-Sitemap: https://BORARLY.com/sitemap.xml`;
+Sitemap: https://borarly.com/sitemap.xml`;
 
   return new Response(robotsTxt, {
     status: 200,

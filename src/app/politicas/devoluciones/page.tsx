@@ -17,7 +17,7 @@ export default function DevolucionesPage() {
 
       <h1 className="text-4xl font-extrabold tracking-tight mb-4">Política de Devoluciones y Reembolsos</h1>
       <p className="text-muted-foreground text-lg mb-8">
-        En BORARLY, nuestra prioridad es tu satisfacción. Aquí detallamos los términos para procesar devoluciones y reembolsos de manera transparente.
+        En Borarly, nuestra prioridad es tu satisfacción. Aquí detallamos los términos para procesar devoluciones y reembolsos de manera transparente.
       </p>
 
       <div className="grid gap-8">
@@ -85,8 +85,8 @@ export default function DevolucionesPage() {
       </div>
 
       <footer className="mt-12 pt-8 border-t text-sm text-muted-foreground">
-        <p>¿Tienes dudas? Contáctanos a través de nuestro soporte oficial para asistencia inmediata en <strong>ventas@BORARLY.com</strong>.</p>
-        <p className="mt-2">&copy; {new Date().getFullYear()} BORARLY Mayorista Tecnológico.</p>
+        <p>¿Tienes dudas? Contáctanos a través de nuestro soporte oficial para asistencia inmediata en <strong>ventas@borarly.com</strong>.</p>
+        <p className="mt-2">&copy; {new Date().getFullYear()} Borarly Mayorista Tecnológico.</p>
       </footer>
     </div>
   );

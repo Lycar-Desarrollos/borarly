@@ -8,24 +8,24 @@ import { Organization, WebSite, WithContext } from 'schema-dts';
 import { JsonLd } from 'react-schemaorg';
 
 export const metadata: Metadata = {
-  metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL || 'https://BORARLY.com'),
+  metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL || 'https://borarly.com'),
   title: {
-    template: '%s | BORARLY Mayorista',
-    default: 'BORARLY | Mayorista Tecnológico en Seguridad y Redes',
+    template: '%s | Borarly Mayorista',
+    default: 'Borarly | Mayorista Tecnológico en Seguridad y Redes',
   },
-  description: 'Distribuidor mayorista líder en equipo de seguridad electrónica, videovigilancia, redes, y cómputo. Encuentra las mejores marcas al mejor precio garantizado con BORARLY.',
-  keywords: ['seguridad electrónica', 'mayorista de ciberseguridad', 'equipo de redes', 'Syscom', 'videovigilancia', 'computo', 'BORARLY', 'telecomunicaciones'],
+  description: 'Distribuidor mayorista líder en equipo de seguridad electrónica, videovigilancia, redes, y cómputo. Encuentra las mejores marcas al mejor precio garantizado con Borarly.',
+  keywords: ['seguridad electrónica', 'mayorista de ciberseguridad', 'equipo de redes', 'Syscom', 'videovigilancia', 'computo', 'Borarly', 'telecomunicaciones'],
   openGraph: {
-    title: 'BORARLY | Mayorista Tecnológico',
+    title: 'Borarly | Mayorista Tecnológico',
     description: 'Distribuidor mayorista líder en equipo de seguridad electrónica, videovigilancia, redes, y cómputo.',
-    url: 'https://BORARLY.com',
-    siteName: 'BORARLY Mayorista',
+    url: 'https://borarly.com',
+    siteName: 'Borarly Mayorista',
     locale: 'es_MX',
     type: 'website',
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'BORARLY | Mayorista Tecnológico',
+    title: 'Borarly | Mayorista Tecnológico',
     description: 'Distribuidor mayorista en seguridad electrónica y redes.',
   },
   robots: {
@@ -57,12 +57,12 @@ export default function RootLayout({
   const organizationSchema: WithContext<Organization> = {
     '@context': 'https://schema.org',
     '@type': 'Organization',
-    name: 'BORARLY Mayorista',
-    url: 'https://BORARLY.com',
+    name: 'Borarly Mayorista',
+    url: 'https://borarly.com',
     description: 'Distribuidor mayorista líder en seguridad electrónica y redes.',
     logo: {
       '@type': 'ImageObject',
-      url: 'https://BORARLY.com/icon-512.png',
+      url: 'https://borarly.com/icon-512.png',
       width: 512,
       height: 512,
     } as any,
@@ -77,11 +77,11 @@ export default function RootLayout({
   const websiteSchema: WithContext<WebSite> = {
     '@context': 'https://schema.org',
     '@type': 'WebSite',
-    name: 'BORARLY Mayorista',
-    url: 'https://BORARLY.com',
+    name: 'Borarly Mayorista',
+    url: 'https://borarly.com',
     potentialAction: {
       '@type': 'SearchAction',
-      target: 'https://BORARLY.com/?search={search_term_string}',
+      target: 'https://borarly.com/?search={search_term_string}',
       'query-input': 'required name=search_term_string'
     } as any
   };
