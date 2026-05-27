@@ -50,6 +50,7 @@ Boratech-Syscom
 
 # Scripts de prueba locales (pueden contener credenciales)
 *.mjs
+!postcss.config.mjs
 check_*.ts
 fetch_*.mjs
 test_*.mjs
