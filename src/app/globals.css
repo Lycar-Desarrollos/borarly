@@ -1,0 +1,176 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+html {
+  font-size: 14px;
+}
+
+body {
+  font-family: var(--font-geist-sans), Arial, Helvetica, sans-serif;
+}
+
+@layer base {
+  :root {
+    /* LUXURY LIGHT MODE */
+    --background: 0 0% 98%; 
+    --foreground: 222 47% 11%;
+
+    --card: 0 0% 100%;
+    --card-foreground: 222 47% 11%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 222 47% 11%;
+
+    --primary: 213 94% 37%; /* #0256B9 Azul BORARLY */
+    --primary-foreground: 0 0% 100%; 
+
+    --secondary: 210 40% 96.1%; 
+    --secondary-foreground: 222.2 47.4% 11.2%;
+
+    --muted: 210 40% 96.1%;
+    --muted-foreground: 215.4 16.3% 46.9%;
+
+    --accent: 151 100% 45%; /* #00E676 Verde BORARLY */
+    --accent-foreground: 222 47% 11%; 
+
+    --destructive: 0 84.2% 60.2%; /* #FF3B30 */
+    --destructive-foreground: 210 40% 98%;
+
+    --border: 214.3 31.8% 91.4%;
+    --input: 214.3 31.8% 91.4%;
+    --ring: 213 94% 37%; 
+
+    --radius: 0.75rem; /* Más boleado y elegante */
+
+    /* Chart colors */
+    --chart-1: 213 94% 37%; 
+    --chart-2: 151 100% 45%; 
+    --chart-3: 199 89% 48%; 
+    --chart-4: 43 74% 66%;  
+    --chart-5: 27 87% 67%; 
+    
+    /* Sidebar Light */
+    --sidebar-background: 0 0% 100%;
+    --sidebar-foreground: 222 47% 11%;
+    --sidebar-primary: 213 94% 37%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 210 40% 96.1%;
+    --sidebar-accent-foreground: 222 47% 11%;
+    --sidebar-border: 214.3 31.8% 91.4%;
+    --sidebar-ring: 213 94% 37%;
+  }
+
+  .dark {
+    /* ULTRA PREMIUM DARK MODE */
+    --background: 222 47% 8%; /* #0B1120 Deep Infinity Blue */
+    --foreground: 210 40% 98%;
+
+    --card: 223 47% 11%; /* #0F172A Slate 900 */
+    --card-foreground: 210 40% 98%;
+
+    --popover: 222 47% 8%;
+    --popover-foreground: 210 40% 98%;
+
+    --primary: 213 94% 50%; /* Brighter Blue for Dark Mode */
+    --primary-foreground: 0 0% 100%;
+
+    --secondary: 217.2 32.6% 17.5%;
+    --secondary-foreground: 210 40% 98%;
+
+    --muted: 217.2 32.6% 17.5%;
+    --muted-foreground: 215 20.2% 65.1%;
+
+    --accent: 151 100% 45%; /* #00E676 Verde BORARLY */
+    --accent-foreground: 222 47% 11%;
+
+    --destructive: 0 70% 50%; /* #FF3B30 */
+    --destructive-foreground: 210 40% 98%;
+
+    --border: 217.2 32.6% 17.5%;
+    --input: 217.2 32.6% 17.5%;
+    --ring: 213 94% 50%;
+    
+    /* Sidebar Ultra Dark */
+    --sidebar-background: 222 47% 6%; /* Almost black slate */
+    --sidebar-foreground: 210 40% 98%;
+    --sidebar-primary: 213 94% 50%;
+    --sidebar-primary-foreground: 210 40% 98%;
+    --sidebar-accent: 217.2 32.6% 17.5%;
+    --sidebar-accent-foreground: 210 40% 98%;
+    --sidebar-border: 217.2 32.6% 17.5%;
+    --sidebar-ring: 213 94% 50%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground transition-colors duration-300;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+  }
+  main {
+    @apply flex-grow;
+  }
+}
+
+/* SYSCOM HTML CONTENT OVERRIDES */
+.syscom-html-content {
+  @apply text-muted-foreground dark:text-zinc-300 leading-relaxed overflow-hidden;
+}
+
+.syscom-html-content img {
+  @apply max-w-full h-auto rounded-lg my-4 mx-auto block bg-white/10 p-2;
+}
+
+.syscom-html-content iframe {
+  @apply w-full aspect-video rounded-xl my-6 border border-border dark:border-slate-800 shadow-2xl;
+}
+
+.syscom-html-content h1, 
+.syscom-html-content h2, 
+.syscom-html-content h3 {
+  @apply text-foreground dark:text-white font-bold mt-8 mb-4 tracking-tight;
+}
+
+.syscom-html-content h2 { @apply text-2xl; }
+.syscom-html-content h3 { @apply text-xl; }
+
+.syscom-html-content table {
+  @apply w-full border-collapse my-6 overflow-hidden rounded-lg border border-border dark:border-slate-800 bg-muted/40 dark:bg-slate-900/40;
+}
+
+.syscom-html-content th, 
+.syscom-html-content td {
+  @apply p-3 border border-border dark:border-slate-800/50 text-sm;
+}
+
+.syscom-html-content th {
+  @apply bg-muted dark:bg-slate-800 text-foreground dark:text-white font-bold text-left;
+}
+
+.syscom-html-content tr:nth-child(even) {
+  @apply bg-muted/50 dark:bg-slate-800/20;
+}
+
+.syscom-html-content p {
+  @apply mb-4;
+}
+
+.syscom-html-content a {
+  @apply text-[#00E676] hover:underline;
+}
+
+@layer utilities {
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+  .no-scrollbar {
+    -ms-overflow-style: none; /* IE and Edge */
+    scrollbar-width: none; /* Firefox */
+  }
+}

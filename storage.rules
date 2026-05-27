@@ -1,0 +1,30 @@
+rules_version = '2';
+
+// Reglas para el servicio de Firebase Storage
+service firebase.storage {
+  // Coincide con el bucket de almacenamiento de tu proyecto
+  match /b/{bucket}/o {
+
+    // Reglas para las imágenes de los productos
+    // Las imágenes de productos deben ser públicamente legibles para que todos puedan verlas.
+    // Solo los usuarios autenticados (administradores) deben poder escribir (subir/eliminar) imágenes.
+    match /products/{allPaths=**} {
+      // Permite que cualquiera lea (descargue) las imágenes de los productos.
+      allow read;
+      // Permite que solo los usuarios autenticados escriban (suban, actualicen, eliminen) imágenes.
+      allow write: if request.auth != null;
+    }
+
+    // Reglas para los slides del carrusel
+    match /hero-slides/{allPaths=**} {
+      allow read;
+      allow write: if request.auth != null;
+    }
+
+    // Reglas para el logo de la configuración
+    match /settings/quoteLogo/{allPaths=**} {
+        allow read;
+        allow write: if request.auth != null;
+    }
+  }
+}
