@@ -33,12 +33,57 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       changeFrequency: 'daily',
       priority: 1,
     },
+    // Políticas (requeridas por Google Merchant Center)
+    {
+      url: 'https://borarly.com/politicas/envios',
+      lastModified: new Date(),
+      changeFrequency: 'monthly',
+      priority: 0.6,
+    },
+    {
+      url: 'https://borarly.com/politicas/devoluciones',
+      lastModified: new Date(),
+      changeFrequency: 'monthly',
+      priority: 0.6,
+    },
+    {
+      url: 'https://borarly.com/politicas/privacidad',
+      lastModified: new Date(),
+      changeFrequency: 'monthly',
+      priority: 0.5,
+    },
+    {
+      url: 'https://borarly.com/politicas/terminos',
+      lastModified: new Date(),
+      changeFrequency: 'monthly',
+      priority: 0.5,
+    },
+    // Servicios
     {
       url: 'https://borarly.com/services/web',
       lastModified: new Date(),
       changeFrequency: 'monthly',
       priority: 0.8,
     },
+    {
+      url: 'https://borarly.com/services/financial',
+      lastModified: new Date(),
+      changeFrequency: 'monthly',
+      priority: 0.7,
+    },
+    {
+      url: 'https://borarly.com/services/support',
+      lastModified: new Date(),
+      changeFrequency: 'monthly',
+      priority: 0.7,
+    },
+    {
+      url: 'https://borarly.com/services/value-projects',
+      lastModified: new Date(),
+      changeFrequency: 'monthly',
+      priority: 0.7,
+    },
+    // Feed de Google Merchant Center
     {
       url: 'https://borarly.com/feed.xml',
       lastModified: new Date(),

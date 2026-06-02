@@ -6,12 +6,17 @@
  * - Google visita el feed ~1 vez al día → en la práctica, Netlify ejecuta la función
  *   solo cuando el cache expira (no en cada visita), ahorrando invocaciones serverless
  *
+ * CATEGORÍAS DINÁMICAS:
+ * - Las categorías se obtienen de la API de Syscom en tiempo real (GET /categorias)
+ * - Si Syscom cambia/renombra/agrega categorías, el feed se adapta automáticamente
+ * - El mapeo a taxonomía de Google Shopping se hace por nombre (keywords), no por ID
+ *
  * CAMPOS REQUERIDOS POR GOOGLE MERCHANT CENTER:
  * - g:id, g:title, g:description, g:link, g:image_link, g:price,
  *   g:availability, g:condition, g:brand, g:identifier_exists
  */
 
-import { getProductosSyscomMerida, obtenerTipoCambioSyscom } from '@/services/syscom';
+import { getProductosSyscomMerida, obtenerTipoCambioSyscom, getCategoriasSyscomL1, getGoogleCategoryByName } from '@/services/syscom';
 import { getVatRate, getProfitMargin } from '@/services/settingsService';
 import type { Product } from '@/lib/types';
 
@@ -21,40 +26,6 @@ export const revalidate = 3600;
 
 // Timeout por categoría para evitar tiempos de respuesta muy largos
 const FETCH_TIMEOUT_MS = 25000;
-
-// Categorías principales de Syscom a incluir en el feed
-// Cada una hace 1 request a la API de Syscom
-const CATEGORIAS_FEED = [
-  { id: '22', nombre: 'Videovigilancia' },
-  { id: '43', nombre: 'Control de Acceso' },
-  { id: '24', nombre: 'Redes' },
-  { id: '26', nombre: 'Radiocomunicación' },
-  { id: '95', nombre: 'Cableado Estructurado' },
-  { id: '10', nombre: 'Energía' },
-  { id: '1',  nombre: 'Detección de Fuego' },
-  { id: '11', nombre: 'Intrusión' },
-  { id: '17', nombre: 'Cómputo' },
-  { id: '5',  nombre: 'Telefonía' },
-  { id: '91', nombre: 'Herramientas y Herrajes' },
-  { id: '31', nombre: 'Audio y Video' },
-];
-
-// Mapa de categorías Syscom → taxonomía de Google Shopping (IDs de Google)
-// https://www.google.com/basepages/producttype/taxonomy-with-ids.en-US.txt
-const GOOGLE_CATEGORY_MAP: Record<string, string> = {
-  '22': '505306', // Videovigilancia (Surveillance Cameras)
-  '43': '505304', // Control de Acceso (Access Control Systems)
-  '24': '262',    // Redes (Networking)
-  '26': '614',    // Radiocomunicación (Two-way Radios)
-  '95': '3144',   // Cableado (Cables)
-  '10': '5945',   // Energía (Power Supplies)
-  '1':  '505303', // Fuego (Security & Alarms)
-  '11': '499960', // Intrusión (Security Alarms)
-  '17': '278',    // Cómputo (Computers)
-  '5':  '267',    // Telefonía (Telephony)
-  '91': '455',    // Herramientas (Tools)
-  '31': '305',    // Audio/Video
-};
 
 /** Escapa caracteres especiales XML */
 function escapeXml(str: string): string {
@@ -68,7 +39,7 @@ function escapeXml(str: string): string {
 }
 
 /** Convierte un producto al formato XML de Google Shopping */
-function productToXmlItem(product: Product, categoriaId: string): string {
+function productToXmlItem(product: Product, googleCategoryId: string): string {
   const availability = product.stock && product.stock > 0 ? 'in_stock' : 'out_of_stock';
   const imageUrl = product.imageUrls?.[0] || '';
   if (!imageUrl || imageUrl.includes('placehold.co')) return ''; // Google rechaza placeholders
@@ -89,7 +60,6 @@ function productToXmlItem(product: Product, categoriaId: string): string {
   
   const brand = product.brand || 'Borarly';
   const model = product.line || product.id; // Modelo de fábrica real (no ID interno)
-  const googleCategory = GOOGLE_CATEGORY_MAP[categoriaId] || 'Electronics';
 
   // Imágenes adicionales (hasta 10)
   const additionalImages = (product.imageUrls || [])
@@ -112,7 +82,7 @@ function productToXmlItem(product: Product, categoriaId: string): string {
       <g:brand>${escapeXml(brand)}</g:brand>
       <g:mpn>${escapeXml(model)}</g:mpn>
       <g:identifier_exists>yes</g:identifier_exists>
-      <g:google_product_category>${escapeXml(googleCategory)}</g:google_product_category>
+      <g:google_product_category>${escapeXml(googleCategoryId)}</g:google_product_category>
       <g:shipping>
         <g:country>MX</g:country>
         <g:service>Estándar</g:service>
@@ -148,7 +118,7 @@ async function fetchCategoryWithTimeout(
         exchangeRate,
         vatRate,
         margin,
-        controller.signal     // FIX #2: Señal correctamente conectada
+        controller.signal
     );
     clearTimeout(timeoutId);
     return products;
@@ -161,44 +131,59 @@ async function fetchCategoryWithTimeout(
 
 export async function GET() {
   try {
-    // PRE-OBTENER TASAS Y MÁRGENES (1 sola vez para todo el feed)
+    // 1. OBTENER CATEGORÍAS DINÁMICAMENTE DE SYSCOM (cache 24h)
+    const categorias = await getCategoriasSyscomL1();
+    
+    if (categorias.length === 0) {
+      console.error('Feed: No se pudieron obtener categorías de Syscom');
+      return new Response('<?xml version="1.0"?><rss version="2.0"><channel><title>Error</title></channel></rss>', {
+        status: 500,
+        headers: { 'Content-Type': 'application/xml' },
+      });
+    }
+
+    console.log(`Feed: Generando con ${categorias.length} categorías dinámicas de Syscom: ${categorias.map(c => `${c.id}(${c.nombre})`).join(', ')}`);
+
+    // 2. PRE-OBTENER TASAS Y MÁRGENES (1 sola vez para todo el feed)
     const [exchangeRate, vatRate, margin] = await Promise.all([
       obtenerTipoCambioSyscom(),
       getVatRate(),
       getProfitMargin()
     ]);
 
-    // FIX #1: Batching anti-rate-limit
-    // En lugar de lanzar 60 promesas simultáneas, las procesamos en lotes de 4
-    // para no saturar la API de Syscom con demasiadas peticiones al mismo tiempo.
+    // 3. FETCH CON BATCHING ANTI-RATE-LIMIT
+    // En lugar de lanzar todas las promesas simultáneas, las procesamos en lotes de 4
     const BATCH_SIZE = 4;
     const paginas = [1, 2, 3]; // Fetching first 3 pages per category
-    const allFetchRequests = CATEGORIAS_FEED.flatMap(cat =>
-      paginas.map(p => ({ categoriaId: cat.id, pagina: p }))
+    const allFetchRequests = categorias.flatMap(cat =>
+      paginas.map(p => ({ categoriaId: cat.id, categoriaNombre: cat.nombre, pagina: p }))
     );
 
-    const resultsPorPagina: { categoriaId: string; products: Product[] }[] = [];
+    const resultsPorPagina: { categoriaId: string; categoriaNombre: string; products: Product[] }[] = [];
 
     for (let i = 0; i < allFetchRequests.length; i += BATCH_SIZE) {
       const batch = allFetchRequests.slice(i, i + BATCH_SIZE);
       const batchResults = await Promise.all(
-        batch.map(({ categoriaId, pagina }) =>
+        batch.map(({ categoriaId, categoriaNombre, pagina }) =>
           fetchCategoryWithTimeout(categoriaId, FETCH_TIMEOUT_MS, pagina, exchangeRate, vatRate, margin)
-            .then(products => ({ categoriaId, products }))
+            .then(products => ({ categoriaId, categoriaNombre, products }))
         )
       );
       resultsPorPagina.push(...batchResults);
     }
 
-    // Eliminar duplicados por ID (un producto puede estar en varias categorías)
+    // 4. DEDUPLICAR Y GENERAR XML
     const seenIds = new Set<string>();
     const allItems: string[] = [];
 
-    for (const { categoriaId, products } of resultsPorPagina) {
+    for (const { categoriaNombre, products } of resultsPorPagina) {
+      // Mapear por NOMBRE de categoría → taxonomía de Google (dinámico)
+      const googleCategoryId = getGoogleCategoryByName(categoriaNombre);
+      
       for (const product of products) {
         if (seenIds.has(product.id)) continue;
         seenIds.add(product.id);
-        const item = productToXmlItem(product, categoriaId);
+        const item = productToXmlItem(product, googleCategoryId);
         if (item) allItems.push(item);
       }
     }
@@ -224,6 +209,7 @@ export async function GET() {
         // Netlify CDN cache: 1 hora, stale-while-revalidate 24 horas
         'Cache-Control': 'public, s-maxage=3600, stale-while-revalidate=86400',
         'X-Feed-Items': String(allItems.length),
+        'X-Feed-Categories': String(categorias.length),
       },
     });
   } catch (error) {

@@ -165,7 +165,7 @@ export default async function ProductDetailPage(props: ProductDetailPageProps) {
         '@type': 'MerchantReturnPolicy',
         applicableCountry: 'MX',
         returnPolicyCategory: 'https://schema.org/MerchantReturnFiniteReturnWindow',
-        merchantReturnDays: 30,
+        merchantReturnDays: 5,
         returnMethod: 'https://schema.org/ReturnByMail',
         returnFees: 'https://schema.org/FreeReturn'
       }

@@ -2,49 +2,17 @@
  * @fileOverview API Route: Generador de archivo XLSX para carga masiva en Mercado Libre México
  * 
  * GET /api/ml-export
- * - Obtiene productos de Syscom con stock en Mérida
+ * - Obtiene TODAS las categorías dinámicamente de Syscom (ya no hardcodeadas)
+ * - Obtiene productos con stock en Mérida
  * - Los transforma al formato requerido por ML para carga masiva
  * - Devuelve un archivo XLSX listo para descargar y subir a ML
  */
 
 import { NextResponse } from 'next/server';
 import * as XLSX from 'xlsx';
-import { getProductosSyscomMerida, obtenerTipoCambioSyscom } from '@/services/syscom';
+import { getProductosSyscomMerida, obtenerTipoCambioSyscom, getCategoriasSyscomL1, getMLCategoryName } from '@/services/syscom';
 import { getVatRate, getProfitMargin } from '@/services/settingsService';
 import type { Product } from '@/lib/types';
-
-// Mapa de categorías Syscom → Nombre legible para ML
-// (ML México requiere que el vendedor seleccione la categoria en su portal,
-//  pero el campo "Categoría sugerida" en el CSV ayuda a ML a categorizarla)
-const CATEGORIA_NOMBRES: Record<string, string> = {
-  '22': 'Cámaras y Sistemas de Seguridad',
-  '43': 'Control de Acceso',
-  '24': 'Redes y Conectividad',
-  '26': 'Radiocomunicación',
-  '95': 'Cableado Estructurado',
-  '10': 'Fuentes de Energía y UPS',
-  '1':  'Detección de Incendio y Alarmas',
-  '11': 'Sistemas de Intrusión',
-  '17': 'Cómputo y Periféricos',
-  '5':  'Telefonía y Comunicaciones',
-  '91': 'Herramientas y Herrajes',
-  '31': 'Audio y Video Profesional',
-};
-
-// Categorías de Syscom a incluir
-const CATEGORIAS = [
-  { id: '22', nombre: 'Videovigilancia' },
-  { id: '43', nombre: 'Control de Acceso' },
-  { id: '24', nombre: 'Redes' },
-  { id: '95', nombre: 'Cableado Estructurado' },
-  { id: '10', nombre: 'Energía' },
-  { id: '1',  nombre: 'Detección de Fuego' },
-  { id: '11', nombre: 'Intrusión' },
-  { id: '17', nombre: 'Cómputo' },
-  { id: '5',  nombre: 'Telefonía' },
-  { id: '91', nombre: 'Herramientas' },
-  { id: '31', nombre: 'Audio y Video' },
-];
 
 /** Trunca el título a max 60 caracteres (límite de ML) */
 function truncateTitle(title: string, max = 60): string {
@@ -53,7 +21,7 @@ function truncateTitle(title: string, max = 60): string {
 }
 
 /** Convierte un producto al formato de fila para ML */
-function productToMLRow(product: Product, categoriaId: string) {
+function productToMLRow(product: Product, categoriaNombre: string) {
   const images = (product.imageUrls || []).filter(u => u && !u.includes('placehold'));
   const description = product.description?.trim() 
     ? product.description.substring(0, 3000)
@@ -62,7 +30,7 @@ function productToMLRow(product: Product, categoriaId: string) {
   return {
     'SKU (Tu código)':               product.line || product.id,
     'Título':                         truncateTitle(product.name),
-    'Categoría sugerida':             CATEGORIA_NOMBRES[categoriaId] || 'Electrónica',
+    'Categoría sugerida':             getMLCategoryName(categoriaNombre),
     'Condición':                      'new',
     'Tipo de publicación':            'free',          // Clásica gratuita
     'Precio':                         product.price.toFixed(2),
@@ -84,26 +52,33 @@ function productToMLRow(product: Product, categoriaId: string) {
 
 export async function GET() {
   try {
-    // Obtener tasas una sola vez
+    // 1. Obtener categorías dinámicamente de Syscom
+    const categorias = await getCategoriasSyscomL1();
+    
+    if (categorias.length === 0) {
+      return NextResponse.json({ error: 'No se pudieron obtener categorías de Syscom.' }, { status: 500 });
+    }
+
+    // 2. Obtener tasas una sola vez
     const [exchangeRate, vatRate, margin] = await Promise.all([
       obtenerTipoCambioSyscom(),
       getVatRate(),
       getProfitMargin(),
     ]);
 
-    // Fetch de todas las categorías con stock en Mérida
+    // 3. Fetch de todas las categorías con stock en Mérida
     const BATCH_SIZE = 4;
-    const requests = CATEGORIAS.flatMap(cat =>
-      [1, 2, 3].map(pagina => ({ categoriaId: cat.id, pagina }))
+    const requests = categorias.flatMap(cat =>
+      [1, 2, 3].map(pagina => ({ categoriaId: cat.id, categoriaNombre: cat.nombre, pagina }))
     );
 
-    const allProducts: { categoriaId: string; product: Product }[] = [];
+    const allProducts: { categoriaNombre: string; product: Product }[] = [];
     const seen = new Set<string>();
 
     for (let i = 0; i < requests.length; i += BATCH_SIZE) {
       const batch = requests.slice(i, i + BATCH_SIZE);
       const results = await Promise.all(
-        batch.map(({ categoriaId, pagina }) =>
+        batch.map(({ categoriaId, categoriaNombre, pagina }) =>
           getProductosSyscomMerida(
             categoriaId, undefined, undefined, undefined,
             'merida',   // ← SOLO MÉRIDA
@@ -111,15 +86,15 @@ export async function GET() {
             true,       // ← SOLO CON STOCK
             undefined, undefined, pagina,
             exchangeRate, vatRate, margin
-          ).then(products => ({ categoriaId, products }))
-           .catch(() => ({ categoriaId, products: [] as Product[] }))
+          ).then(products => ({ categoriaNombre, products }))
+           .catch(() => ({ categoriaNombre, products: [] as Product[] }))
         )
       );
-      for (const { categoriaId, products } of results) {
+      for (const { categoriaNombre, products } of results) {
         for (const p of products) {
           if (seen.has(p.id) || (p.stock ?? 0) <= 0) continue;
           seen.add(p.id);
-          allProducts.push({ categoriaId, product: p });
+          allProducts.push({ categoriaNombre, product: p });
         }
       }
     }
@@ -128,12 +103,12 @@ export async function GET() {
       return NextResponse.json({ error: 'No se encontraron productos con stock en Mérida.' }, { status: 404 });
     }
 
-    // Generar filas para el XLSX
-    const rows = allProducts.map(({ categoriaId, product }) =>
-      productToMLRow(product, categoriaId)
+    // 4. Generar filas para el XLSX
+    const rows = allProducts.map(({ categoriaNombre, product }) =>
+      productToMLRow(product, categoriaNombre)
     );
 
-    // Crear el libro de Excel
+    // 5. Crear el libro de Excel
     const wb = XLSX.utils.book_new();
     const ws = XLSX.utils.json_to_sheet(rows);
 
@@ -174,6 +149,7 @@ export async function GET() {
       [''],
       [`Generado: ${new Date().toLocaleString('es-MX')}`],
       [`Total de productos: ${rows.length}`],
+      [`Categorías incluidas: ${categorias.map(c => c.nombre).join(', ')}`],
     ];
     const wsInfo = XLSX.utils.aoa_to_sheet(instrucciones);
     XLSX.utils.book_append_sheet(wb, wsInfo, 'Instrucciones');
@@ -188,6 +164,7 @@ export async function GET() {
         'Content-Type': 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
         'Content-Disposition': `attachment; filename="Borarly_ML_${fecha}_${rows.length}productos.xlsx"`,
         'X-Product-Count': String(rows.length),
+        'X-Categories-Count': String(categorias.length),
       },
     });
 

@@ -348,18 +348,7 @@ export async function getCategoriasSyscom(): Promise<Category[]> {
         
         const results: Category[] = [];
 
-        // Map for Premium Category Images (since Syscom API doesn't provide them)
-        const CATEGORY_IMAGES: Record<string, string> = {
-            '22': 'https://images.unsplash.com/photo-1557597774-9d273605dfa9?q=80&w=800&auto=format&fit=crop', // Videovigilancia (Security Camera)
-            '43': 'https://images.unsplash.com/photo-1558002038-1055907df827?q=80&w=800&auto=format&fit=crop', // Control de Acceso (Smart Lock/Access)
-            '24': 'https://images.unsplash.com/photo-1544197150-b99a580bb7a8?q=80&w=800&auto=format&fit=crop', // Redes (Server Room/Network)
-            '26': 'https://images.unsplash.com/photo-1493246507139-91e8fad9978e?q=80&w=800&auto=format&fit=crop', // Radiocomunicación (Radio/Tech)
-            '95': 'https://images.unsplash.com/photo-1498084393753-b411b2d25b34?q=80&w=800&auto=format&fit=crop', // Cableado Estructurado (Cables)
-            '10': 'https://images.unsplash.com/photo-1473341304170-971dccb5ac1e?q=80&w=800&auto=format&fit=crop', // Energía (Solar Panels/Power)
-            '1':  'https://images.unsplash.com/photo-1582139329536-e7284fece509?q=80&w=800&auto=format&fit=crop', // Fuego (Fire/Alarm)
-            '11': 'https://images.unsplash.com/photo-1558002038-1055907df827?q=80&w=800&auto=format&fit=crop', // Intrusión
-        };
-
+        // Map for Premium Category Images (dynamic, based on category name instead of ID)
         const FALLBACK_IMG = 'https://images.unsplash.com/photo-1518770660439-4636190af475?q=80&w=800&auto=format&fit=crop';
 
         // Mapeamos nivel 1 - FILTRAMOS MARKETING AQUÍ TAMBIÉN
@@ -371,7 +360,7 @@ export async function getCategoriasSyscom(): Promise<Category[]> {
                 name: c.nombre || 'Categoría',
                 description: '',
                 isFeatured: true, // Las principales las marcamos como destacadas por defecto
-                featuredImageUrl: CATEGORY_IMAGES[String(c.id)] || FALLBACK_IMG,
+                featuredImageUrl: getCategoryImageByName(c.nombre || '') || FALLBACK_IMG,
                 parentId: null,
                 level: 1 as const
             });
@@ -466,3 +455,99 @@ export async function getSucursalesSyscom(): Promise<{id: string, nombre: string
     const allSucursales = Object.values(SUCURSALES_POR_ESTADO).flat();
     return allSucursales;
 }
+
+/**
+ * Obtiene SOLO las categorías de nivel 1 de Syscom (ligero, para feed/export).
+ * Cache de 24 horas — perfecto para feeds que se regeneran cada hora.
+ * Filtra Marketing (65747) automáticamente.
+ */
+export async function getCategoriasSyscomL1(): Promise<{ id: string; nombre: string }[]> {
+    const token = await obtenerTokenSyscom();
+    if (!token) return [];
+
+    try {
+        const res = await fetch(`${API_URL}/categorias`, {
+            method: 'GET',
+            headers: { 'Authorization': `Bearer ${token}` },
+            next: { revalidate: 86400 } // Cache 24 horas
+        });
+
+        if (!res.ok) return [];
+
+        const data = await safeJson(res);
+        if (!data || !Array.isArray(data)) return [];
+
+        return data
+            .filter((c: any) => String(c.id) !== '65747') // Filtrar Marketing
+            .map((c: any) => ({ id: String(c.id), nombre: c.nombre || 'Categoría' }));
+    } catch (error) {
+        console.error("Fallo obteniendo categorías L1 de Syscom:", error);
+        return [];
+    }
+}
+
+/**
+ * Mapea una categoría de Syscom a un ID de taxonomía de Google Shopping.
+ * Usa keywords del nombre de la categoría para determinar la mejor coincidencia.
+ * https://www.google.com/basepages/producttype/taxonomy-with-ids.en-US.txt
+ */
+export function getGoogleCategoryByName(nombre: string): string {
+    const n = nombre.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+    
+    if (n.includes('video') || n.includes('camara') || n.includes('vigilancia') || n.includes('cctv')) return '505306'; // Surveillance Cameras
+    if (n.includes('acceso') || n.includes('biometrico') || n.includes('cerradura')) return '505304'; // Access Control
+    if (n.includes('red') || n.includes('networking') || n.includes('switch') || n.includes('router')) return '262'; // Networking
+    if (n.includes('radio') || n.includes('comunicacion')) return '614'; // Two-way Radios
+    if (n.includes('cable') || n.includes('fibra') || n.includes('estructurado')) return '3144'; // Cables
+    if (n.includes('energia') || n.includes('solar') || n.includes('ups') || n.includes('fuente')) return '5945'; // Power Supplies
+    if (n.includes('fuego') || n.includes('incendio') || n.includes('humo')) return '505303'; // Security & Alarms (Fire)
+    if (n.includes('intrusion') || n.includes('alarma')) return '499960'; // Security Alarms
+    if (n.includes('computo') || n.includes('computadora') || n.includes('laptop') || n.includes('servidor')) return '278'; // Computers
+    if (n.includes('telefon') || n.includes('telefonia')) return '267'; // Telephony
+    if (n.includes('herramienta') || n.includes('herraje')) return '455'; // Tools
+    if (n.includes('audio') || n.includes('video') || n.includes('bocina') || n.includes('sonido')) return '305'; // Audio/Video
+    if (n.includes('automatizacion') || n.includes('smart') || n.includes('domotica')) return '499960'; // Smart Home Security
+    
+    return '222'; // Electronics (fallback genérico)
+}
+
+/**
+ * Mapea una categoría de Syscom a un nombre legible para Mercado Libre.
+ */
+export function getMLCategoryName(nombre: string): string {
+    const n = nombre.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+    
+    if (n.includes('video') || n.includes('camara') || n.includes('vigilancia')) return 'Cámaras y Sistemas de Seguridad';
+    if (n.includes('acceso') || n.includes('biometrico')) return 'Control de Acceso';
+    if (n.includes('red') || n.includes('networking') || n.includes('switch')) return 'Redes y Conectividad';
+    if (n.includes('radio') || n.includes('comunicacion')) return 'Radiocomunicación';
+    if (n.includes('cable') || n.includes('fibra') || n.includes('estructurado')) return 'Cableado Estructurado';
+    if (n.includes('energia') || n.includes('solar') || n.includes('ups')) return 'Fuentes de Energía y UPS';
+    if (n.includes('fuego') || n.includes('incendio') || n.includes('humo')) return 'Detección de Incendio y Alarmas';
+    if (n.includes('intrusion') || n.includes('alarma')) return 'Sistemas de Intrusión';
+    if (n.includes('computo') || n.includes('computadora')) return 'Cómputo y Periféricos';
+    if (n.includes('telefon')) return 'Telefonía y Comunicaciones';
+    if (n.includes('herramienta') || n.includes('herraje')) return 'Herramientas y Herrajes';
+    if (n.includes('audio') || n.includes('bocina')) return 'Audio y Video Profesional';
+    
+    return nombre; // Usar el nombre original como fallback
+}
+
+/**
+ * Mapea el nombre de una categoría Syscom a una imagen representativa (Unsplash).
+ */
+export function getCategoryImageByName(nombre: string): string {
+    const n = nombre.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+    
+    if (n.includes('video') || n.includes('camara') || n.includes('vigilancia')) return 'https://images.unsplash.com/photo-1557597774-9d273605dfa9?q=80&w=800&auto=format&fit=crop';
+    if (n.includes('acceso') || n.includes('biometrico')) return 'https://images.unsplash.com/photo-1558002038-1055907df827?q=80&w=800&auto=format&fit=crop';
+    if (n.includes('red') || n.includes('networking') || n.includes('switch')) return 'https://images.unsplash.com/photo-1544197150-b99a580bb7a8?q=80&w=800&auto=format&fit=crop';
+    if (n.includes('radio') || n.includes('comunicacion')) return 'https://images.unsplash.com/photo-1493246507139-91e8fad9978e?q=80&w=800&auto=format&fit=crop';
+    if (n.includes('cable') || n.includes('fibra') || n.includes('estructurado')) return 'https://images.unsplash.com/photo-1498084393753-b411b2d25b34?q=80&w=800&auto=format&fit=crop';
+    if (n.includes('energia') || n.includes('solar') || n.includes('ups')) return 'https://images.unsplash.com/photo-1473341304170-971dccb5ac1e?q=80&w=800&auto=format&fit=crop';
+    if (n.includes('fuego') || n.includes('incendio') || n.includes('humo')) return 'https://images.unsplash.com/photo-1582139329536-e7284fece509?q=80&w=800&auto=format&fit=crop';
+    if (n.includes('intrusion') || n.includes('alarma')) return 'https://images.unsplash.com/photo-1558002038-1055907df827?q=80&w=800&auto=format&fit=crop';
+    
+    return 'https://images.unsplash.com/photo-1518770660439-4636190af475?q=80&w=800&auto=format&fit=crop'; // Fallback tech
+}
+
