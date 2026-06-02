@@ -1,7 +1,13 @@
+import type { Metadata } from 'next';
 
 import { Truck, Globe, Clock, ShieldCheck, ArrowLeft } from 'lucide-react';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
+
+export const metadata: Metadata = {
+  title: 'Política de Envíos',
+  description: 'Conoce nuestras políticas de envío, tiempos de entrega, cobertura nacional y costos de envío en Borarly Mayorista.',
+};
 
 export default function EnviosPage() {
   return (

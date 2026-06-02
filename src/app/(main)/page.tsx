@@ -92,6 +92,8 @@ export default async function HomePage(props: HomePageProps) {
     <div className="space-y-12 md:space-y-16 lg:space-y-20">
       {isLandingView ? (
         <>
+          {/* SEO: H1 server-rendered para que Googlebot lo indexe (el del HeroSection es client-side) */}
+          <h1 className="sr-only">Borarly — Mayorista Tecnológico en Seguridad Electrónica, Videovigilancia y Redes en México</h1>
           <HeroSection />
           {/* <ServiceHighlights /> */}
           <FeaturedCategoriesSection categories={featuredCategoriesForSection} /> 

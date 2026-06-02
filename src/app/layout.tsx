@@ -22,11 +22,20 @@ export const metadata: Metadata = {
     siteName: 'Borarly Mayorista',
     locale: 'es_MX',
     type: 'website',
+    images: [
+      {
+        url: 'https://borarly.com/og-image.png',
+        width: 1200,
+        height: 630,
+        alt: 'Borarly - Mayorista Tecnológico en Seguridad y Redes',
+      },
+    ],
   },
   twitter: {
     card: 'summary_large_image',
     title: 'Borarly | Mayorista Tecnológico',
     description: 'Distribuidor mayorista en seguridad electrónica y redes.',
+    images: ['https://borarly.com/og-image.png'],
   },
   robots: {
     index: true,
@@ -49,6 +58,9 @@ export const metadata: Metadata = {
   manifest: '/manifest.json',
   verification: {
     google: '4cAs3ppz9-efaf5qsiwL2sPBotKLtoiZlBlvW7xyfqI',
+  },
+  alternates: {
+    canonical: 'https://borarly.com',
   },
 };
 

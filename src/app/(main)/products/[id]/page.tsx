@@ -66,6 +66,9 @@ export async function generateMetadata(
     title: `${product.name} | Borarly Mayorista`,
     description: product.description.substring(0, 160) || `Encuentra ${product.name} al mejor precio en Borarly Mayorista.`,
     keywords: [product.name, product.brand, product.category, 'Borarly Mayorista'].filter(Boolean).join(', '),
+    alternates: {
+      canonical: `https://borarly.com/products/${product.id}`,
+    },
     openGraph: {
       title: product.name,
       description: product.description.substring(0, 160),

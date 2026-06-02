@@ -1,7 +1,13 @@
+import type { Metadata } from 'next';
 
 import { Lock, Eye, FileText, ArrowLeft } from 'lucide-react';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
+
+export const metadata: Metadata = {
+  title: 'Aviso de Privacidad',
+  description: 'Aviso de privacidad de Borarly Mayorista. Conoce cómo protegemos y usamos tus datos personales conforme a la LFPDPPP.',
+};
 
 export default function PrivacidadPage() {
   return (

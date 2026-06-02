@@ -1,7 +1,13 @@
+import type { Metadata } from 'next';
 
 import { ShieldCheck, Clock, Mail, Truck, ArrowLeft } from 'lucide-react';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
+
+export const metadata: Metadata = {
+  title: 'Política de Devoluciones',
+  description: 'Conoce el proceso de devoluciones, garantías y reembolsos en Borarly Mayorista. 5 días naturales para solicitar devolución.',
+};
 
 export default function DevolucionesPage() {
   return (

@@ -1,7 +1,13 @@
+import type { Metadata } from 'next';
 
 import { Scale, Users, ShoppingBag, ShieldAlert, ArrowLeft } from 'lucide-react';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
+
+export const metadata: Metadata = {
+  title: 'Términos y Condiciones',
+  description: 'Términos y condiciones de uso de Borarly Mayorista. Condiciones de venta, pago, envío y garantías.',
+};
 
 export default function TerminosPage() {
   return (
