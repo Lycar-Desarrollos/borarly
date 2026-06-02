@@ -163,9 +163,19 @@ export function Navbar() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between gap-4">
         
         {/* Left: Logo */}
-        <div className="flex items-center md:flex-1 shrink-0 group invisible md:visible">
-          <Link href="/" className="flex items-center gap-2 text-xl font-bold text-primary">
-            <span className="leading-none hidden sm:block">BORARLY</span>
+        <div className="flex items-center md:flex-1 shrink-0 group">
+          <Link href="/" className="flex items-center gap-2 text-xl font-black tracking-tight text-foreground select-none">
+            <Image
+              src="/icon-192.png"
+              alt="BORARLY Logo"
+              width={32}
+              height={32}
+              priority
+              className="h-8 w-8 object-contain transition-transform group-hover:scale-105"
+            />
+            <span className="leading-none hidden sm:block font-black text-2xl tracking-tighter bg-gradient-to-r from-blue-600 to-cyan-500 bg-clip-text text-transparent dark:from-blue-400 dark:to-cyan-400">
+              BORARLY
+            </span>
           </Link>
         </div>
         
