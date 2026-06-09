@@ -60,7 +60,7 @@ export default function WebServicesPage() {
             Hablemos sobre tus ideas. Te ofrecemos una consulta gratuita para entender tus objetivos y proponerte la mejor solución tecnológica.
           </p>
           <a
-            href="https://wa.me/529993101452?text=Hola,%20me%20gustaría%20recibir%20más%20información%20sobre%20sus%20servicios%20de%20desarrollo%20web."
+            href="https://wa.me/5219999040931?text=Hola,%20me%20gustaría%20recibir%20más%20información%20sobre%20sus%20servicios%20de%20desarrollo%20web."
             target="_blank"
             rel="noopener noreferrer"
           >

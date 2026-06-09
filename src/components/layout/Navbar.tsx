@@ -222,7 +222,7 @@ export function Navbar() {
           ) : (
             <nav className="flex items-center gap-1 sm:gap-2 lg:gap-4">
               <ThemeToggle />
-              <a href="https://wa.me/529993101452" target="_blank" rel="noopener noreferrer" className="hidden lg:flex items-center gap-2 text-sm font-medium text-muted-foreground hover:text-green-500 transition-colors">
+              <a href="https://wa.me/5219999040931" target="_blank" rel="noopener noreferrer" className="hidden lg:flex items-center gap-2 text-sm font-medium text-muted-foreground hover:text-green-500 transition-colors">
                 <MessageCircle className="h-5 w-5 text-green-500" />
                 <span>WhatsApp</span>
               </a>

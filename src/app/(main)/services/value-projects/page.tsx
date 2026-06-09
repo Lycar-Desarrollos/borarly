@@ -53,7 +53,7 @@ export default function ValueProjectsPage() {
             No importa en qué etapa te encuentres, estamos aquí para ayudarte a planificar, diseñar, desarrollar e implementar la solución tecnológica que impulsará tu negocio.
           </p>
           <a
-            href="https://wa.me/529993101452?text=Hola,%20me%20gustaría%20hablar%20con%20ustedes%20sobre%20un%20proyecto%20de%20sistemas."
+            href="https://wa.me/5219999040931?text=Hola,%20me%20gustaría%20hablar%20con%20ustedes%20sobre%20un%20proyecto%20de%20sistemas."
             target="_blank"
             rel="noopener noreferrer"
           >

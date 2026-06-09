@@ -126,7 +126,7 @@ export default function QuickBuyPage() {
 
 Por favor, confírmame los datos para realizar la transferencia SPEI. Gracias.`;
     
-    const whatsappUrl = `https://wa.me/529993101452?text=${encodeURIComponent(message)}`;
+    const whatsappUrl = `https://wa.me/5219999040931?text=${encodeURIComponent(message)}`;
     
     toast({
         title: "¡Casi listo!",

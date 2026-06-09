@@ -90,7 +90,7 @@ export default function RootLayout({
     contactPoint: {
       '@type': 'ContactPoint',
       contactType: 'sales',
-      telephone: '+52-999-310-1452',
+      telephone: '+52-1-999-904-0931',
       email: 'ventas@borarly.com',
       areaServed: 'MX',
       availableLanguage: 'Spanish',

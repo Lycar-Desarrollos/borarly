@@ -54,7 +54,7 @@ export default function SupportPage() {
             Nuestros planes de soporte se adaptan a las necesidades y tamaño de tu empresa. Contáctanos para diseñar un plan a tu medida y olvídate de las emergencias de sistemas.
           </p>
           <a
-            href="https://wa.me/529993101452?text=Hola,%20estoy%20interesado%20en%20sus%20planes%20de%20soporte%20técnico%2024/7."
+            href="https://wa.me/5219999040931?text=Hola,%20estoy%20interesado%20en%20sus%20planes%20de%20soporte%20técnico%2024/7."
             target="_blank"
             rel="noopener noreferrer"
           >
