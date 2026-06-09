@@ -10,6 +10,15 @@ import type { Metadata, ResolvingMetadata } from 'next';
 import { Product as ProductSchema } from 'schema-dts';
 import { JsonLd } from 'react-schemaorg';
 
+/** Elimina etiquetas HTML y devuelve solo texto plano */
+function stripHtml(html: string): string {
+  return html
+    .replace(/<[^>]*>/g, ' ')   // Reemplaza etiquetas con espacios
+    .replace(/&[a-zA-Z]+;/g, ' ') // Reemplaza entidades HTML
+    .replace(/\s+/g, ' ')        // Colapsa espacios múltiples
+    .trim();
+}
+
 
 interface ProductDetailPageProps {
   params: Promise<{ id: string }>;
@@ -62,16 +71,19 @@ export async function generateMetadata(
   // optionally access and extend (rather than replace) parent metadata
   const previousImages = (await parent).openGraph?.images || []
  
+  // Limpiar la descripción de HTML para meta tags (Google penaliza HTML crudo en meta)
+  const cleanDescription = stripHtml(product.description).substring(0, 160) || `Encuentra ${product.name} al mejor precio en Borarly Mayorista.`;
+
   return {
     title: `${product.name} | Borarly Mayorista`,
-    description: product.description.substring(0, 160) || `Encuentra ${product.name} al mejor precio en Borarly Mayorista.`,
+    description: cleanDescription,
     keywords: [product.name, product.brand, product.category, 'Borarly Mayorista'].filter(Boolean).join(', '),
     alternates: {
       canonical: `https://borarly.com/products/${product.id}`,
     },
     openGraph: {
       title: product.name,
-      description: product.description.substring(0, 160),
+      description: cleanDescription,
       images: product.imageUrls.length > 0 ? [product.imageUrls[0], ...previousImages] : previousImages,
       type: 'website',
       siteName: 'Borarly Mayorista',
@@ -79,7 +91,7 @@ export async function generateMetadata(
     twitter: {
       card: 'summary_large_image',
       title: product.name,
-      description: product.description.substring(0, 160),
+      description: cleanDescription,
       images: product.imageUrls.length > 0 ? [product.imageUrls[0]] : [],
     }
   }
@@ -141,7 +153,7 @@ export default async function ProductDetailPage(props: ProductDetailPageProps) {
         '@type': 'OfferShippingDetails',
         shippingRate: {
           '@type': 'MonetaryAmount',
-          value: '0',
+          value: '189',
           currency: 'MXN'
         },
         deliveryTime: {

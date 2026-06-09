@@ -20,9 +20,11 @@ import { getProductosSyscomMerida, obtenerTipoCambioSyscom, getCategoriasSyscomL
 import { getVatRate, getProfitMargin } from '@/services/settingsService';
 import type { Product } from '@/lib/types';
 
-// ISR: Regenerar el feed máximo 1 vez por hora
-// Netlify ejecutará la función ~24 veces/día en vez de miles
-export const revalidate = 3600;
+// FORZAR REGENERACIÓN DINÁMICA en cada visita
+// ISR (revalidate) no funciona correctamente con route handlers en Netlify.
+// El cache se controla vía Cache-Control headers en la response.
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
 
 // Timeout por categoría para evitar tiempos de respuesta muy largos
 const FETCH_TIMEOUT_MS = 25000;
@@ -48,8 +50,14 @@ function productToXmlItem(product: Product, googleCategoryId: string): string {
   const price = product.price.toFixed(2);
   const productUrl = `https://borarly.com/products/${product.id}`;
   
-  // Google requiere min. 150 caracteres en descripción
+  // Google requiere min. 150 caracteres en descripción — LIMPIAR HTML
   let description = product.description?.trim() || '';
+  // Eliminar etiquetas HTML y entidades (Syscom envía HTML en descripciones)
+  description = description
+    .replace(/<[^>]*>/g, ' ')
+    .replace(/&[a-zA-Z]+;/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
   if (description.length < 150) {
     // Enriquecer la descripción con contexto del producto
     const brand = product.brand || 'Borarly';
