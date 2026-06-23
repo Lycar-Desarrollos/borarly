@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import { Mail, Phone, MapPin, ShieldCheck, ChevronRight } from 'lucide-react';
+import { Mail, Phone, MapPin, ShieldCheck, ChevronRight, Clock } from 'lucide-react';
 
 export function Footer() {
   const currentYear = new Date().getFullYear();
@@ -51,34 +51,52 @@ export function Footer() {
             <h3 className="text-sm font-bold uppercase tracking-widest text-foreground">Explorar</h3>
             <ul className="space-y-2 text-sm text-muted-foreground">
               <li><Link href="/" className="hover:text-primary transition-colors">Inicio</Link></li>
+              <li><Link href="/nosotros" className="hover:text-primary transition-colors">Quiénes Somos</Link></li>
               <li><Link href="/profile/orders" className="hover:text-primary transition-colors">Mis Pedidos</Link></li>
               <li><Link href="/cart" className="hover:text-primary transition-colors">Mi Carrito</Link></li>
             </ul>
           </div>
 
-          {/* Contacto */}
+          {/* Contacto - COMPLETO para Google Merchant Center */}
           <div className="space-y-4">
             <h3 className="text-sm font-bold uppercase tracking-widest text-foreground">Contacto</h3>
             <ul className="space-y-3 text-sm text-muted-foreground">
               <li className="flex items-start gap-3">
-                <MapPin className="w-4 h-4 text-primary shrink-0" />
-                <span>Yucatán, México</span>
+                <MapPin className="w-4 h-4 text-primary shrink-0 mt-0.5" />
+                <span>
+                  Calle 8 C por 21, No. 105<br />
+                  Fracc. San Ángel, Kanasín<br />
+                  Yucatán, México, C.P. 97370
+                </span>
+              </li>
+              <li className="flex items-center gap-3">
+                <Phone className="w-4 h-4 text-primary shrink-0" />
+                <a href="https://wa.me/5219999040931" target="_blank" rel="noopener noreferrer" className="hover:text-green-500 transition-colors">
+                  +52 1 999 904 0931
+                </a>
               </li>
               <li className="flex items-center gap-3">
                 <Mail className="w-4 h-4 text-primary shrink-0" />
-                <span>ventas@borarly.com</span>
+                <a href="mailto:ventas@borarly.com" className="hover:text-primary transition-colors">ventas@borarly.com</a>
+              </li>
+              <li className="flex items-center gap-3">
+                <Clock className="w-4 h-4 text-primary shrink-0" />
+                <span>Atención 24 horas</span>
               </li>
             </ul>
           </div>
         </div>
 
-        <div className="mt-12 pt-8 border-t border-border/50 text-center">
+        {/* Datos Fiscales + Copyright */}
+        <div className="mt-12 pt-8 border-t border-border/50 text-center space-y-2">
           <p className="text-xs text-muted-foreground">
-            &copy; {currentYear} BORARLY. Todos los derechos reservados. | Diseñado para el éxito.
+            Edgar Ydalimir Arevalo Escobedo &middot; RFC: AEEE991122MA7 &middot; Persona Física con Actividad Empresarial
+          </p>
+          <p className="text-xs text-muted-foreground">
+            &copy; {currentYear} BORARLY. Todos los derechos reservados.
           </p>
         </div>
       </div>
     </footer>
   );
 }
-

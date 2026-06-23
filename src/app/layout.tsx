@@ -83,8 +83,10 @@ export default function RootLayout({
     } as any,
     address: {
       '@type': 'PostalAddress',
-      addressLocality: 'Mérida',
+      streetAddress: 'Calle 8 C por 21, No. 105, Fracc. San Ángel',
+      addressLocality: 'Kanasín',
       addressRegion: 'Yucatán',
+      postalCode: '97370',
       addressCountry: 'MX',
     } as any,
     contactPoint: {

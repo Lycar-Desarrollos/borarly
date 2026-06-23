@@ -33,6 +33,13 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       changeFrequency: 'daily',
       priority: 1,
     },
+    // Quiénes Somos (crítico para Misrepresentation)
+    {
+      url: 'https://borarly.com/nosotros',
+      lastModified: new Date(),
+      changeFrequency: 'monthly',
+      priority: 0.9,
+    },
     // Políticas (requeridas por Google Merchant Center)
     {
       url: 'https://borarly.com/politicas/envios',

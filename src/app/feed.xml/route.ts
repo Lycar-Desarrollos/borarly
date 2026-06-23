@@ -76,10 +76,13 @@ function productToXmlItem(product: Product, googleCategoryId: string): string {
     .map(url => `      <g:additional_image_link>${escapeXml(url)}</g:additional_image_link>`)
     .join('\n');
 
+  // Truncar título a 150 caracteres (Google Merchant Center rechaza títulos largos)
+  const title = product.name.length > 150 ? product.name.substring(0, 147) + '...' : product.name;
+
   return `
     <item>
       <g:id>${escapeXml(product.id)}</g:id>
-      <g:title>${escapeXml(product.name)}</g:title>
+      <g:title>${escapeXml(title)}</g:title>
       <g:description>${escapeXml(description)}</g:description>
       <g:link>${escapeXml(productUrl)}</g:link>
       <g:image_link>${escapeXml(imageUrl)}</g:image_link>
