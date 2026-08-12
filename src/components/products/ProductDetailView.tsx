@@ -180,18 +180,21 @@ export function ProductDetailView({ product, relatedProducts, allCategories }: P
                 {/* Galería con Carrusel Interactiva */}
                 <div className="md:col-span-2 order-2 md:order-1 relative group h-full">
                     <div className="flex md:flex-col gap-2 overflow-x-auto md:overflow-y-auto no-scrollbar scroll-smooth h-full max-h-[480px] pb-2 md:pb-0 pr-1 select-none" id="thumbnail-container">
-                        {product.imageUrls && product.imageUrls.map((url, index) => (
-                            <div
-                                key={index}
-                                className={cn(
-                                    "w-16 h-16 md:w-full aspect-square relative rounded-lg border-2 cursor-pointer bg-white shrink-0 transition-all hover:border-primary/50",
-                                    index === selectedImageIndex ? "border-primary shadow-sm" : "border-slate-100 dark:border-slate-800"
-                                )}
-                                onClick={() => setSelectedImageIndex(index)}
-                            >
-                                <Image src={url} alt={`thumbnail-${index}`} layout="fill" objectFit="contain" className="p-1.5 rounded-md" />
-                            </div>
-                        ))}
+                        {product.imageUrls && product.imageUrls.map((url, index) => {
+                            const proxyUrl = url.includes('syscom.mx') ? `/api/image-proxy?url=${encodeURIComponent(url)}` : url;
+                            return (
+                              <div
+                                  key={index}
+                                  className={cn(
+                                      "w-16 h-16 md:w-full aspect-square relative rounded-lg border-2 cursor-pointer bg-white shrink-0 transition-all hover:border-primary/50",
+                                      index === selectedImageIndex ? "border-primary shadow-sm" : "border-slate-100 dark:border-slate-800"
+                                  )}
+                                  onClick={() => setSelectedImageIndex(index)}
+                              >
+                                  <Image src={proxyUrl} alt={`thumbnail-${index}`} fill className="object-contain p-1.5 rounded-md" />
+                              </div>
+                            );
+                        })}
                     </div>
                     
                     {/* Botones de Navegación del Carrusel (Solo si hay más de 5 imágenes) */}
@@ -227,13 +230,12 @@ export function ProductDetailView({ product, relatedProducts, allCategories }: P
                     <div className="aspect-[4/3] relative rounded-xl overflow-hidden bg-white border border-slate-800 group cursor-zoom-in"
                          onDoubleClick={handleMainImageDoubleClick}>
                         <Image
-                            src={mainImageUrl}
+                            src={mainImageUrl.includes('syscom.mx') ? `/api/image-proxy?url=${encodeURIComponent(mainImageUrl)}` : mainImageUrl}
                             alt={product.name}
-                            layout="fill"
-                            objectFit="contain"
+                            fill
                             priority
                             unoptimized={true}
-                            className="p-8 transition-transform group-hover:scale-105"
+                            className="object-contain p-8 transition-transform group-hover:scale-105"
                         />
                     </div>
                 </div>

@@ -48,8 +48,8 @@ export interface SyscomCsvRow {
 export function getDiskCachedProducts(): Product[] {
   if (typeof window !== 'undefined') return [];
   try {
-    const fs = require('fs');
-    const path = require('path');
+    const fs = eval("require('fs')");
+    const path = eval("require('path')");
     const dataDir = path.join(process.cwd(), 'data');
     const cacheFile = path.join(dataDir, 'syscom-catalog-cache.json');
     if (fs.existsSync(cacheFile)) {
@@ -71,8 +71,8 @@ export function getDiskCachedProducts(): Product[] {
 export function saveDiskCachedProducts(products: Product[]): void {
   if (typeof window !== 'undefined') return;
   try {
-    const fs = require('fs');
-    const path = require('path');
+    const fs = eval("require('fs')");
+    const path = eval("require('path')");
     const dataDir = path.join(process.cwd(), 'data');
     if (!fs.existsSync(dataDir)) {
       fs.mkdirSync(dataDir, { recursive: true });

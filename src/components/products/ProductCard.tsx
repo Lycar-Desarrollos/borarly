@@ -27,10 +27,11 @@ export function ProductCard({ product }: ProductCardProps) {
 
   const rawImage = product.imageUrls && product.imageUrls.length > 0 
     ? product.imageUrls[0] 
-    : "https://placehold.co/600x400.png?text=Sin+Imagen";
+    : "https://images.unsplash.com/photo-1557597774-9d273605dfa9?q=80&w=800&auto=format&fit=crop";
 
-  // Clean Syscom FTP URL to remove blocking cdn-cgi path
-  const primaryImage = rawImage.replace('ftp3.syscom.mx/cdn-cgi/image/format=webp,width=300,height=300/', 'ftp3.syscom.mx/');
+  const primaryImage = rawImage.includes('syscom.mx')
+    ? `/api/image-proxy?url=${encodeURIComponent(rawImage)}`
+    : rawImage;
 
   const handleAddToCart = () => {
     // Add multiple items if quantity > 1

@@ -124,8 +124,8 @@ export function Navbar() {
                 onMouseDown={(e) => e.preventDefault()}
               >
                 <div className="relative h-12 w-12 flex-shrink-0 bg-white rounded border">
-                   <Image src={product.imageUrls[0]} alt={product.name} layout="fill" objectFit="contain" className="p-1"/>
-                </div>
+                    <Image src={product.imageUrls[0]?.includes('syscom.mx') ? `/api/image-proxy?url=${encodeURIComponent(product.imageUrls[0])}` : (product.imageUrls[0] || 'https://images.unsplash.com/photo-1557597774-9d273605dfa9?q=80&w=800&auto=format&fit=crop')} alt={product.name} fill className="object-contain p-1"/>
+                 </div>
                 <div className="flex-grow overflow-hidden">
                   <p className="font-medium truncate text-sm">{product.name}</p>
                   <p className="text-xs text-muted-foreground">{formatCurrency(product.price)}</p>
