@@ -1,0 +1,317 @@
+[
+  {
+    "id": "210627",
+    "name": "Cámara Turret IP 4 Megapíxel / Lente 2.8 mm / 30 mts IR / PoE / WDR / IP67 / H.265+",
+    "description": "Cámara de videovigilancia alta definición 4MP Hikvision ideal para exterior o interior. Visión nocturna inteligente Exir IR hasta 30m, resistencia a la intemperie IP67 y compresión H.265+ para ahorro de disco duro.",
+    "price": 1489.0,
+    "currency": "MXN",
+    "costPrice": 950.0,
+    "profitMargin": 0.2,
+    "imageUrls": [
+      "https://ftp3.syscom.mx/cdn-cgi/image/format=webp,width=600,height=600/usuarios/fotos/BancoFotografiasSyscom/HIKVISION/DS2CD1143G0I/DS2CD1143G0I-p.PNG"
+    ],
+    "category": "Videovigilancia",
+    "categoryId": "22",
+    "stock": 48,
+    "brand": "Hikvision",
+    "line": "DS-2CD1143G0-I",
+    "series": "IP Serie 1",
+    "isFeatured": true,
+    "createdAt": "2026-08-12T00:00:00.000Z",
+    "updatedAt": "2026-08-12T00:00:00.000Z",
+    "sat_code": "46171610",
+    "sap_code": "210627",
+    "puntos_clave": [
+      "4 Megapíxel",
+      "Visión Nocturna 30m",
+      "IP67 Exterior",
+      "PoE IEEE 802.3af"
+    ]
+  },
+  {
+    "id": "218714",
+    "name": "DVR 8 Canales 4 Megapíxeles LITE / 8 Canales de Video + 4 Canales IP / AcuSense Filtro de Falsas Alarmas",
+    "description": "Grabador Digital DVR de 8 Canales TurboHD de Alta Definición con Tecnología AcuSense. Clasificación de personas y vehículos para evitar falsas alarmas. Soporta salida 4K HDMI.",
+    "price": 2890.0,
+    "currency": "MXN",
+    "costPrice": 1850.0,
+    "profitMargin": 0.2,
+    "imageUrls": [
+      "https://ftp3.syscom.mx/cdn-cgi/image/format=webp,width=600,height=600/usuarios/fotos/BancoFotografiasSyscom/HIKVISION/iDS7208HQHIM1S/iDS7208HQHIM1S-p.PNG"
+    ],
+    "category": "Videovigilancia",
+    "categoryId": "22",
+    "stock": 26,
+    "brand": "Hikvision",
+    "line": "iDS-7208HQHI-M1/S",
+    "series": "AcuSense",
+    "isFeatured": true,
+    "createdAt": "2026-08-12T00:00:00.000Z",
+    "updatedAt": "2026-08-12T00:00:00.000Z",
+    "sat_code": "46171622",
+    "sap_code": "218714",
+    "puntos_clave": [
+      "8 Canales TurboHD",
+      "Filtro AcuSense",
+      "Salida HDMI 4K",
+      "Compresión H.265 Pro+"
+    ]
+  },
+  {
+    "id": "220309",
+    "name": "Cámara Bala Térmica + Optica / Medición de Temperatura Bi-Espectral / Alarma Audible y Destello",
+    "description": "Cámara térmica bi-espectral de alta precisión para detección rápida de elevación de temperatura en accesos y prevención de incendios.",
+    "price": 18500.0,
+    "currency": "MXN",
+    "costPrice": 12500.0,
+    "profitMargin": 0.2,
+    "imageUrls": [
+      "https://ftp3.syscom.mx/cdn-cgi/image/format=webp,width=600,height=600/usuarios/fotos/BancoFotografiasSyscom/HIKVISION/DS2TD2617B6PA/DS2TD2617B6PA-p.PNG"
+    ],
+    "category": "Videovigilancia",
+    "categoryId": "22",
+    "stock": 8,
+    "brand": "Hikvision",
+    "line": "DS-2TD2617B-6/PA",
+    "series": "Thermal Series",
+    "isFeatured": true,
+    "createdAt": "2026-08-12T00:00:00.000Z",
+    "updatedAt": "2026-08-12T00:00:00.000Z",
+    "sat_code": "46171610",
+    "sap_code": "220309",
+    "puntos_clave": [
+      "Detección Térmica",
+      "Bi-Espectral",
+      "Alarma Integrada"
+    ]
+  },
+  {
+    "id": "310450",
+    "name": "Switch Administrable Gigabit 24 Puertos PoE+ (370W) / 2 Puertos SFP / Ubiquiti UniFi",
+    "description": "Switch administrable corporativo UniFi de 24 Puertos Gigabit Ethernet con tecnología Power over Ethernet PoE+ hasta 370W totales. Ideal para alimentar cámaras IP y Puntos de Acceso.",
+    "price": 8990.0,
+    "currency": "MXN",
+    "costPrice": 6200.0,
+    "profitMargin": 0.2,
+    "imageUrls": [
+      "https://ftp3.syscom.mx/cdn-cgi/image/format=webp,width=600,height=600/usuarios/fotos/BancoFotografiasSyscom/UBIQUITI/USW24POE/USW24POE-p.PNG"
+    ],
+    "category": "Redes y Networking",
+    "categoryId": "redes",
+    "stock": 35,
+    "brand": "Ubiquiti Networks",
+    "line": "USW-24-POE",
+    "series": "UniFi Switch",
+    "isFeatured": true,
+    "createdAt": "2026-08-12T00:00:00.000Z",
+    "updatedAt": "2026-08-12T00:00:00.000Z",
+    "sat_code": "43222612",
+    "sap_code": "310450",
+    "puntos_clave": [
+      "24 Puertos Gigabit",
+      "PoE+ 370W",
+      "Pantalla Táctil 1.3\"",
+      "Gestión UniFi Controller"
+    ]
+  },
+  {
+    "id": "312890",
+    "name": "Punto de Acceso Wi-Fi 6 de Alto Rendimiento / Banda Doble AX3000 / Ubiquiti UniFi U6-Lite",
+    "description": "Access Point Wi-Fi 6 compacto de alto rendimiento. Soporta hasta 300+ clientes simultáneos con cobertura ultrarrápida para oficinas, hoteles y residencias.",
+    "price": 2490.0,
+    "currency": "MXN",
+    "costPrice": 1650.0,
+    "profitMargin": 0.2,
+    "imageUrls": [
+      "https://ftp3.syscom.mx/cdn-cgi/image/format=webp,width=600,height=600/usuarios/fotos/BancoFotografiasSyscom/UBIQUITI/U6LITE/U6LITE-p.PNG"
+    ],
+    "category": "Redes y Networking",
+    "categoryId": "redes",
+    "stock": 64,
+    "brand": "Ubiquiti Networks",
+    "line": "U6-Lite",
+    "series": "UniFi 6",
+    "isFeatured": true,
+    "createdAt": "2026-08-12T00:00:00.000Z",
+    "updatedAt": "2026-08-12T00:00:00.000Z",
+    "sat_code": "43223108",
+    "sap_code": "312890",
+    "puntos_clave": [
+      "Wi-Fi 6 AX3000",
+      "Alimentación PoE",
+      "Banda Doble 2.4/5 GHz"
+    ]
+  },
+  {
+    "id": "410100",
+    "name": "Terminal Biométrica de Reconocimiento Facial y Huella / Pantalla Táctil 4.3\" / Lector de Tarjetas RFID",
+    "description": "Terminal de control de acceso autónoma con reconocimiento facial ultra rápido en 0.2 segundos, huella dactilar y tarjeta mifare. Capacidad para 3,000 rostros.",
+    "price": 4590.0,
+    "currency": "MXN",
+    "costPrice": 3100.0,
+    "profitMargin": 0.2,
+    "imageUrls": [
+      "https://ftp3.syscom.mx/cdn-cgi/image/format=webp,width=600,height=600/usuarios/fotos/BancoFotografiasSyscom/HIKVISION/DSK1T341AMF/DSK1T341AMF-p.PNG"
+    ],
+    "category": "Control de Acceso",
+    "categoryId": "acceso",
+    "stock": 19,
+    "brand": "Hikvision",
+    "line": "DS-K1T341AMF",
+    "series": "MinMoe Facial",
+    "isFeatured": true,
+    "createdAt": "2026-08-12T00:00:00.000Z",
+    "updatedAt": "2026-08-12T00:00:00.000Z",
+    "sat_code": "46171600",
+    "sap_code": "410100",
+    "puntos_clave": [
+      "Reconocimiento Facial 0.2s",
+      "Lector de Huella y Tarjeta",
+      "3,000 Rostros",
+      "IP65 Exterior"
+    ]
+  },
+  {
+    "id": "412500",
+    "name": "Cerradura Electromagnética de 600 lbs (280 kg) con LED Indicador / Aleación de Aluminio de Alta Resistencia",
+    "description": "Chapa electromagnética de alta seguridad para puertas de madera, vidrio o metal. Fuerza de sujeción de 600 libras (280 kg), LED bicolor y sensor de estado de puerta.",
+    "price": 890.0,
+    "currency": "MXN",
+    "costPrice": 550.0,
+    "profitMargin": 0.2,
+    "imageUrls": [
+      "https://ftp3.syscom.mx/cdn-cgi/image/format=webp,width=600,height=600/usuarios/fotos/BancoFotografiasSyscom/ACCESSPRO/MAG600LED/MAG600LED-p.PNG"
+    ],
+    "category": "Control de Acceso",
+    "categoryId": "acceso",
+    "stock": 85,
+    "brand": "AccessPRO",
+    "line": "MAG600LED",
+    "series": "Magnetic Locks",
+    "isFeatured": false,
+    "createdAt": "2026-08-12T00:00:00.000Z",
+    "updatedAt": "2026-08-12T00:00:00.000Z",
+    "sat_code": "46171600",
+    "sap_code": "412500",
+    "puntos_clave": [
+      "Fuerza 600 lbs (280kg)",
+      "Sensor LED Bicolor",
+      "Dual 12/24 Vcc"
+    ]
+  },
+  {
+    "id": "510200",
+    "name": "Radio Portátil Kenwood VHF 5 Watts / 16 Canales / Cumple Norma Militar MIL-STD-810 C/D/E/F/G",
+    "description": "Radio de comunicación profesional para trabajo pesado en construcción, seguridad e industria. Carcasa de alta resistencia contra caídas e intemperie IP54.",
+    "price": 3290.0,
+    "currency": "MXN",
+    "costPrice": 2200.0,
+    "profitMargin": 0.2,
+    "imageUrls": [
+      "https://ftp3.syscom.mx/cdn-cgi/image/format=webp,width=600,height=600/usuarios/fotos/BancoFotografiasSyscom/KENWOOD/TK2000K/TK2000K-p.PNG"
+    ],
+    "category": "Radiocomunicación",
+    "categoryId": "radio",
+    "stock": 42,
+    "brand": "Kenwood",
+    "line": "TK-2000K",
+    "series": "ProTalk",
+    "isFeatured": true,
+    "createdAt": "2026-08-12T00:00:00.000Z",
+    "updatedAt": "2026-08-12T00:00:00.000Z",
+    "sat_code": "43191500",
+    "sap_code": "510200",
+    "puntos_clave": [
+      "VHF 5 Watts",
+      "16 Canales",
+      "Batería Li-Ion Incluida",
+      "Cargador Rápido"
+    ]
+  },
+  {
+    "id": "610300",
+    "name": "Panel Solar Fotovoltaico Monocristalino 550 Watts / Alta Eficiencia 21.3% / Marco de Aluminio Anodizado",
+    "description": "Módulo fotovoltaico de 550W monocristalino tecnología PERC de celda partida para proyectos de energía solar residencial e industrial. Garantía de 25 años en generación.",
+    "price": 3890.0,
+    "currency": "MXN",
+    "costPrice": 2650.0,
+    "profitMargin": 0.2,
+    "imageUrls": [
+      "https://ftp3.syscom.mx/cdn-cgi/image/format=webp,width=600,height=600/usuarios/fotos/BancoFotografiasSyscom/EPI/EPI550W/EPI550W-p.PNG"
+    ],
+    "category": "Energía y Solar",
+    "categoryId": "energia",
+    "stock": 110,
+    "brand": "Epcom Powerline",
+    "line": "EPI-550W-MONO",
+    "series": "Solar Pro",
+    "isFeatured": true,
+    "createdAt": "2026-08-12T00:00:00.000Z",
+    "updatedAt": "2026-08-12T00:00:00.000Z",
+    "sat_code": "26111607",
+    "sap_code": "610300",
+    "puntos_clave": [
+      "Potencia 550 Watts",
+      "Eficiencia 21.3%",
+      "Tecnología PERC Celda Partida"
+    ]
+  },
+  {
+    "id": "710100",
+    "name": "Bobina de Cable UTP Categoría 6 100% Cobre / 305 Metros / Color Azul / Uso en Interiores",
+    "description": "Bobina de cable de red UTP Cat6 100% Cobre puro de 4 pares trenzados. Ideal para redes de alta velocidad Gigabit Ethernet y alimentación PoE de cámaras IP.",
+    "price": 2750.0,
+    "currency": "MXN",
+    "costPrice": 1850.0,
+    "profitMargin": 0.2,
+    "imageUrls": [
+      "https://ftp3.syscom.mx/cdn-cgi/image/format=webp,width=600,height=600/usuarios/fotos/BancoFotografiasSyscom/LINKEDPRO/PROCAT6AZ/PROCAT6AZ-p.PNG"
+    ],
+    "category": "Cableado Estructurado",
+    "categoryId": "cableado",
+    "stock": 78,
+    "brand": "LinkedPRO",
+    "line": "PRO-CAT-6-AZ",
+    "series": "UTP Cat6",
+    "isFeatured": false,
+    "createdAt": "2026-08-12T00:00:00.000Z",
+    "updatedAt": "2026-08-12T00:00:00.000Z",
+    "sat_code": "26121609",
+    "sap_code": "710100",
+    "puntos_clave": [
+      "100% Cobre Puro",
+      "Categoría 6",
+      "Bobina 305 Metros",
+      "Certificación UL"
+    ]
+  },
+  {
+    "id": "810100",
+    "name": "Kit de Alarma Residencial Inalámbrica Inteligente / Wi-Fi + 4G LTE / Teclado Táctil / Sirena Integrada",
+    "description": "Sistema de alarma contra robos de fácil instalación con notificación inmediata al celular por app y llamadas SMS 4G. Incluye sensor de movimiento y contacto magnético.",
+    "price": 3690.0,
+    "currency": "MXN",
+    "costPrice": 2450.0,
+    "profitMargin": 0.2,
+    "imageUrls": [
+      "https://ftp3.syscom.mx/cdn-cgi/image/format=webp,width=600,height=600/usuarios/fotos/BancoFotografiasSyscom/HIKVISION/DSPWA64KITWE/DSPWA64KITWE-p.PNG"
+    ],
+    "category": "Intrusión y Alarmas",
+    "categoryId": "intrusion",
+    "stock": 31,
+    "brand": "Hikvision",
+    "line": "DS-PWA64-KIT-WE",
+    "series": "AX PRO",
+    "isFeatured": true,
+    "createdAt": "2026-08-12T00:00:00.000Z",
+    "updatedAt": "2026-08-12T00:00:00.000Z",
+    "sat_code": "46171600",
+    "sap_code": "810100",
+    "puntos_clave": [
+      "Conexión Wi-Fi y 4G LTE",
+      "64 Zonas Inalámbricas",
+      "Notificaciones por App",
+      "Batería de Respaldo"
+    ]
+  }
+]

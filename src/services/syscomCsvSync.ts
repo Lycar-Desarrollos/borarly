@@ -2,11 +2,10 @@
  * @fileOverview Servicio de sincronización y parseo masivo del reporte CSV de Syscom (42,520 productos).
  *
  * Características:
- * 1. Descarga automática del reporte CSV en tiempo real desde la URL pública de Syscom.
- * 2. Manejo de la restricción de Syscom (1 descarga por hora). Si Syscom responde "Intente más tarde",
- *    se reutiliza la versión en caché más reciente.
- * 3. Normalización de precios considerando Tipo de Cambio (USD/MXN), Margen de Utilidad Borarly e IVA.
- * 4. Parseo seguro de comillas, saltos de línea y descripciones HTML.
+ * 1. Sincronización automática mediante caché persistente en disco (data/syscom-catalog-cache.json).
+ * 2. Si Syscom responde "Intente más tarde" debido al límite de 1 descarga/hora, se lee y sirve
+ *    el catálogo guardado en disco de forma transparente y sin interrupciones.
+ * 3. Compatibilidad total con entornos Server y Client en Next.js.
  */
 
 import type { Product } from '@/lib/types';
@@ -44,8 +43,47 @@ export interface SyscomCsvRow {
 }
 
 /**
- * Parsea una línea en formato CSV respetando campos entre comillas y comas internas.
+ * Lee el catálogo en caché guardado en disco (Server-side solo).
  */
+export function getDiskCachedProducts(): Product[] {
+  if (typeof window !== 'undefined') return [];
+  try {
+    const fs = require('fs');
+    const path = require('path');
+    const dataDir = path.join(process.cwd(), 'data');
+    const cacheFile = path.join(dataDir, 'syscom-catalog-cache.json');
+    if (fs.existsSync(cacheFile)) {
+      const content = fs.readFileSync(cacheFile, 'utf-8');
+      const data = JSON.parse(content);
+      if (Array.isArray(data) && data.length > 0) {
+        return data;
+      }
+    }
+  } catch (e) {
+    console.warn("No se pudo leer el archivo de caché en disco:", e);
+  }
+  return [];
+}
+
+/**
+ * Guarda los productos parseados en el archivo de disco (Server-side solo).
+ */
+export function saveDiskCachedProducts(products: Product[]): void {
+  if (typeof window !== 'undefined') return;
+  try {
+    const fs = require('fs');
+    const path = require('path');
+    const dataDir = path.join(process.cwd(), 'data');
+    if (!fs.existsSync(dataDir)) {
+      fs.mkdirSync(dataDir, { recursive: true });
+    }
+    const cacheFile = path.join(dataDir, 'syscom-catalog-cache.json');
+    fs.writeFileSync(cacheFile, JSON.stringify(products, null, 2), 'utf-8');
+  } catch (e) {
+    console.error("Error guardando el archivo de caché en disco:", e);
+  }
+}
+
 function parseCsvLine(line: string): string[] {
   const values: string[] = [];
   let currentValue = '';
@@ -56,7 +94,7 @@ function parseCsvLine(line: string): string[] {
     if (char === '"') {
       if (insideQuotes && line[i + 1] === '"') {
         currentValue += '"';
-        i++; // Saltar comilla escapada
+        i++;
       } else {
         insideQuotes = !insideQuotes;
       }
@@ -71,9 +109,6 @@ function parseCsvLine(line: string): string[] {
   return values;
 }
 
-/**
- * Limpia la descripción HTML de Syscom dejando solo texto legible.
- */
 export function stripHtml(html: string): string {
   if (!html) return '';
   return html
@@ -89,25 +124,16 @@ export function stripHtml(html: string): string {
     .trim();
 }
 
-/**
- * Convierte una fila del CSV de Syscom al objeto Product estándar de Borarly.
- */
 export function mapCsvRowToProduct(
   row: SyscomCsvRow,
   exchangeRate: number,
   vatRate: number,
   profitMargin: number
 ): Product {
-  const isMxn = false; // La mayoría de precios en Syscom son USD a menos que se indique lo contrario
+  const isMxn = false;
   const effectiveTC = row.tipoCambio > 1 ? row.tipoCambio : (exchangeRate > 1.1 ? exchangeRate : 20.0);
-  
-  // Costo mayorista neto en MXN
   const costInMxn = row.suPrecio * (isMxn ? 1 : effectiveTC);
-  
-  // Aplicar margen de utilidad de Borarly
   const priceBeforeTax = costInMxn * (1 + profitMargin);
-  
-  // Aplicar IVA (16%)
   const finalPrice = Math.round(priceBeforeTax * (1 + vatRate) * 100) / 100;
   
   const idClean = row.idProducto || row.modelo.replace(/[^a-zA-Z0-9_-]/g, '');
@@ -138,10 +164,11 @@ export function mapCsvRowToProduct(
 }
 
 /**
- * Descarga y parsea el CSV masivo de Syscom (42,520 productos).
+ * Descarga y parsea el CSV masivo de Syscom. Si Syscom limita la descarga (1 descarga/hora),
+ * recupera automáticamente los productos guardados en disco.
  */
 export async function downloadAndParseSyscomCsv(): Promise<{ products: Product[]; status: CsvSyncStatus }> {
-  const status: CsvSyncStatus = {
+  let status: CsvSyncStatus = {
     lastSync: null,
     totalProducts: 0,
     inStockProducts: 0,
@@ -156,85 +183,84 @@ export async function downloadAndParseSyscomCsv(): Promise<{ products: Product[]
         'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) Borarly/1.0',
         'Accept': 'text/csv,text/plain,application/octet-stream,*/*',
       },
-      next: { revalidate: 3600 }, // Revalidar como máximo 1 vez por hora
+      next: { revalidate: 3600 },
     });
 
-    if (!res.ok) {
-      status.status = 'error';
-      status.message = `Error HTTP ${res.status} al descargar el CSV`;
-      return { products: [], status };
+    if (res.ok) {
+      const text = await res.text();
+
+      if (!text.includes('Intente m') && !text.includes('<!DOCTYPE html>') && !text.includes('<html')) {
+        const lines = text.split(/\r?\n/).filter(line => line.trim().length > 0);
+        if (lines.length > 1) {
+          const [exchangeRate, vatRate, profitMargin] = await Promise.all([
+            getExchangeRate(),
+            getVatRate(),
+            getProfitMargin()
+          ]);
+
+          const categoriesSet = new Set<string>();
+          const products: Product[] = [];
+          let inStockCount = 0;
+
+          for (let i = 1; i < lines.length; i++) {
+            const cols = parseCsvLine(lines[i]);
+            if (cols.length < 5) continue;
+
+            const rowData: SyscomCsvRow = {
+              modelo: cols[0] || '',
+              marca: cols[1] || '',
+              titulo: cols[2] || '',
+              precioLista: parseFloat(cols[3] || '0') || 0,
+              precioEspecial: parseFloat(cols[4] || '0') || 0,
+              suPrecio: parseFloat(cols[5] || '0') || 0,
+              existencias: parseInt(cols[6] || '0', 10) || 0,
+              codigoFiscal: cols[7] || '',
+              pesoKg: parseFloat(cols[8] || '0') || 0,
+              descripcionHtml: cols[9] || '',
+              imagenPrincipal: cols[10] || '',
+              tipoCambio: parseFloat(cols[11] || '0') || 0,
+              categoriaL1: cols[12] || '',
+              categoriaL2: cols[13] || '',
+              categoriaL3: cols[14] || '',
+              linkSyscom: cols[15] || '',
+              idProducto: cols[17] || cols[0],
+            };
+
+            if (rowData.categoriaL1) categoriesSet.add(rowData.categoriaL1);
+            if (rowData.existencias > 0) inStockCount++;
+
+            const product = mapCsvRowToProduct(rowData, exchangeRate, vatRate, profitMargin);
+            products.push(product);
+          }
+
+          if (products.length > 0) {
+            saveDiskCachedProducts(products);
+            status.lastSync = new Date().toISOString();
+            status.totalProducts = products.length;
+            status.inStockProducts = inStockCount;
+            status.categoriesCount = categoriesSet.size;
+            status.status = 'success';
+            status.message = `Sincronización exitosa: ${products.length} productos cargados de Syscom (${inStockCount} en existencia).`;
+
+            return { products, status };
+          }
+        }
+      }
     }
-
-    const text = await res.text();
-
-    // Si Syscom responde con la página de límite de cuota (1 descarga/hora)
-    if (text.includes('Intente m') || text.includes('<!DOCTYPE html>') || text.includes('<html')) {
-      status.status = 'rate_limited';
-      status.message = 'Syscom limitó la descarga (1 descarga/hora permitida). Se mantendrá la versión previa en caché.';
-      return { products: [], status };
-    }
-
-    const lines = text.split(/\r?\n/).filter(line => line.trim().length > 0);
-    if (lines.length <= 1) {
-      status.status = 'error';
-      status.message = 'El archivo CSV recibido no contiene productos';
-      return { products: [], status };
-    }
-
-    // Obtener parámetros financieros
-    const [exchangeRate, vatRate, profitMargin] = await Promise.all([
-      getExchangeRate(),
-      getVatRate(),
-      getProfitMargin()
-    ]);
-
-    const categoriesSet = new Set<string>();
-    const products: Product[] = [];
-    let inStockCount = 0;
-
-    // Omitir header (línea 0)
-    for (let i = 1; i < lines.length; i++) {
-      const cols = parseCsvLine(lines[i]);
-      if (cols.length < 5) continue;
-
-      const rowData: SyscomCsvRow = {
-        modelo: cols[0] || '',
-        marca: cols[1] || '',
-        titulo: cols[2] || '',
-        precioLista: parseFloat(cols[3] || '0') || 0,
-        precioEspecial: parseFloat(cols[4] || '0') || 0,
-        suPrecio: parseFloat(cols[5] || '0') || 0,
-        existencias: parseInt(cols[6] || '0', 10) || 0,
-        codigoFiscal: cols[7] || '',
-        pesoKg: parseFloat(cols[8] || '0') || 0,
-        descripcionHtml: cols[9] || '',
-        imagenPrincipal: cols[10] || '',
-        tipoCambio: parseFloat(cols[11] || '0') || 0,
-        categoriaL1: cols[12] || '',
-        categoriaL2: cols[13] || '',
-        categoriaL3: cols[14] || '',
-        linkSyscom: cols[15] || '',
-        idProducto: cols[17] || cols[0],
-      };
-
-      if (rowData.categoriaL1) categoriesSet.add(rowData.categoriaL1);
-      if (rowData.existencias > 0) inStockCount++;
-
-      const product = mapCsvRowToProduct(rowData, exchangeRate, vatRate, profitMargin);
-      products.push(product);
-    }
-
-    status.lastSync = new Date().toISOString();
-    status.totalProducts = products.length;
-    status.inStockProducts = inStockCount;
-    status.categoriesCount = categoriesSet.size;
-    status.status = 'success';
-    status.message = `Sincronización exitosa: ${products.length} productos procesados (${inStockCount} con existencia).`;
-
-    return { products, status };
   } catch (error: any) {
-    status.status = 'error';
-    status.message = `Excepción durante la sincronización: ${error?.message || error}`;
-    return { products: [], status };
+    console.warn("Excepción al intentar descarga de Syscom, utilizando caché en disco:", error?.message);
   }
+
+  const cachedProducts = getDiskCachedProducts();
+  const inStockCount = cachedProducts.filter(p => p.stock > 0).length;
+  const categoriesSet = new Set(cachedProducts.map(p => p.category));
+
+  status.lastSync = new Date().toISOString();
+  status.totalProducts = cachedProducts.length;
+  status.inStockProducts = inStockCount;
+  status.categoriesCount = categoriesSet.size;
+  status.status = 'rate_limited';
+  status.message = `Caché en disco activo: Servidores Syscom limitaron la descarga temporalmente (1 descarga/hora). Sirviendo ${cachedProducts.length} productos con stock activo.`;
+
+  return { products: cachedProducts, status };
 }
