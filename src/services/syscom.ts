@@ -149,6 +149,26 @@ function mapearProductoSyscom(p: any, exchangeRate: number, vatRate: number, pro
     };
 }
 
+function matchesCategoryFilter(productCategory: string, productCatId: string | undefined, filterCategory: string): boolean {
+  if (!filterCategory || filterCategory === 'all') return true;
+  const pCat = (productCategory || '').toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+  const pId = (productCatId || '').toLowerCase();
+  const f = filterCategory.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+
+  if (pCat.includes(f) || f.includes(pCat) || pId === f) return true;
+
+  if ((f === '22' || f.includes('video')) && (pCat.includes('video') || pCat.includes('camara') || pCat.includes('vigilancia'))) return true;
+  if ((f === 'acceso' || f === '43') && (pCat.includes('acceso') || pCat.includes('biometrico') || pCat.includes('cerradura'))) return true;
+  if ((f === 'redes' || f === '24') && (pCat.includes('red') || pCat.includes('networking') || pCat.includes('switch') || pCat.includes('router'))) return true;
+  if ((f === 'radio' || f === '31') && (pCat.includes('radio') || pCat.includes('comunicacion'))) return true;
+  if ((f === 'cableado' || f === '95') && (pCat.includes('cable') || pCat.includes('fibra') || pCat.includes('estructurado'))) return true;
+  if ((f === 'energia' || f === '10') && (pCat.includes('energia') || pCat.includes('solar') || pCat.includes('ups') || pCat.includes('bateria'))) return true;
+  if ((f === 'intrusion' || f === '11') && (pCat.includes('intrusion') || pCat.includes('alarma') || pCat.includes('sensor'))) return true;
+  if ((f === 'fuego' || f === '17') && (pCat.includes('fuego') || pCat.includes('incendio') || pCat.includes('humo'))) return true;
+
+  return false;
+}
+
 /**
  * Obtiene el Catálogo Nacional de Syscom (REST API o Fallback CSV)
  */
@@ -179,8 +199,7 @@ export async function getProductosSyscomMerida(
             if (products.length > 0) {
                 let filtered = products;
                 if (categoria && categoria !== 'all') {
-                    const catLower = categoria.toLowerCase();
-                    filtered = filtered.filter(p => p.category?.toLowerCase().includes(catLower) || p.categoryId?.toLowerCase() === catLower);
+                    filtered = filtered.filter(p => matchesCategoryFilter(p.category, p.categoryId, categoria));
                 }
                 if (busqueda && busqueda.trim() !== '') {
                     const q = busqueda.toLowerCase().trim();

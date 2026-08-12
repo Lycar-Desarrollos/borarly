@@ -139,6 +139,8 @@ export function mapCsvRowToProduct(
   const idClean = row.idProducto || row.modelo.replace(/[^a-zA-Z0-9_-]/g, '');
   const cleanDescription = stripHtml(row.descripcionHtml);
 
+  const rawImage = row.imagenPrincipal?.replace('ftp3.syscom.mx/cdn-cgi/image/format=webp,width=300,height=300/', 'ftp3.syscom.mx/') || '';
+
   return {
     id: idClean,
     name: row.titulo || row.modelo,
@@ -147,7 +149,7 @@ export function mapCsvRowToProduct(
     currency: 'MXN',
     costPrice: Math.round(costInMxn * 100) / 100,
     profitMargin: profitMargin,
-    imageUrls: row.imagenPrincipal && !row.imagenPrincipal.includes('placehold') ? [row.imagenPrincipal] : ['https://placehold.co/600x400.png'],
+    imageUrls: rawImage && !rawImage.includes('placehold') ? [rawImage] : ['https://placehold.co/600x400.png'],
     category: row.categoriaL1 || 'Seguridad y Redes',
     categoryId: row.categoriaL1,
     stock: row.existencias || 0,

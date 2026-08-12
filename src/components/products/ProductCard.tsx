@@ -25,9 +25,12 @@ export function ProductCard({ product }: ProductCardProps) {
     currency: 'MXN',
   }).format(product.price);
 
-  const primaryImage = product.imageUrls && product.imageUrls.length > 0 
+  const rawImage = product.imageUrls && product.imageUrls.length > 0 
     ? product.imageUrls[0] 
     : "https://placehold.co/600x400.png?text=Sin+Imagen";
+
+  // Clean Syscom FTP URL to remove blocking cdn-cgi path
+  const primaryImage = rawImage.replace('ftp3.syscom.mx/cdn-cgi/image/format=webp,width=300,height=300/', 'ftp3.syscom.mx/');
 
   const handleAddToCart = () => {
     // Add multiple items if quantity > 1
@@ -48,9 +51,8 @@ export function ProductCard({ product }: ProductCardProps) {
           <Image
             src={primaryImage}
             alt={product.name}
-            layout="fill"
-            objectFit="contain"
-            className="drop-shadow-lg"
+            fill
+            className="object-contain drop-shadow-lg"
             unoptimized={true}
           />
         </div>
