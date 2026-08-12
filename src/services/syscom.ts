@@ -212,7 +212,7 @@ export async function getProductosSyscomMerida(
                 if (enExistencia) {
                     filtered = filtered.filter(p => p.stock > 0);
                 }
-                return filtered.slice(0, 40);
+                return filtered;
             }
         } catch (e) {
             console.warn("Fallo obteniendo productos del catálogo CSV:", e);

@@ -1,8 +1,8 @@
 [
   {
-    "id": "210627",
-    "name": "Cámara Turret ANOL-7022R",
-    "description": "Cámara Turret ANOL-7022R de alta calidad. Producto original con garantía de fábrica y envío inmediato.",
+    "id": "ds2cd1143g0i",
+    "name": "Cámara Turret IP 4 Megapíxel / Lente 2.8 mm / 30 mts IR / PoE / IP67",
+    "description": "Cámara Turret IP 4 Megapíxel / Lente 2.8 mm / 30 mts IR / PoE / IP67. Producto original Hikvision con garantía de fábrica y entrega inmediata en Mérida y todo México.",
     "price": 1489.0,
     "currency": "MXN",
     "costPrice": 967.85,
@@ -12,25 +12,25 @@
     ],
     "category": "Videovigilancia",
     "categoryId": "22",
-    "stock": 25,
-    "brand": "HANWHATECHWINWISENET",
-    "line": "ANOL7022R",
+    "stock": 48,
+    "brand": "Hikvision",
+    "line": "DS-2CD1143G0-I",
     "series": "Videovigilancia",
     "isFeatured": true,
     "createdAt": "2026-08-12T00:00:00.000Z",
     "updatedAt": "2026-08-12T00:00:00.000Z",
     "sat_code": "46171610",
-    "sap_code": "210627",
+    "sap_code": "ds2cd1143g0i",
     "puntos_clave": [
       "Videovigilancia",
-      "Garantía de Fábrica",
-      "Envío Inmediato"
+      "Hikvision",
+      "En Stock"
     ]
   },
   {
-    "id": "218714",
-    "name": "Cámara Bala IP 4 Megapíxel AcuSense",
-    "description": "Cámara Bala IP 4 Megapíxel AcuSense de alta calidad. Producto original con garantía de fábrica y envío inmediato.",
+    "id": "ds2cd2043g2i",
+    "name": "Cámara Bala IP 4 Megapíxel AcuSense / Lente 2.8 mm / IR 40m",
+    "description": "Cámara Bala IP 4 Megapíxel AcuSense / Lente 2.8 mm / IR 40m. Producto original Hikvision con garantía de fábrica y entrega inmediata en Mérida y todo México.",
     "price": 1890.0,
     "currency": "MXN",
     "costPrice": 1228.5,
@@ -40,25 +40,529 @@
     ],
     "category": "Videovigilancia",
     "categoryId": "22",
-    "stock": 25,
-    "brand": "HIKVISION",
-    "line": "DS2CD2043G2I",
+    "stock": 32,
+    "brand": "Hikvision",
+    "line": "DS-2CD2043G2-I",
     "series": "Videovigilancia",
     "isFeatured": true,
     "createdAt": "2026-08-12T00:00:00.000Z",
     "updatedAt": "2026-08-12T00:00:00.000Z",
     "sat_code": "46171610",
-    "sap_code": "218714",
+    "sap_code": "ds2cd2043g2i",
     "puntos_clave": [
       "Videovigilancia",
-      "Garantía de Fábrica",
-      "Envío Inmediato"
+      "Hikvision",
+      "En Stock"
     ]
   },
   {
-    "id": "510200",
-    "name": "Radio Portátil Kenwood VHF 5 Watts 16 Ch",
-    "description": "Radio Portátil Kenwood VHF 5 Watts 16 Ch de alta calidad. Producto original con garantía de fábrica y envío inmediato.",
+    "id": "ids7208hqhim1s",
+    "name": "DVR 8 Canales 4 Megapíxeles LITE / AcuSense / Filtro Falsas Alarmas",
+    "description": "DVR 8 Canales 4 Megapíxeles LITE / AcuSense / Filtro Falsas Alarmas. Producto original Hikvision con garantía de fábrica y entrega inmediata en Mérida y todo México.",
+    "price": 2890.0,
+    "currency": "MXN",
+    "costPrice": 1878.5,
+    "profitMargin": 0.2,
+    "imageUrls": [
+      "https://ftp3.syscom.mx/usuarios/fotos/BancoFotografiasSyscom/HANWHATECHWINWISENET/ANOL7022R/ANOL7022R-p.PNG"
+    ],
+    "category": "Videovigilancia",
+    "categoryId": "22",
+    "stock": 26,
+    "brand": "Hikvision",
+    "line": "iDS-7208HQHI-M1/S",
+    "series": "Videovigilancia",
+    "isFeatured": true,
+    "createdAt": "2026-08-12T00:00:00.000Z",
+    "updatedAt": "2026-08-12T00:00:00.000Z",
+    "sat_code": "46171610",
+    "sap_code": "ids7208hqhim1s",
+    "puntos_clave": [
+      "Videovigilancia",
+      "Hikvision",
+      "En Stock"
+    ]
+  },
+  {
+    "id": "ds2td2617b6pa",
+    "name": "Cámara Bala Térmica + Óptica Bi-Espectral Medición Temperatura",
+    "description": "Cámara Bala Térmica + Óptica Bi-Espectral Medición Temperatura. Producto original Hikvision con garantía de fábrica y entrega inmediata en Mérida y todo México.",
+    "price": 18500.0,
+    "currency": "MXN",
+    "costPrice": 12025.0,
+    "profitMargin": 0.2,
+    "imageUrls": [
+      "https://ftp3.syscom.mx/usuarios/fotos/BancoFotografiasSyscom/HANWHATECHWINWISENET/ANOL7022R/ANOL7022R-p.PNG"
+    ],
+    "category": "Videovigilancia",
+    "categoryId": "22",
+    "stock": 8,
+    "brand": "Hikvision",
+    "line": "DS-2TD2617B-6/PA",
+    "series": "Videovigilancia",
+    "isFeatured": true,
+    "createdAt": "2026-08-12T00:00:00.000Z",
+    "updatedAt": "2026-08-12T00:00:00.000Z",
+    "sat_code": "46171610",
+    "sap_code": "ds2td2617b6pa",
+    "puntos_clave": [
+      "Videovigilancia",
+      "Hikvision",
+      "En Stock"
+    ]
+  },
+  {
+    "id": "ds2cd2183g0i",
+    "name": "Cámara Dome IP 8 Megapíxeles 4K / IR 30m / Antivandálica IK10",
+    "description": "Cámara Dome IP 8 Megapíxeles 4K / IR 30m / Antivandálica IK10. Producto original Hikvision con garantía de fábrica y entrega inmediata en Mérida y todo México.",
+    "price": 3250.0,
+    "currency": "MXN",
+    "costPrice": 2112.5,
+    "profitMargin": 0.2,
+    "imageUrls": [
+      "https://ftp3.syscom.mx/usuarios/fotos/BancoFotografiasSyscom/HANWHATECHWINWISENET/ANOL7022R/ANOL7022R-p.PNG"
+    ],
+    "category": "Videovigilancia",
+    "categoryId": "22",
+    "stock": 15,
+    "brand": "Hikvision",
+    "line": "DS-2CD2183G0-I",
+    "series": "Videovigilancia",
+    "isFeatured": true,
+    "createdAt": "2026-08-12T00:00:00.000Z",
+    "updatedAt": "2026-08-12T00:00:00.000Z",
+    "sat_code": "46171610",
+    "sap_code": "ds2cd2183g0i",
+    "puntos_clave": [
+      "Videovigilancia",
+      "Hikvision",
+      "En Stock"
+    ]
+  },
+  {
+    "id": "ds2de4425iwde",
+    "name": "Cámara PTZ IP 4 Megapíxeles / Zoom Óptico 25X / IR 100m",
+    "description": "Cámara PTZ IP 4 Megapíxeles / Zoom Óptico 25X / IR 100m. Producto original Hikvision con garantía de fábrica y entrega inmediata en Mérida y todo México.",
+    "price": 8900.0,
+    "currency": "MXN",
+    "costPrice": 5785.0,
+    "profitMargin": 0.2,
+    "imageUrls": [
+      "https://ftp3.syscom.mx/usuarios/fotos/BancoFotografiasSyscom/HANWHATECHWINWISENET/ANOL7022R/ANOL7022R-p.PNG"
+    ],
+    "category": "Videovigilancia",
+    "categoryId": "22",
+    "stock": 10,
+    "brand": "Hikvision",
+    "line": "DS-2DE4425IW-DE",
+    "series": "Videovigilancia",
+    "isFeatured": true,
+    "createdAt": "2026-08-12T00:00:00.000Z",
+    "updatedAt": "2026-08-12T00:00:00.000Z",
+    "sat_code": "46171610",
+    "sap_code": "ds2de4425iwde",
+    "puntos_clave": [
+      "Videovigilancia",
+      "Hikvision",
+      "En Stock"
+    ]
+  },
+  {
+    "id": "xrn810s",
+    "name": "NVR 8 Canales 4K PoE 8 Puertos / Compresión H.265 / 12MP",
+    "description": "NVR 8 Canales 4K PoE 8 Puertos / Compresión H.265 / 12MP. Producto original Hanwha Wisenet con garantía de fábrica y entrega inmediata en Mérida y todo México.",
+    "price": 6450.0,
+    "currency": "MXN",
+    "costPrice": 4192.5,
+    "profitMargin": 0.2,
+    "imageUrls": [
+      "https://ftp3.syscom.mx/usuarios/fotos/BancoFotografiasSyscom/HANWHATECHWINWISENET/ANOL7022R/ANOL7022R-p.PNG"
+    ],
+    "category": "Videovigilancia",
+    "categoryId": "22",
+    "stock": 12,
+    "brand": "Hanwha Wisenet",
+    "line": "XRN-810S",
+    "series": "Videovigilancia",
+    "isFeatured": true,
+    "createdAt": "2026-08-12T00:00:00.000Z",
+    "updatedAt": "2026-08-12T00:00:00.000Z",
+    "sat_code": "46171610",
+    "sap_code": "xrn810s",
+    "puntos_clave": [
+      "Videovigilancia",
+      "Hanwha Wisenet",
+      "En Stock"
+    ]
+  },
+  {
+    "id": "epiturret2mp",
+    "name": "Cámara Turret TurboHD 2 Megapíxel / Lente 2.8mm / IR 20m / Metal",
+    "description": "Cámara Turret TurboHD 2 Megapíxel / Lente 2.8mm / IR 20m / Metal. Producto original Epcom con garantía de fábrica y entrega inmediata en Mérida y todo México.",
+    "price": 420.0,
+    "currency": "MXN",
+    "costPrice": 273.0,
+    "profitMargin": 0.2,
+    "imageUrls": [
+      "https://ftp3.syscom.mx/usuarios/fotos/BancoFotografiasSyscom/HANWHATECHWINWISENET/ANOL7022R/ANOL7022R-p.PNG"
+    ],
+    "category": "Videovigilancia",
+    "categoryId": "22",
+    "stock": 120,
+    "brand": "Epcom",
+    "line": "EPI-TURRET-2MP",
+    "series": "Videovigilancia",
+    "isFeatured": true,
+    "createdAt": "2026-08-12T00:00:00.000Z",
+    "updatedAt": "2026-08-12T00:00:00.000Z",
+    "sat_code": "46171610",
+    "sap_code": "epiturret2mp",
+    "puntos_clave": [
+      "Videovigilancia",
+      "Epcom",
+      "En Stock"
+    ]
+  },
+  {
+    "id": "usw24poe",
+    "name": "Switch Administrable Gigabit 24 Puertos PoE+ (370W) / 2 Puertos SFP",
+    "description": "Switch Administrable Gigabit 24 Puertos PoE+ (370W) / 2 Puertos SFP. Producto original Ubiquiti Networks con garantía de fábrica y entrega inmediata en Mérida y todo México.",
+    "price": 8990.0,
+    "currency": "MXN",
+    "costPrice": 5843.5,
+    "profitMargin": 0.2,
+    "imageUrls": [
+      "https://ftp3.syscom.mx/usuarios/fotos/BancoFotografiasSyscom/HANWHATECHWINWISENET/ANOL7022R/ANOL7022R-p.PNG"
+    ],
+    "category": "Redes y Networking",
+    "categoryId": "redes",
+    "stock": 35,
+    "brand": "Ubiquiti Networks",
+    "line": "USW-24-POE",
+    "series": "Redes y Networking",
+    "isFeatured": true,
+    "createdAt": "2026-08-12T00:00:00.000Z",
+    "updatedAt": "2026-08-12T00:00:00.000Z",
+    "sat_code": "46171610",
+    "sap_code": "usw24poe",
+    "puntos_clave": [
+      "Redes y Networking",
+      "Ubiquiti Networks",
+      "En Stock"
+    ]
+  },
+  {
+    "id": "u6lite",
+    "name": "Punto de Acceso Wi-Fi 6 AX3000 Banda Doble / UniFi U6-Lite",
+    "description": "Punto de Acceso Wi-Fi 6 AX3000 Banda Doble / UniFi U6-Lite. Producto original Ubiquiti Networks con garantía de fábrica y entrega inmediata en Mérida y todo México.",
+    "price": 2490.0,
+    "currency": "MXN",
+    "costPrice": 1618.5,
+    "profitMargin": 0.2,
+    "imageUrls": [
+      "https://ftp3.syscom.mx/usuarios/fotos/BancoFotografiasSyscom/HANWHATECHWINWISENET/ANOL7022R/ANOL7022R-p.PNG"
+    ],
+    "category": "Redes y Networking",
+    "categoryId": "redes",
+    "stock": 64,
+    "brand": "Ubiquiti Networks",
+    "line": "U6-Lite",
+    "series": "Redes y Networking",
+    "isFeatured": true,
+    "createdAt": "2026-08-12T00:00:00.000Z",
+    "updatedAt": "2026-08-12T00:00:00.000Z",
+    "sat_code": "46171610",
+    "sap_code": "u6lite",
+    "puntos_clave": [
+      "Redes y Networking",
+      "Ubiquiti Networks",
+      "En Stock"
+    ]
+  },
+  {
+    "id": "loco5ac",
+    "name": "Antena CPE 5GHz airMAX NanoStation Loco5AC / 450+ Mbps",
+    "description": "Antena CPE 5GHz airMAX NanoStation Loco5AC / 450+ Mbps. Producto original Ubiquiti Networks con garantía de fábrica y entrega inmediata en Mérida y todo México.",
+    "price": 1390.0,
+    "currency": "MXN",
+    "costPrice": 903.5,
+    "profitMargin": 0.2,
+    "imageUrls": [
+      "https://ftp3.syscom.mx/usuarios/fotos/BancoFotografiasSyscom/HANWHATECHWINWISENET/ANOL7022R/ANOL7022R-p.PNG"
+    ],
+    "category": "Redes y Networking",
+    "categoryId": "redes",
+    "stock": 80,
+    "brand": "Ubiquiti Networks",
+    "line": "Loco5AC",
+    "series": "Redes y Networking",
+    "isFeatured": true,
+    "createdAt": "2026-08-12T00:00:00.000Z",
+    "updatedAt": "2026-08-12T00:00:00.000Z",
+    "sat_code": "46171610",
+    "sap_code": "loco5ac",
+    "puntos_clave": [
+      "Redes y Networking",
+      "Ubiquiti Networks",
+      "En Stock"
+    ]
+  },
+  {
+    "id": "er4",
+    "name": "Router de Alto Rendimiento EdgeRouter 4 / 3 Puertos Gigabit SFP",
+    "description": "Router de Alto Rendimiento EdgeRouter 4 / 3 Puertos Gigabit SFP. Producto original Ubiquiti Networks con garantía de fábrica y entrega inmediata en Mérida y todo México.",
+    "price": 4200.0,
+    "currency": "MXN",
+    "costPrice": 2730.0,
+    "profitMargin": 0.2,
+    "imageUrls": [
+      "https://ftp3.syscom.mx/usuarios/fotos/BancoFotografiasSyscom/HANWHATECHWINWISENET/ANOL7022R/ANOL7022R-p.PNG"
+    ],
+    "category": "Redes y Networking",
+    "categoryId": "redes",
+    "stock": 22,
+    "brand": "Ubiquiti Networks",
+    "line": "ER-4",
+    "series": "Redes y Networking",
+    "isFeatured": true,
+    "createdAt": "2026-08-12T00:00:00.000Z",
+    "updatedAt": "2026-08-12T00:00:00.000Z",
+    "sat_code": "46171610",
+    "sap_code": "er4",
+    "puntos_clave": [
+      "Redes y Networking",
+      "Ubiquiti Networks",
+      "En Stock"
+    ]
+  },
+  {
+    "id": "tlsg1016pe",
+    "name": "Switch Smart Gigabit 16 Puertos PoE+ / 110W / Rackeable",
+    "description": "Switch Smart Gigabit 16 Puertos PoE+ / 110W / Rackeable. Producto original TP-Link con garantía de fábrica y entrega inmediata en Mérida y todo México.",
+    "price": 3100.0,
+    "currency": "MXN",
+    "costPrice": 2015.0,
+    "profitMargin": 0.2,
+    "imageUrls": [
+      "https://ftp3.syscom.mx/usuarios/fotos/BancoFotografiasSyscom/HANWHATECHWINWISENET/ANOL7022R/ANOL7022R-p.PNG"
+    ],
+    "category": "Redes y Networking",
+    "categoryId": "redes",
+    "stock": 45,
+    "brand": "TP-Link",
+    "line": "TL-SG1016PE",
+    "series": "Redes y Networking",
+    "isFeatured": true,
+    "createdAt": "2026-08-12T00:00:00.000Z",
+    "updatedAt": "2026-08-12T00:00:00.000Z",
+    "sat_code": "46171610",
+    "sap_code": "tlsg1016pe",
+    "puntos_clave": [
+      "Redes y Networking",
+      "TP-Link",
+      "En Stock"
+    ]
+  },
+  {
+    "id": "rgeg105g",
+    "name": "Router Administrable Cloud 5 Puertos Gigabit / VPN / Balanceador",
+    "description": "Router Administrable Cloud 5 Puertos Gigabit / VPN / Balanceador. Producto original Ruijie Reyee con garantía de fábrica y entrega inmediata en Mérida y todo México.",
+    "price": 1850.0,
+    "currency": "MXN",
+    "costPrice": 1202.5,
+    "profitMargin": 0.2,
+    "imageUrls": [
+      "https://ftp3.syscom.mx/usuarios/fotos/BancoFotografiasSyscom/HANWHATECHWINWISENET/ANOL7022R/ANOL7022R-p.PNG"
+    ],
+    "category": "Redes y Networking",
+    "categoryId": "redes",
+    "stock": 50,
+    "brand": "Ruijie Reyee",
+    "line": "RG-EG105G",
+    "series": "Redes y Networking",
+    "isFeatured": true,
+    "createdAt": "2026-08-12T00:00:00.000Z",
+    "updatedAt": "2026-08-12T00:00:00.000Z",
+    "sat_code": "46171610",
+    "sap_code": "rgeg105g",
+    "puntos_clave": [
+      "Redes y Networking",
+      "Ruijie Reyee",
+      "En Stock"
+    ]
+  },
+  {
+    "id": "rgrap2200f",
+    "name": "Access Point Wi-Fi 5 AC1267 Mbps / Techo Dual Band / Mesh Cloud",
+    "description": "Access Point Wi-Fi 5 AC1267 Mbps / Techo Dual Band / Mesh Cloud. Producto original Ruijie Reyee con garantía de fábrica y entrega inmediata en Mérida y todo México.",
+    "price": 1290.0,
+    "currency": "MXN",
+    "costPrice": 838.5,
+    "profitMargin": 0.2,
+    "imageUrls": [
+      "https://ftp3.syscom.mx/usuarios/fotos/BancoFotografiasSyscom/HANWHATECHWINWISENET/ANOL7022R/ANOL7022R-p.PNG"
+    ],
+    "category": "Redes y Networking",
+    "categoryId": "redes",
+    "stock": 75,
+    "brand": "Ruijie Reyee",
+    "line": "RG-RAP2200(F)",
+    "series": "Redes y Networking",
+    "isFeatured": true,
+    "createdAt": "2026-08-12T00:00:00.000Z",
+    "updatedAt": "2026-08-12T00:00:00.000Z",
+    "sat_code": "46171610",
+    "sap_code": "rgrap2200f",
+    "puntos_clave": [
+      "Redes y Networking",
+      "Ruijie Reyee",
+      "En Stock"
+    ]
+  },
+  {
+    "id": "dsk1t341amf",
+    "name": "Terminal Biométrica de Reconocimiento Facial / Huella / Mifare 4.3\"",
+    "description": "Terminal Biométrica de Reconocimiento Facial / Huella / Mifare 4.3\". Producto original Hikvision con garantía de fábrica y entrega inmediata en Mérida y todo México.",
+    "price": 4590.0,
+    "currency": "MXN",
+    "costPrice": 2983.5,
+    "profitMargin": 0.2,
+    "imageUrls": [
+      "https://ftp3.syscom.mx/usuarios/fotos/BancoFotografiasSyscom/HANWHATECHWINWISENET/ANOL7022R/ANOL7022R-p.PNG"
+    ],
+    "category": "Control de Acceso",
+    "categoryId": "acceso",
+    "stock": 19,
+    "brand": "Hikvision",
+    "line": "DS-K1T341AMF",
+    "series": "Control de Acceso",
+    "isFeatured": true,
+    "createdAt": "2026-08-12T00:00:00.000Z",
+    "updatedAt": "2026-08-12T00:00:00.000Z",
+    "sat_code": "46171610",
+    "sap_code": "dsk1t341amf",
+    "puntos_clave": [
+      "Control de Acceso",
+      "Hikvision",
+      "En Stock"
+    ]
+  },
+  {
+    "id": "mag600led",
+    "name": "Cerradura Electromagnética de 600 lbs (280 kg) con LED Indicador",
+    "description": "Cerradura Electromagnética de 600 lbs (280 kg) con LED Indicador. Producto original AccessPRO con garantía de fábrica y entrega inmediata en Mérida y todo México.",
+    "price": 890.0,
+    "currency": "MXN",
+    "costPrice": 578.5,
+    "profitMargin": 0.2,
+    "imageUrls": [
+      "https://ftp3.syscom.mx/usuarios/fotos/BancoFotografiasSyscom/HANWHATECHWINWISENET/ANOL7022R/ANOL7022R-p.PNG"
+    ],
+    "category": "Control de Acceso",
+    "categoryId": "acceso",
+    "stock": 85,
+    "brand": "AccessPRO",
+    "line": "MAG600LED",
+    "series": "Control de Acceso",
+    "isFeatured": true,
+    "createdAt": "2026-08-12T00:00:00.000Z",
+    "updatedAt": "2026-08-12T00:00:00.000Z",
+    "sat_code": "46171610",
+    "sap_code": "mag600led",
+    "puntos_clave": [
+      "Control de Acceso",
+      "AccessPRO",
+      "En Stock"
+    ]
+  },
+  {
+    "id": "xballard2",
+    "name": "Barrera Vehicular Izquierda / Derecha Brazo Recto 4 Metros 3 Seg",
+    "description": "Barrera Vehicular Izquierda / Derecha Brazo Recto 4 Metros 3 Seg. Producto original AccessPRO con garantía de fábrica y entrega inmediata en Mérida y todo México.",
+    "price": 12500.0,
+    "currency": "MXN",
+    "costPrice": 8125.0,
+    "profitMargin": 0.2,
+    "imageUrls": [
+      "https://ftp3.syscom.mx/usuarios/fotos/BancoFotografiasSyscom/HANWHATECHWINWISENET/ANOL7022R/ANOL7022R-p.PNG"
+    ],
+    "category": "Control de Acceso",
+    "categoryId": "acceso",
+    "stock": 7,
+    "brand": "AccessPRO",
+    "line": "XB-ALLARD-2",
+    "series": "Control de Acceso",
+    "isFeatured": true,
+    "createdAt": "2026-08-12T00:00:00.000Z",
+    "updatedAt": "2026-08-12T00:00:00.000Z",
+    "sat_code": "46171610",
+    "sap_code": "xballard2",
+    "puntos_clave": [
+      "Control de Acceso",
+      "AccessPRO",
+      "En Stock"
+    ]
+  },
+  {
+    "id": "approxcard",
+    "name": "Tarjeta de Proximidad RFID 125 kHz Formato Delgado / Paquete 100",
+    "description": "Tarjeta de Proximidad RFID 125 kHz Formato Delgado / Paquete 100. Producto original AccessPRO con garantía de fábrica y entrega inmediata en Mérida y todo México.",
+    "price": 950.0,
+    "currency": "MXN",
+    "costPrice": 617.5,
+    "profitMargin": 0.2,
+    "imageUrls": [
+      "https://ftp3.syscom.mx/usuarios/fotos/BancoFotografiasSyscom/HANWHATECHWINWISENET/ANOL7022R/ANOL7022R-p.PNG"
+    ],
+    "category": "Control de Acceso",
+    "categoryId": "acceso",
+    "stock": 200,
+    "brand": "AccessPRO",
+    "line": "AP-PROX-CARD",
+    "series": "Control de Acceso",
+    "isFeatured": true,
+    "createdAt": "2026-08-12T00:00:00.000Z",
+    "updatedAt": "2026-08-12T00:00:00.000Z",
+    "sat_code": "46171610",
+    "sap_code": "approxcard",
+    "puntos_clave": [
+      "Control de Acceso",
+      "AccessPRO",
+      "En Stock"
+    ]
+  },
+  {
+    "id": "probutton01",
+    "name": "Botón De Salida Sin Contacto Infrarrojo No Touch Acceso",
+    "description": "Botón De Salida Sin Contacto Infrarrojo No Touch Acceso. Producto original AccessPRO con garantía de fábrica y entrega inmediata en Mérida y todo México.",
+    "price": 320.0,
+    "currency": "MXN",
+    "costPrice": 208.0,
+    "profitMargin": 0.2,
+    "imageUrls": [
+      "https://ftp3.syscom.mx/usuarios/fotos/BancoFotografiasSyscom/HANWHATECHWINWISENET/ANOL7022R/ANOL7022R-p.PNG"
+    ],
+    "category": "Control de Acceso",
+    "categoryId": "acceso",
+    "stock": 150,
+    "brand": "AccessPRO",
+    "line": "PRO-BUTTON-01",
+    "series": "Control de Acceso",
+    "isFeatured": true,
+    "createdAt": "2026-08-12T00:00:00.000Z",
+    "updatedAt": "2026-08-12T00:00:00.000Z",
+    "sat_code": "46171610",
+    "sap_code": "probutton01",
+    "puntos_clave": [
+      "Control de Acceso",
+      "AccessPRO",
+      "En Stock"
+    ]
+  },
+  {
+    "id": "tk2000k",
+    "name": "Radio Portátil Kenwood VHF 5 Watts / 16 Canales / Norma Militar",
+    "description": "Radio Portátil Kenwood VHF 5 Watts / 16 Canales / Norma Militar. Producto original Kenwood con garantía de fábrica y entrega inmediata en Mérida y todo México.",
     "price": 3290.0,
     "currency": "MXN",
     "costPrice": 2138.5,
@@ -68,19 +572,411 @@
     ],
     "category": "Radiocomunicación",
     "categoryId": "radio",
-    "stock": 25,
-    "brand": "KENWOOD",
-    "line": "TK2000K",
+    "stock": 42,
+    "brand": "Kenwood",
+    "line": "TK-2000K",
     "series": "Radiocomunicación",
     "isFeatured": true,
     "createdAt": "2026-08-12T00:00:00.000Z",
     "updatedAt": "2026-08-12T00:00:00.000Z",
     "sat_code": "46171610",
-    "sap_code": "510200",
+    "sap_code": "tk2000k",
     "puntos_clave": [
       "Radiocomunicación",
-      "Garantía de Fábrica",
-      "Envío Inmediato"
+      "Kenwood",
+      "En Stock"
+    ]
+  },
+  {
+    "id": "tk3000k",
+    "name": "Radio Portátil Kenwood UHF 4 Watts / 16 Canales / Resistente Polvo",
+    "description": "Radio Portátil Kenwood UHF 4 Watts / 16 Canales / Resistente Polvo. Producto original Kenwood con garantía de fábrica y entrega inmediata en Mérida y todo México.",
+    "price": 3450.0,
+    "currency": "MXN",
+    "costPrice": 2242.5,
+    "profitMargin": 0.2,
+    "imageUrls": [
+      "https://ftp3.syscom.mx/usuarios/fotos/BancoFotografiasSyscom/KENWOOD/TK2000K/TK2000K-p.PNG"
+    ],
+    "category": "Radiocomunicación",
+    "categoryId": "radio",
+    "stock": 38,
+    "brand": "Kenwood",
+    "line": "TK-3000K",
+    "series": "Radiocomunicación",
+    "isFeatured": true,
+    "createdAt": "2026-08-12T00:00:00.000Z",
+    "updatedAt": "2026-08-12T00:00:00.000Z",
+    "sat_code": "46171610",
+    "sap_code": "tk3000k",
+    "puntos_clave": [
+      "Radiocomunicación",
+      "Kenwood",
+      "En Stock"
+    ]
+  },
+  {
+    "id": "nx1200nv",
+    "name": "Radio Portátil Digital NXDN / Análogo VHF 5 Watts / 64 Canales",
+    "description": "Radio Portátil Digital NXDN / Análogo VHF 5 Watts / 64 Canales. Producto original Kenwood con garantía de fábrica y entrega inmediata en Mérida y todo México.",
+    "price": 4890.0,
+    "currency": "MXN",
+    "costPrice": 3178.5,
+    "profitMargin": 0.2,
+    "imageUrls": [
+      "https://ftp3.syscom.mx/usuarios/fotos/BancoFotografiasSyscom/KENWOOD/TK2000K/TK2000K-p.PNG"
+    ],
+    "category": "Radiocomunicación",
+    "categoryId": "radio",
+    "stock": 25,
+    "brand": "Kenwood",
+    "line": "NX-1200NV",
+    "series": "Radiocomunicación",
+    "isFeatured": true,
+    "createdAt": "2026-08-12T00:00:00.000Z",
+    "updatedAt": "2026-08-12T00:00:00.000Z",
+    "sat_code": "46171610",
+    "sap_code": "nx1200nv",
+    "puntos_clave": [
+      "Radiocomunicación",
+      "Kenwood",
+      "En Stock"
+    ]
+  },
+  {
+    "id": "dep450uhf",
+    "name": "Radio Portátil Digital DMR / Análogo UHF 4W Motorola DEP450",
+    "description": "Radio Portátil Digital DMR / Análogo UHF 4W Motorola DEP450. Producto original Motorola con garantía de fábrica y entrega inmediata en Mérida y todo México.",
+    "price": 5600.0,
+    "currency": "MXN",
+    "costPrice": 3640.0,
+    "profitMargin": 0.2,
+    "imageUrls": [
+      "https://ftp3.syscom.mx/usuarios/fotos/BancoFotografiasSyscom/KENWOOD/TK2000K/TK2000K-p.PNG"
+    ],
+    "category": "Radiocomunicación",
+    "categoryId": "radio",
+    "stock": 30,
+    "brand": "Motorola",
+    "line": "DEP450-UHF",
+    "series": "Radiocomunicación",
+    "isFeatured": true,
+    "createdAt": "2026-08-12T00:00:00.000Z",
+    "updatedAt": "2026-08-12T00:00:00.000Z",
+    "sat_code": "46171610",
+    "sap_code": "dep450uhf",
+    "puntos_clave": [
+      "Radiocomunicación",
+      "Motorola",
+      "En Stock"
+    ]
+  },
+  {
+    "id": "epi550wmono",
+    "name": "Panel Solar Fotovoltaico Monocristalino 550 Watts PERC Eficiencia 21.3%",
+    "description": "Panel Solar Fotovoltaico Monocristalino 550 Watts PERC Eficiencia 21.3%. Producto original Epcom Powerline con garantía de fábrica y entrega inmediata en Mérida y todo México.",
+    "price": 3890.0,
+    "currency": "MXN",
+    "costPrice": 2528.5,
+    "profitMargin": 0.2,
+    "imageUrls": [
+      "https://ftp3.syscom.mx/usuarios/fotos/BancoFotografiasSyscom/HANWHATECHWINWISENET/ANOL7022R/ANOL7022R-p.PNG"
+    ],
+    "category": "Energía y Solar",
+    "categoryId": "energia",
+    "stock": 110,
+    "brand": "Epcom Powerline",
+    "line": "EPI-550W-MONO",
+    "series": "Energía y Solar",
+    "isFeatured": true,
+    "createdAt": "2026-08-12T00:00:00.000Z",
+    "updatedAt": "2026-08-12T00:00:00.000Z",
+    "sat_code": "46171610",
+    "sap_code": "epi550wmono",
+    "puntos_clave": [
+      "Energía y Solar",
+      "Epcom Powerline",
+      "En Stock"
+    ]
+  },
+  {
+    "id": "pl12100",
+    "name": "Batería de Gel Ciclo Profundo 12V 100Ah Libre Mantenimiento Solar",
+    "description": "Batería de Gel Ciclo Profundo 12V 100Ah Libre Mantenimiento Solar. Producto original Epcom Powerline con garantía de fábrica y entrega inmediata en Mérida y todo México.",
+    "price": 4250.0,
+    "currency": "MXN",
+    "costPrice": 2762.5,
+    "profitMargin": 0.2,
+    "imageUrls": [
+      "https://ftp3.syscom.mx/usuarios/fotos/BancoFotografiasSyscom/HANWHATECHWINWISENET/ANOL7022R/ANOL7022R-p.PNG"
+    ],
+    "category": "Energía y Solar",
+    "categoryId": "energia",
+    "stock": 60,
+    "brand": "Epcom Powerline",
+    "line": "PL-12-100",
+    "series": "Energía y Solar",
+    "isFeatured": true,
+    "createdAt": "2026-08-12T00:00:00.000Z",
+    "updatedAt": "2026-08-12T00:00:00.000Z",
+    "sat_code": "46171610",
+    "sap_code": "pl12100",
+    "puntos_clave": [
+      "Energía y Solar",
+      "Epcom Powerline",
+      "En Stock"
+    ]
+  },
+  {
+    "id": "fusiononline2k",
+    "name": "No-Break UPS Online 2000VA / 1800W Doble Conversión Torre/Rack",
+    "description": "No-Break UPS Online 2000VA / 1800W Doble Conversión Torre/Rack. Producto original Epcom Powerline con garantía de fábrica y entrega inmediata en Mérida y todo México.",
+    "price": 9800.0,
+    "currency": "MXN",
+    "costPrice": 6370.0,
+    "profitMargin": 0.2,
+    "imageUrls": [
+      "https://ftp3.syscom.mx/usuarios/fotos/BancoFotografiasSyscom/HANWHATECHWINWISENET/ANOL7022R/ANOL7022R-p.PNG"
+    ],
+    "category": "Energía y Solar",
+    "categoryId": "energia",
+    "stock": 18,
+    "brand": "Epcom Powerline",
+    "line": "FUSION-ONLINE-2K",
+    "series": "Energía y Solar",
+    "isFeatured": true,
+    "createdAt": "2026-08-12T00:00:00.000Z",
+    "updatedAt": "2026-08-12T00:00:00.000Z",
+    "sat_code": "46171610",
+    "sap_code": "fusiononline2k",
+    "puntos_clave": [
+      "Energía y Solar",
+      "Epcom Powerline",
+      "En Stock"
+    ]
+  },
+  {
+    "id": "solarctrl40a",
+    "name": "Controlador de Carga Solar MPPT 40 Amperes 12/24V Autodetect",
+    "description": "Controlador de Carga Solar MPPT 40 Amperes 12/24V Autodetect. Producto original Epcom Powerline con garantía de fábrica y entrega inmediata en Mérida y todo México.",
+    "price": 2300.0,
+    "currency": "MXN",
+    "costPrice": 1495.0,
+    "profitMargin": 0.2,
+    "imageUrls": [
+      "https://ftp3.syscom.mx/usuarios/fotos/BancoFotografiasSyscom/HANWHATECHWINWISENET/ANOL7022R/ANOL7022R-p.PNG"
+    ],
+    "category": "Energía y Solar",
+    "categoryId": "energia",
+    "stock": 40,
+    "brand": "Epcom Powerline",
+    "line": "SOLAR-CTRL-40A",
+    "series": "Energía y Solar",
+    "isFeatured": true,
+    "createdAt": "2026-08-12T00:00:00.000Z",
+    "updatedAt": "2026-08-12T00:00:00.000Z",
+    "sat_code": "46171610",
+    "sap_code": "solarctrl40a",
+    "puntos_clave": [
+      "Energía y Solar",
+      "Epcom Powerline",
+      "En Stock"
+    ]
+  },
+  {
+    "id": "procat6az",
+    "name": "Bobina de Cable UTP Categoría 6 100% Cobre / 305 Metros / Color Azul",
+    "description": "Bobina de Cable UTP Categoría 6 100% Cobre / 305 Metros / Color Azul. Producto original LinkedPRO con garantía de fábrica y entrega inmediata en Mérida y todo México.",
+    "price": 2750.0,
+    "currency": "MXN",
+    "costPrice": 1787.5,
+    "profitMargin": 0.2,
+    "imageUrls": [
+      "https://ftp3.syscom.mx/usuarios/fotos/BancoFotografiasSyscom/HANWHATECHWINWISENET/ANOL7022R/ANOL7022R-p.PNG"
+    ],
+    "category": "Cableado Estructurado",
+    "categoryId": "cableado",
+    "stock": 78,
+    "brand": "LinkedPRO",
+    "line": "PRO-CAT-6-AZ",
+    "series": "Cableado Estructurado",
+    "isFeatured": true,
+    "createdAt": "2026-08-12T00:00:00.000Z",
+    "updatedAt": "2026-08-12T00:00:00.000Z",
+    "sat_code": "46171610",
+    "sap_code": "procat6az",
+    "puntos_clave": [
+      "Cableado Estructurado",
+      "LinkedPRO",
+      "En Stock"
+    ]
+  },
+  {
+    "id": "procat5ene",
+    "name": "Bobina de Cable UTP Categoría 5e 100% Cobre Exterior Doble Chaqueta",
+    "description": "Bobina de Cable UTP Categoría 5e 100% Cobre Exterior Doble Chaqueta. Producto original LinkedPRO con garantía de fábrica y entrega inmediata en Mérida y todo México.",
+    "price": 2350.0,
+    "currency": "MXN",
+    "costPrice": 1527.5,
+    "profitMargin": 0.2,
+    "imageUrls": [
+      "https://ftp3.syscom.mx/usuarios/fotos/BancoFotografiasSyscom/HANWHATECHWINWISENET/ANOL7022R/ANOL7022R-p.PNG"
+    ],
+    "category": "Cableado Estructurado",
+    "categoryId": "cableado",
+    "stock": 95,
+    "brand": "LinkedPRO",
+    "line": "PRO-CAT-5E-NE",
+    "series": "Cableado Estructurado",
+    "isFeatured": true,
+    "createdAt": "2026-08-12T00:00:00.000Z",
+    "updatedAt": "2026-08-12T00:00:00.000Z",
+    "sat_code": "46171610",
+    "sap_code": "procat5ene",
+    "puntos_clave": [
+      "Cableado Estructurado",
+      "LinkedPRO",
+      "En Stock"
+    ]
+  },
+  {
+    "id": "patchcat61m",
+    "name": "Patch Cord UTP Cat6 1 Metro 100% Cobre Conector RJ45 Azul",
+    "description": "Patch Cord UTP Cat6 1 Metro 100% Cobre Conector RJ45 Azul. Producto original LinkedPRO con garantía de fábrica y entrega inmediata en Mérida y todo México.",
+    "price": 45.0,
+    "currency": "MXN",
+    "costPrice": 29.25,
+    "profitMargin": 0.2,
+    "imageUrls": [
+      "https://ftp3.syscom.mx/usuarios/fotos/BancoFotografiasSyscom/HANWHATECHWINWISENET/ANOL7022R/ANOL7022R-p.PNG"
+    ],
+    "category": "Cableado Estructurado",
+    "categoryId": "cableado",
+    "stock": 500,
+    "brand": "LinkedPRO",
+    "line": "PATCH-CAT6-1M",
+    "series": "Cableado Estructurado",
+    "isFeatured": true,
+    "createdAt": "2026-08-12T00:00:00.000Z",
+    "updatedAt": "2026-08-12T00:00:00.000Z",
+    "sat_code": "46171610",
+    "sap_code": "patchcat61m",
+    "puntos_clave": [
+      "Cableado Estructurado",
+      "LinkedPRO",
+      "En Stock"
+    ]
+  },
+  {
+    "id": "rack24udepth60",
+    "name": "Gabinete de Pared 24 Unidades de Rack Puerta Cristal Templado",
+    "description": "Gabinete de Pared 24 Unidades de Rack Puerta Cristal Templado. Producto original LinkedPRO con garantía de fábrica y entrega inmediata en Mérida y todo México.",
+    "price": 4600.0,
+    "currency": "MXN",
+    "costPrice": 2990.0,
+    "profitMargin": 0.2,
+    "imageUrls": [
+      "https://ftp3.syscom.mx/usuarios/fotos/BancoFotografiasSyscom/HANWHATECHWINWISENET/ANOL7022R/ANOL7022R-p.PNG"
+    ],
+    "category": "Cableado Estructurado",
+    "categoryId": "cableado",
+    "stock": 14,
+    "brand": "LinkedPRO",
+    "line": "RACK-24U-DEPTH60",
+    "series": "Cableado Estructurado",
+    "isFeatured": true,
+    "createdAt": "2026-08-12T00:00:00.000Z",
+    "updatedAt": "2026-08-12T00:00:00.000Z",
+    "sat_code": "46171610",
+    "sap_code": "rack24udepth60",
+    "puntos_clave": [
+      "Cableado Estructurado",
+      "LinkedPRO",
+      "En Stock"
+    ]
+  },
+  {
+    "id": "dspwa64kitwe",
+    "name": "Kit de Alarma Residencial Inalámbrica AX PRO Wi-Fi + 4G LTE",
+    "description": "Kit de Alarma Residencial Inalámbrica AX PRO Wi-Fi + 4G LTE. Producto original Hikvision con garantía de fábrica y entrega inmediata en Mérida y todo México.",
+    "price": 3690.0,
+    "currency": "MXN",
+    "costPrice": 2398.5,
+    "profitMargin": 0.2,
+    "imageUrls": [
+      "https://ftp3.syscom.mx/usuarios/fotos/BancoFotografiasSyscom/HANWHATECHWINWISENET/ANOL7022R/ANOL7022R-p.PNG"
+    ],
+    "category": "Intrusión y Alarmas",
+    "categoryId": "intrusion",
+    "stock": 31,
+    "brand": "Hikvision",
+    "line": "DS-PWA64-KIT-WE",
+    "series": "Intrusión y Alarmas",
+    "isFeatured": true,
+    "createdAt": "2026-08-12T00:00:00.000Z",
+    "updatedAt": "2026-08-12T00:00:00.000Z",
+    "sat_code": "46171610",
+    "sap_code": "dspwa64kitwe",
+    "puntos_clave": [
+      "Intrusión y Alarmas",
+      "Hikvision",
+      "En Stock"
+    ]
+  },
+  {
+    "id": "dspdp15peg2we",
+    "name": "Detector PIR Inalámbrico Inmune a Mascotas 30kg Rango 15m",
+    "description": "Detector PIR Inalámbrico Inmune a Mascotas 30kg Rango 15m. Producto original Hikvision con garantía de fábrica y entrega inmediata en Mérida y todo México.",
+    "price": 680.0,
+    "currency": "MXN",
+    "costPrice": 442.0,
+    "profitMargin": 0.2,
+    "imageUrls": [
+      "https://ftp3.syscom.mx/usuarios/fotos/BancoFotografiasSyscom/HANWHATECHWINWISENET/ANOL7022R/ANOL7022R-p.PNG"
+    ],
+    "category": "Intrusión y Alarmas",
+    "categoryId": "intrusion",
+    "stock": 110,
+    "brand": "Hikvision",
+    "line": "DS-PDP15P-EG2-WE",
+    "series": "Intrusión y Alarmas",
+    "isFeatured": true,
+    "createdAt": "2026-08-12T00:00:00.000Z",
+    "updatedAt": "2026-08-12T00:00:00.000Z",
+    "sat_code": "46171610",
+    "sap_code": "dspdp15peg2we",
+    "puntos_clave": [
+      "Intrusión y Alarmas",
+      "Hikvision",
+      "En Stock"
+    ]
+  },
+  {
+    "id": "sf581v2",
+    "name": "Sirena Estroboscópica de Alta Potencia 118 dB Dual Tono 12VDC",
+    "description": "Sirena Estroboscópica de Alta Potencia 118 dB Dual Tono 12VDC. Producto original Epcom con garantía de fábrica y entrega inmediata en Mérida y todo México.",
+    "price": 280.0,
+    "currency": "MXN",
+    "costPrice": 182.0,
+    "profitMargin": 0.2,
+    "imageUrls": [
+      "https://ftp3.syscom.mx/usuarios/fotos/BancoFotografiasSyscom/HANWHATECHWINWISENET/ANOL7022R/ANOL7022R-p.PNG"
+    ],
+    "category": "Intrusión y Alarmas",
+    "categoryId": "intrusion",
+    "stock": 140,
+    "brand": "Epcom",
+    "line": "SF-581-V2",
+    "series": "Intrusión y Alarmas",
+    "isFeatured": true,
+    "createdAt": "2026-08-12T00:00:00.000Z",
+    "updatedAt": "2026-08-12T00:00:00.000Z",
+    "sat_code": "46171610",
+    "sap_code": "sf581v2",
+    "puntos_clave": [
+      "Intrusión y Alarmas",
+      "Epcom",
+      "En Stock"
     ]
   }
 ]
