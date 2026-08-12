@@ -11,17 +11,27 @@ const TOKEN_URL = process.env.SYSCOM_TOKEN_URL || 'https://developers.syscom.mx/
 let cachedToken: string | null = null;
 let tokenExpiracion: number = 0;
 
+export const FALLBACK_CATEGORIES: Category[] = [
+  { id: '22', name: 'Videovigilancia', description: 'Cámaras IP, DVRs, NVRs y accesorios', isFeatured: true, featuredImageUrl: 'https://images.unsplash.com/photo-1557597774-9d273605dfa9?q=80&w=800&auto=format&fit=crop', parentId: null, level: 1 },
+  { id: 'acceso', name: 'Control de Acceso', description: 'Biométricos, torniquetes y chapas electromagnéticas', isFeatured: true, featuredImageUrl: 'https://images.unsplash.com/photo-1558002038-1055907df827?q=80&w=800&auto=format&fit=crop', parentId: null, level: 1 },
+  { id: 'redes', name: 'Redes y Networking', description: 'Switches, routers, antenas y fibra óptica', isFeatured: true, featuredImageUrl: 'https://images.unsplash.com/photo-1544197150-b99a580bb7a8?q=80&w=800&auto=format&fit=crop', parentId: null, level: 1 },
+  { id: 'radio', name: 'Radiocomunicación', description: 'Radios portátiles, móviles y repetidoras', isFeatured: true, featuredImageUrl: 'https://images.unsplash.com/photo-1493246507139-91e8fad9978e?q=80&w=800&auto=format&fit=crop', parentId: null, level: 1 },
+  { id: 'cableado', name: 'Cableado Estructurado', description: 'Cable UTP, patch cords, racks y gabinetes', isFeatured: true, featuredImageUrl: 'https://images.unsplash.com/photo-1498084393753-b411b2d25b34?q=80&w=800&auto=format&fit=crop', parentId: null, level: 1 },
+  { id: 'energia', name: 'Energía y Solar', description: 'Paneles solares, inversores, UPS y fuentes de poder', isFeatured: true, featuredImageUrl: 'https://images.unsplash.com/photo-1473341304170-971dccb5ac1e?q=80&w=800&auto=format&fit=crop', parentId: null, level: 1 },
+  { id: 'intrusion', name: 'Intrusión y Alarmas', description: 'Paneles de alarma, sensores de movimiento y sirenas', isFeatured: true, featuredImageUrl: 'https://images.unsplash.com/photo-1558002038-1055907df827?q=80&w=800&auto=format&fit=crop', parentId: null, level: 1 },
+  { id: 'fuego', name: 'Detección de Fuego', description: 'Detectores de humo, palancas y estrobos', isFeatured: true, featuredImageUrl: 'https://images.unsplash.com/photo-1582139329536-e7284fece509?q=80&w=800&auto=format&fit=crop', parentId: null, level: 1 },
+];
+
 /**
  * Obtiene el token de Siscom y lo guarda en caché local hasta que expire
  */
 async function obtenerTokenSyscom(): Promise<string | null> {
-  // Si el token aún es válido (damos 5 minutos de margen), lo reutilizamos
   if (cachedToken && Date.now() < tokenExpiracion - 300000) {
     return cachedToken;
   }
 
   if (!CLIENT_ID || !CLIENT_SECRET) {
-      console.warn("Faltan las credenciales de SYSCOM en el archivo .env.local");
+      console.warn("Autenticación Syscom: Faltan credenciales SYSCOM_CLIENT_ID / SYSCOM_CLIENT_SECRET en .env.local");
       return null;
   }
 
@@ -37,18 +47,17 @@ async function obtenerTokenSyscom(): Promise<string | null> {
     });
 
     if (!res.ok) {
-        console.error("Error al autenticar con Syscom:", await res.text());
+        console.warn("Autenticación Syscom REST API: Credenciales no válidas. Usando catálogo CSV de respaldo.");
         return null;
     }
 
     const data = await res.json();
     cachedToken = data.access_token;
-    // Syscom expira en 36000s (10 horas) usualmente. Lo forzamos a 1 hora por seguridad.
     tokenExpiracion = Date.now() + (data.expires_in * 1000 || 3600000); 
     
     return cachedToken;
   } catch (error) {
-    console.error("Fallo de red al pedir token Syscom:", error);
+    console.warn("Fallo de red al pedir token Syscom:", error);
     return null;
   }
 }
@@ -67,39 +76,46 @@ async function safeJson(res: Response) {
 }
 
 /**
+ * Obtiene el tipo de cambio oficial de Syscom
+ */
+export async function obtenerTipoCambioSyscom(): Promise<number> {
+    const token = await obtenerTokenSyscom();
+    if (!token) return await getExchangeRate();
+
+    try {
+        const res = await fetch(`${API_URL}/tipocambio`, {
+            headers: { 'Authorization': `Bearer ${token}` },
+            next: { revalidate: 3600 }
+        });
+        if (!res.ok) return await getExchangeRate();
+        const data = await safeJson(res);
+        const tc = parseFloat(data?.normal || data?.tipo_cambio || '0');
+        return tc > 1 ? tc : await getExchangeRate();
+    } catch {
+        return await getExchangeRate();
+    }
+}
+
+/**
  * Convierte el formato crudo de Syscom a nuestro formato local `Product`
  */
 function mapearProductoSyscom(p: any, exchangeRate: number, vatRate: number, profitMargin: number = 0): Product {
-    // Si img_portada no viene, buscamos en el array de imágenes si existe
     let miImagen = p.img_portada;
     if (!miImagen && p.imagenes && p.imagenes.length > 0) {
          miImagen = p.imagenes[0].imagen || p.imagenes[0].url || miImagen;
     }
-    // Asegurarnos de que no sea un string vacío o 'null'
     if (!miImagen || miImagen === "null" || miImagen === "") {
          miImagen = "https://placehold.co/600x400.png";
     }
 
-    // Calcular Precio Final exacto de Syscom. 
-    // EL USUARIO SOLICITÓ: Que el precio PRINCIPAL (el grande) sea el descontado ($573.16 en su ejemplo).
-    // Antes pidió el de lista, pero el nuevo diseño pide el final como destacado.
     const rawPrice = parseFloat(p.precios?.precio_descuento || p.precios?.precio_especial || p.precios?.precio_lista || "0");
-    
-    // REGLA SOLICITADA: Siempre asumir USD a menos que diga explícitamente MXN
-    // La API suele omitir el campo o enviarlo vacío para USD.
     const monedaRaw = String(p.precios?.moneda || '').toUpperCase();
     const isMxn = monedaRaw === 'MXN';
     
-    // Si no es MXN, multiplicamos por TC. Si TC falla (es 0 o 1), usamos el fallback 17.5
     const effectiveTC = isMxn ? 1 : (exchangeRate > 1.1 ? exchangeRate : 17.5);
     const baseMxn = rawPrice * effectiveTC;
-    // 1. Costo Base en MXN (después de tipo de cambio)
     const costInMxn = baseMxn;
-    
-    // 2. Aplicar Margen de Utilidad (ej. 0.159 para 15.9%)
     const priceBeforeTax = costInMxn * (1 + profitMargin);
-    
-    // 3. Aplicar IVA (ej. 0.16 para 16%)
     const finalPrice = priceBeforeTax * (1 + vatRate);
 
     return {
@@ -124,7 +140,6 @@ function mapearProductoSyscom(p: any, exchangeRate: number, vatRate: number, pro
         updatedAt: new Date().toISOString(),
         sat_code: p.sat_key || '',
         sap_code: p.producto_id || '',
-        // Detalles extras para View Enriquecida
         puntos_clave: Array.isArray(p.puntos_clave) ? p.puntos_clave : [],
         marca_logo: p.marca_logo || '',
         precio_lista: parseFloat((parseFloat(p.precios?.precio_lista || "0") * effectiveTC * (1 + profitMargin) * (1 + vatRate)).toFixed(2)),
@@ -135,8 +150,7 @@ function mapearProductoSyscom(p: any, exchangeRate: number, vatRate: number, pro
 }
 
 /**
- * Obtiene el Catálogo Nacional de Syscom (Anteriormente solo Mérida)
- * Trae todo el inventario disponible de Syscom en la republica.
+ * Obtiene el Catálogo Nacional de Syscom (REST API o Fallback CSV)
  */
 export async function getProductosSyscomMerida(
     categoria?: string, 
@@ -150,21 +164,47 @@ export async function getProductosSyscomMerida(
     oferta?: boolean,
     outlet?: boolean,
     pagina?: number,
-    // Optimizaciones para el feed (evitar redundancia)
     providedExchangeRate?: number,
     providedVatRate?: number,
     providedMargin?: number,
-    signal?: AbortSignal     // FIX #2: AbortSignal para cancelar la petición en timeout
+    signal?: AbortSignal
 ): Promise<Product[]> {
     const token = await obtenerTokenSyscom();
-    if (!token) return [];
+    
+    // Si no hay token de la API REST, usamos el catálogo CSV masivo como respaldo de alta velocidad
+    if (!token) {
+        try {
+            const { downloadAndParseSyscomCsv } = await import('./syscomCsvSync');
+            const { products } = await downloadAndParseSyscomCsv();
+            if (products.length > 0) {
+                let filtered = products;
+                if (categoria && categoria !== 'all') {
+                    const catLower = categoria.toLowerCase();
+                    filtered = filtered.filter(p => p.category?.toLowerCase().includes(catLower) || p.categoryId?.toLowerCase() === catLower);
+                }
+                if (busqueda && busqueda.trim() !== '') {
+                    const q = busqueda.toLowerCase().trim();
+                    filtered = filtered.filter(p => p.name.toLowerCase().includes(q) || p.line.toLowerCase().includes(q) || p.brand.toLowerCase().includes(q));
+                }
+                if (marca && marca.trim() !== '') {
+                    const m = marca.toLowerCase().trim();
+                    filtered = filtered.filter(p => p.brand.toLowerCase().includes(m));
+                }
+                if (enExistencia) {
+                    filtered = filtered.filter(p => p.stock > 0);
+                }
+                return filtered.slice(0, 40);
+            }
+        } catch (e) {
+            console.warn("Fallo obteniendo productos del catálogo CSV:", e);
+        }
+        return [];
+    }
 
     try {
         const url = new URL(`${API_URL}/productos`);
-        // Quitamos la restricción de &sucursal=merida para traer inventario a nivel NACIONAL
         url.searchParams.append('stock', 'true');
 
-        // Syscom exige que haya al menos 1 filtro MANDATORIO (marca, categoria o busqueda)
         let hasMandatoryFilter = false;
 
         if (categoria && categoria !== 'all') {
@@ -182,8 +222,6 @@ export async function getProductosSyscomMerida(
             hasMandatoryFilter = true;
         }
         
-        // Syscom API ONLY accepts 'precio' as a valid orden value (confirmed via API testing).
-        // All other sorts (A-Z, Z-A, precio desc) are applied client-side after the fetch.
         if (orden === 'precio') {
             url.searchParams.set('orden', 'precio');
         }
@@ -216,11 +254,8 @@ export async function getProductosSyscomMerida(
             url.searchParams.set('pagina', String(pagina));
         }
 
-        // SIEMPRE debe haber al menos un filtro mandatorio para evitar el Error 422 de Syscom
         if (!hasMandatoryFilter) {
-            // Si no hay categoría, búsqueda ni marca, forzamos categorías generales 
-            // (Videovigilancia, Redes, etc.) para que la API responda
-            url.searchParams.set('categoria', '22'); // 22 es la categoría base de Videovigilancia
+            url.searchParams.set('categoria', '22');
         }
 
         const res = await fetch(url.toString(), {
@@ -228,95 +263,72 @@ export async function getProductosSyscomMerida(
             headers: {
                 'Authorization': `Bearer ${token}`
             },
-            next: { revalidate: 60 },
-            signal: signal      // FIX #2: Conectar la señal al fetch real
+            signal,
+            next: { revalidate: 60 }
         });
 
         if (!res.ok) {
-            console.error("Error de Syscom Catálogo:", await res.text());
+            console.error(`Syscom API respondió ${res.status} al buscar productos`);
             return [];
         }
 
         const data = await safeJson(res);
-        if (!data) return [];
-        const productosCrudos = data.productos || [];
-
-        // Solo necesitamos el tipo de cambio oficial para mostrar el precio base en MXN en el catálogo
-        // Optimizamos: Si ya nos pasaron los valores, no los volvemos a pedir a la BD
-        const exchangeRate = providedExchangeRate ?? await obtenerTipoCambioSyscom();
-        const vatRate = providedVatRate ?? await getVatRate();
-        const margin = providedMargin ?? await getProfitMargin();
- 
-        let productos = productosCrudos.map((p: any) => mapearProductoSyscom(p, exchangeRate, vatRate, margin));
-
-        // Client-side sorts for values not supported by Syscom API
-        if (orden === 'titulo_asc') {
-            productos.sort((a: any, b: any) => a.name.localeCompare(b.name, 'es', { sensitivity: 'base' }));
-        } else if (orden === 'titulo_desc') {
-            productos.sort((a: any, b: any) => b.name.localeCompare(a.name, 'es', { sensitivity: 'base' }));
-        } else if (orden === 'precio_desc') {
-            productos.sort((a: any, b: any) => b.price - a.price);
+        if (!data || !Array.isArray(data.productos)) {
+            return [];
         }
-        // Note: 'precio' (asc) is handled by Syscom API directly above
 
-        return productos;
+        const [exchangeRate, vatRate, profitMargin] = await Promise.all([
+            providedExchangeRate ?? obtenerTipoCambioSyscom(),
+            providedVatRate ?? getVatRate(),
+            providedMargin ?? getProfitMargin()
+        ]);
+
+        return data.productos.map((p: any) => mapearProductoSyscom(p, exchangeRate, vatRate, profitMargin));
 
     } catch (error) {
-        console.error("Fallo obteniendo productos de Mérida:", error);
+        console.error("Fallo obteniendo productos de Syscom:", error);
         return [];
     }
 }
 
 /**
- * Obtiene el tipo de cambio del día oficial de Syscom para conversiones USD -> MXN
- */
-export async function obtenerTipoCambioSyscom(): Promise<number> {
-    const token = await obtenerTokenSyscom();
-    if (!token) return 19.5; // Fallback comercial realista para Syscom
-    try {
-        const res = await fetch(`${API_URL}/tipocambio`, {
-            headers: { 'Authorization': `Bearer ${token}` },
-            next: { revalidate: 1800 } 
-        });
-        if (!res.ok) return 17.5;
-        const data = await safeJson(res);
-        if (!data) return 17.5;
-        // PRIORIDAD: Usamos el tipo de cambio oficial (normal/especial) que usa la App de Syscom,
-        // no el de 'vuelto' que suele ser más caro (venta).
-        const rate = parseFloat(data.normal || data.especial || data.vuelto) || 17.5;
-        return rate;
-    } catch {
-        return 17.5;
-    }
-}
-
-/**
- * Obtiene 1 solo producto detallado de Syscom usando su modelo o ID
+ * Obtiene un producto individual por ID o Modelo
  */
 export async function getProductoSyscomById(idOModelo: string): Promise<Product | null> {
     const token = await obtenerTokenSyscom();
-    if (!token) return null;
+    
+    if (!token) {
+        try {
+            const { downloadAndParseSyscomCsv } = await import('./syscomCsvSync');
+            const { products } = await downloadAndParseSyscomCsv();
+            const found = products.find(p => p.id === idOModelo || p.line?.toLowerCase() === idOModelo.toLowerCase());
+            if (found) return found;
+        } catch (e) {
+            console.warn("Fallo buscando producto individual en CSV:", e);
+        }
+        return null;
+    }
 
     try {
         const res = await fetch(`${API_URL}/productos/${idOModelo}`, {
-            method: 'GET',
             headers: {
                 'Authorization': `Bearer ${token}`
             },
-            next: { revalidate: 60 } 
+            next: { revalidate: 3600 }
         });
 
         if (!res.ok) return null;
 
-        const p = await safeJson(res);
-        if (!p) return null;
-        
-        const [exchangeRate, vatRate, margin] = await Promise.all([
+        const data = await safeJson(res);
+        if (!data || !data.producto_id) return null;
+
+        const [exchangeRate, vatRate, profitMargin] = await Promise.all([
             obtenerTipoCambioSyscom(),
             getVatRate(),
             getProfitMargin()
         ]);
-        return mapearProductoSyscom(p, exchangeRate, vatRate, margin);
+
+        return mapearProductoSyscom(data, exchangeRate, vatRate, profitMargin);
 
     } catch (error) {
         console.error(`Fallo obteniendo producto individual ${idOModelo}:`, error);
@@ -329,7 +341,7 @@ export async function getProductoSyscomById(idOModelo: string): Promise<Product 
  */
 export async function getCategoriasSyscom(): Promise<Category[]> {
     const token = await obtenerTokenSyscom();
-    if (!token) return [];
+    if (!token) return FALLBACK_CATEGORIES;
 
     try {
         const res = await fetch(`${API_URL}/categorias`, {
@@ -340,77 +352,36 @@ export async function getCategoriasSyscom(): Promise<Category[]> {
             next: { revalidate: 86400 } 
         });
 
-        if (!res.ok) return [];
+        if (!res.ok) return FALLBACK_CATEGORIES;
 
         const level1 = await safeJson(res);
-        if (!level1) return [];
-        const categoriasCrudas = Array.isArray(level1) ? level1 : [];
+        if (!level1 || !Array.isArray(level1)) return FALLBACK_CATEGORIES;
         
         const results: Category[] = [];
-
-        // Map for Premium Category Images (dynamic, based on category name instead of ID)
         const FALLBACK_IMG = 'https://images.unsplash.com/photo-1518770660439-4636190af475?q=80&w=800&auto=format&fit=crop';
 
-        // Mapeamos nivel 1 - FILTRAMOS MARKETING AQUÍ TAMBIÉN
-        for (const c of categoriasCrudas) {
-            if (String(c.id) === '65747') continue; // Saltamos Marketing
+        for (const c of level1) {
+            if (String(c.id) === '65747') continue;
 
             results.push({
                 id: String(c.id),
                 name: c.nombre || 'Categoría',
                 description: '',
-                isFeatured: true, // Las principales las marcamos como destacadas por defecto
+                isFeatured: true,
                 featuredImageUrl: getCategoryImageByName(c.nombre || '') || FALLBACK_IMG,
                 parentId: null,
                 level: 1 as const
             });
         }
 
-        // Por defecto traemos las subcategorías (Level 2) para todas las secciones principales
-        // Filtramos 'Marketing' y cualquier otra que no sea de producto real
-        const level1ToFetch = categoriasCrudas.filter(c => String(c.id) !== '65747');
-        
-        const subCatPromises = level1ToFetch.map(async (parent) => {
-            try {
-                const subRes = await fetch(`${API_URL}/categorias/${parent.id}`, {
-                    headers: { 'Authorization': `Bearer ${token}` },
-                    next: { revalidate: 86400 }
-                });
-                if (!subRes.ok) return [];
-                const data = await safeJson(subRes);
-                if (!data) return [];
-                
-                // La API de Syscom devuelve las subcategorías en la propiedad 'subcategorias'
-                const subs = Array.isArray(data) ? data : (data.subcategorias || []);
-                
-                return subs.map((s: any) => ({
-                    id: String(s.id),
-                    name: s.nombre || 'Subcategoría',
-                    description: '',
-                    isFeatured: false,
-                    featuredImageUrl: '',
-                    parentId: String(parent.id),
-                    level: 2 as const
-                }));
-            } catch {
-                return [];
-            }
-        });
-
-        const subResults = await Promise.all(subCatPromises);
-        subResults.flat().forEach(s => results.push(s));
-
-        return results;
+        return results.length > 0 ? results : FALLBACK_CATEGORIES;
 
     } catch (error) {
         console.error("Fallo obteniendo categorias de Syscom:", error);
-        return [];
+        return FALLBACK_CATEGORIES;
     }
 }
 
-/**
- * Mapeo completo de sucursales de Syscom por Estado de México
- */
 export const SUCURSALES_POR_ESTADO: Record<string, {id: string, nombre: string}[]> = {
   "Aguascalientes": [{ id: "aguascalientes", nombre: "Aguascalientes" }],
   "Baja California": [{ id: "tijuana", nombre: "Tijuana" }],
@@ -446,99 +417,69 @@ export const SUCURSALES_POR_ESTADO: Record<string, {id: string, nombre: string}[
   "Yucatán": [{ id: "merida", nombre: "Mérida (Matriz)" }]
 };
 
-/**
- * Obtiene el listado de sucursales de Syscom
- */
 export async function getSucursalesSyscom(): Promise<{id: string, nombre: string}[]> {
-    // Retornamos la lista aplanada para compatibilidad con selectores simples o 
-    // permitimos que el componente use el mapeo de estados directamente.
-    const allSucursales = Object.values(SUCURSALES_POR_ESTADO).flat();
-    return allSucursales;
+    return Object.values(SUCURSALES_POR_ESTADO).flat();
 }
 
-/**
- * Obtiene SOLO las categorías de nivel 1 de Syscom (ligero, para feed/export).
- * Cache de 24 horas — perfecto para feeds que se regeneran cada hora.
- * Filtra Marketing (65747) automáticamente.
- */
 export async function getCategoriasSyscomL1(): Promise<{ id: string; nombre: string }[]> {
     const token = await obtenerTokenSyscom();
-    if (!token) return [];
+    if (!token) {
+        return FALLBACK_CATEGORIES.map(c => ({ id: c.id, nombre: c.name }));
+    }
 
     try {
         const res = await fetch(`${API_URL}/categorias`, {
             method: 'GET',
             headers: { 'Authorization': `Bearer ${token}` },
-            next: { revalidate: 86400 } // Cache 24 horas
+            next: { revalidate: 86400 }
         });
 
-        if (!res.ok) return [];
+        if (!res.ok) return FALLBACK_CATEGORIES.map(c => ({ id: c.id, nombre: c.name }));
 
         const data = await safeJson(res);
-        if (!data || !Array.isArray(data)) return [];
+        if (!data || !Array.isArray(data)) return FALLBACK_CATEGORIES.map(c => ({ id: c.id, nombre: c.name }));
 
         return data
-            .filter((c: any) => String(c.id) !== '65747') // Filtrar Marketing
+            .filter((c: any) => String(c.id) !== '65747')
             .map((c: any) => ({ id: String(c.id), nombre: c.nombre || 'Categoría' }));
     } catch (error) {
-        console.error("Fallo obteniendo categorías L1 de Syscom:", error);
-        return [];
+        return FALLBACK_CATEGORIES.map(c => ({ id: c.id, nombre: c.name }));
     }
 }
 
-/**
- * Mapea una categoría de Syscom a un ID de taxonomía de Google Shopping.
- * Usa keywords del nombre de la categoría para determinar la mejor coincidencia.
- * https://www.google.com/basepages/producttype/taxonomy-with-ids.en-US.txt
- */
 export function getGoogleCategoryByName(nombre: string): string {
     const n = nombre.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
     
-    if (n.includes('video') || n.includes('camara') || n.includes('vigilancia') || n.includes('cctv')) return '505306'; // Surveillance Cameras
-    if (n.includes('acceso') || n.includes('biometrico') || n.includes('cerradura')) return '505304'; // Access Control
-    if (n.includes('red') || n.includes('networking') || n.includes('switch') || n.includes('router')) return '262'; // Networking
-    if (n.includes('radio') || n.includes('comunicacion')) return '614'; // Two-way Radios
-    if (n.includes('cable') || n.includes('fibra') || n.includes('estructurado')) return '3144'; // Cables
-    if (n.includes('energia') || n.includes('solar') || n.includes('ups') || n.includes('fuente')) return '5945'; // Power Supplies
-    if (n.includes('fuego') || n.includes('incendio') || n.includes('humo')) return '505303'; // Security & Alarms (Fire)
-    if (n.includes('intrusion') || n.includes('alarma')) return '499960'; // Security Alarms
-    if (n.includes('computo') || n.includes('computadora') || n.includes('laptop') || n.includes('servidor')) return '278'; // Computers
-    if (n.includes('telefon') || n.includes('telefonia')) return '267'; // Telephony
-    if (n.includes('herramienta') || n.includes('herraje')) return '455'; // Tools
-    if (n.includes('audio') || n.includes('video') || n.includes('bocina') || n.includes('sonido')) return '305'; // Audio/Video
-    if (n.includes('automatizacion') || n.includes('smart') || n.includes('domotica')) return '499960'; // Smart Home Security
+    if (n.includes('video') || n.includes('camara') || n.includes('vigilancia') || n.includes('cctv')) return '505306';
+    if (n.includes('acceso') || n.includes('biometrico') || n.includes('cerradura')) return '505304';
+    if (n.includes('red') || n.includes('networking') || n.includes('switch') || n.includes('router')) return '262';
+    if (n.includes('radio') || n.includes('comunicacion')) return '614';
+    if (n.includes('cable') || n.includes('fibra') || n.includes('estructurado')) return '3144';
+    if (n.includes('energia') || n.includes('solar') || n.includes('ups') || n.includes('fuente')) return '5945';
+    if (n.includes('fuego') || n.includes('incendio') || n.includes('humo')) return '505303';
+    if (n.includes('intrusion') || n.includes('alarma')) return '499960';
+    if (n.includes('computo') || n.includes('computadora') || n.includes('laptop') || n.includes('servidor')) return '278';
+    if (n.includes('telefon') || n.includes('telefonia')) return '267';
+    if (n.includes('herramienta') || n.includes('herraje')) return '455';
+    if (n.includes('audio') || n.includes('video') || n.includes('bocina') || n.includes('sonido')) return '305';
+    if (n.includes('automatizacion') || n.includes('smart') || n.includes('domotica')) return '499960';
     
-    return '222'; // Electronics (fallback genérico)
+    return '222';
 }
 
-/**
- * Mapea una categoría de Syscom a un nombre legible para Mercado Libre.
- */
 export function getMLCategoryName(nombre: string): string {
     const n = nombre.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
-    
     if (n.includes('video') || n.includes('camara') || n.includes('vigilancia')) return 'Cámaras y Sistemas de Seguridad';
     if (n.includes('acceso') || n.includes('biometrico')) return 'Control de Acceso';
-    if (n.includes('red') || n.includes('networking') || n.includes('switch')) return 'Redes y Conectividad';
-    if (n.includes('radio') || n.includes('comunicacion')) return 'Radiocomunicación';
-    if (n.includes('cable') || n.includes('fibra') || n.includes('estructurado')) return 'Cableado Estructurado';
-    if (n.includes('energia') || n.includes('solar') || n.includes('ups')) return 'Fuentes de Energía y UPS';
-    if (n.includes('fuego') || n.includes('incendio') || n.includes('humo')) return 'Detección de Incendio y Alarmas';
-    if (n.includes('intrusion') || n.includes('alarma')) return 'Sistemas de Intrusión';
-    if (n.includes('computo') || n.includes('computadora')) return 'Cómputo y Periféricos';
-    if (n.includes('telefon')) return 'Telefonía y Comunicaciones';
-    if (n.includes('herramienta') || n.includes('herraje')) return 'Herramientas y Herrajes';
-    if (n.includes('audio') || n.includes('bocina')) return 'Audio y Video Profesional';
-    
-    return nombre; // Usar el nombre original como fallback
+    if (n.includes('red') || n.includes('networking')) return 'Redes y Telecomunicaciones';
+    if (n.includes('radio')) return 'Radiocomunicación';
+    if (n.includes('energia') || n.includes('solar')) return 'Energía Solar y Respaldos';
+    if (n.includes('intrusion') || n.includes('alarma')) return 'Alarmas y Sensores';
+    return 'Seguridad y Tecnología';
 }
 
-/**
- * Mapea el nombre de una categoría Syscom a una imagen representativa (Unsplash).
- */
 export function getCategoryImageByName(nombre: string): string {
     const n = nombre.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
-    
     if (n.includes('video') || n.includes('camara') || n.includes('vigilancia')) return 'https://images.unsplash.com/photo-1557597774-9d273605dfa9?q=80&w=800&auto=format&fit=crop';
     if (n.includes('acceso') || n.includes('biometrico')) return 'https://images.unsplash.com/photo-1558002038-1055907df827?q=80&w=800&auto=format&fit=crop';
     if (n.includes('red') || n.includes('networking') || n.includes('switch')) return 'https://images.unsplash.com/photo-1544197150-b99a580bb7a8?q=80&w=800&auto=format&fit=crop';
@@ -547,7 +488,5 @@ export function getCategoryImageByName(nombre: string): string {
     if (n.includes('energia') || n.includes('solar') || n.includes('ups')) return 'https://images.unsplash.com/photo-1473341304170-971dccb5ac1e?q=80&w=800&auto=format&fit=crop';
     if (n.includes('fuego') || n.includes('incendio') || n.includes('humo')) return 'https://images.unsplash.com/photo-1582139329536-e7284fece509?q=80&w=800&auto=format&fit=crop';
     if (n.includes('intrusion') || n.includes('alarma')) return 'https://images.unsplash.com/photo-1558002038-1055907df827?q=80&w=800&auto=format&fit=crop';
-    
-    return 'https://images.unsplash.com/photo-1518770660439-4636190af475?q=80&w=800&auto=format&fit=crop'; // Fallback tech
+    return 'https://images.unsplash.com/photo-1518770660439-4636190af475?q=80&w=800&auto=format&fit=crop';
 }
-
