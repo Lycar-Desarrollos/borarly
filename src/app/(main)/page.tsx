@@ -62,7 +62,7 @@ export default async function HomePage(props: HomePageProps) {
   if (isLandingView) {
     // Fetch data for landing page sections in parallel
     [featuredProductsForSection, featuredCategoriesForSection] = await Promise.all([
-      getProducts(undefined, undefined, 4),
+      getProducts(undefined, undefined, 24),
       getCategories().then(cats => {
         const featured = cats.filter(c => c.isFeatured === true);
         // Mostrar destacadas, o si no hay, mostrar las primeras 6 de nivel 1 como fallback
