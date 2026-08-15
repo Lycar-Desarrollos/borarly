@@ -158,61 +158,65 @@ export function Footer() {
             </ul>
           </div>
 
-          {/* Columna 5: SELLOS DE CONFIANZA Y CERTIFICACIONES (PSICOLOGÍA DE CONVERSIÓN) */}
+          {/* Columna 5: SELLOS DE CONFIANZA Y CERTIFICACIONES (PSICOLOGÍA DE CONVERSIÓN DE ALTA GAMA) */}
           <div className="lg:col-span-4 grid grid-cols-2 gap-3 pt-2 sm:pt-0">
             
-            {/* Sello 1: Asociación de Internet.mx */}
-            <div className="bg-white dark:bg-[#0e1422] border border-zinc-200 dark:border-white/10 rounded-2xl p-3.5 flex flex-col justify-center items-center text-center shadow-xs hover:border-blue-400 transition-colors">
+            {/* Sello 1: Asociación de Internet.mx (Sello de Confianza Oficial) */}
+            <div className="bg-white dark:bg-[#0c121e] border border-zinc-200 dark:border-white/10 rounded-2xl p-3.5 flex flex-col justify-center items-center text-center shadow-xs hover:shadow-md hover:border-blue-500/50 transition-all group">
               <div className="flex items-center gap-2 mb-1.5">
-                <div className="w-6 h-6 rounded-md bg-zinc-900 text-white flex items-center justify-center font-black text-xs">
-                  ✓
-                </div>
-                <div className="text-left leading-none">
-                  <span className="text-[9px] text-zinc-500 font-bold block">Asociación de</span>
-                  <span className="text-[10px] text-zinc-900 dark:text-white font-extrabold block">Internet.mx</span>
+                <svg className="w-7 h-7 text-zinc-900 dark:text-white shrink-0" viewBox="0 0 36 36" fill="currentColor">
+                  <path d="M14.5 25.1l-6.8-6.8 2.1-2.1 4.7 4.7 11.2-11.2 2.1 2.1z" />
+                  <path d="M18 2C9.2 2 2 9.2 2 18s7.2 16 16 16 16-7.2 16-16S26.8 2 18 2zm0 29.5C10.6 31.5 4.5 25.4 4.5 18S10.6 4.5 18 4.5 31.5 10.6 31.5 18 25.4 31.5 18 31.5z" />
+                </svg>
+                <div className="text-left leading-tight">
+                  <span className="text-[9px] text-zinc-500 font-medium block">Asociación de</span>
+                  <span className="text-[11px] text-zinc-900 dark:text-white font-extrabold block tracking-tight">Internet.mx</span>
                 </div>
               </div>
-              <span className="text-[9px] font-black uppercase tracking-wider text-blue-600 dark:text-blue-400">
+              <span className="text-[9px] font-black uppercase tracking-wider text-[#0066cc] dark:text-[#38bdf8]">
                 SELLO DE CONFIANZA
               </span>
-              <span className="text-[8px] text-zinc-400 font-medium">COMERCIO ELECTRÓNICO</span>
+              <span className="text-[8px] text-zinc-400 font-medium tracking-tight">COMERCIO ELECTRÓNICO</span>
             </div>
 
             {/* Sello 2: ISO 9001:2015 Certificado */}
-            <div className="bg-white dark:bg-[#0e1422] border border-zinc-200 dark:border-white/10 rounded-2xl p-3.5 flex flex-col justify-center items-center text-center shadow-xs hover:border-blue-400 transition-colors">
-              <div className="w-8 h-8 rounded-full border-2 border-zinc-800 dark:border-zinc-200 flex items-center justify-center mb-1">
-                <Award className="w-4 h-4 text-zinc-800 dark:text-zinc-200" />
+            <div className="bg-white dark:bg-[#0c121e] border border-zinc-200 dark:border-white/10 rounded-2xl p-3.5 flex flex-col justify-center items-center text-center shadow-xs hover:shadow-md hover:border-blue-500/50 transition-all group">
+              <div className="w-7 h-7 rounded-full border-2 border-zinc-800 dark:border-zinc-200 flex items-center justify-center mb-1 text-zinc-800 dark:text-zinc-200">
+                <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+                  <circle cx="12" cy="8" r="6" />
+                  <path d="M15.477 12.89 17 22l-5-3-5 3 1.523-9.11" />
+                </svg>
               </div>
-              <span className="text-[11px] font-black text-zinc-900 dark:text-white tracking-tight leading-tight">
-                ISO 9001 : 2015
+              <span className="text-[12px] font-black text-zinc-900 dark:text-white tracking-tight leading-none">
+                ISO 9001:2015
               </span>
-              <span className="text-[8px] font-bold text-zinc-500 uppercase tracking-widest mt-0.5">
+              <span className="text-[8px] font-bold text-zinc-500 dark:text-zinc-400 uppercase tracking-widest mt-1">
                 CERTIFICADO
               </span>
             </div>
 
-            {/* Sello 3: DigiCert Secured / SSL */}
-            <div className="bg-white dark:bg-[#0e1422] border border-zinc-200 dark:border-white/10 rounded-2xl p-3.5 flex flex-col justify-center items-center text-center shadow-xs hover:border-blue-400 transition-colors">
+            {/* Sello 3: DigiCert Secured / SSL 256-bit */}
+            <div className="bg-white dark:bg-[#0c121e] border border-zinc-200 dark:border-white/10 rounded-2xl p-3.5 flex flex-col justify-center items-center text-center shadow-xs hover:shadow-md hover:border-blue-500/50 transition-all group">
               <div className="flex items-center gap-1.5 mb-1">
-                <div className="w-5 h-5 rounded-full bg-blue-600 text-white flex items-center justify-center">
-                  <Lock className="w-2.5 h-2.5" />
-                </div>
-                <span className="text-xs font-black text-blue-600 dark:text-blue-400 tracking-tight">
+                <svg className="w-5 h-5 text-[#0066cc] dark:text-[#38bdf8]" viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4zm-1 6h2v2h-2V7zm0 4h2v6h-2v-6z"/>
+                </svg>
+                <span className="text-[13px] font-black text-[#0066cc] dark:text-[#38bdf8] tracking-tight leading-none">
                   digicert
                 </span>
               </div>
-              <span className="text-[8px] font-bold text-zinc-400 uppercase tracking-widest">
-                SECURED 256-BIT
+              <span className="text-[8px] font-bold text-zinc-400 dark:text-zinc-400 uppercase tracking-widest">
+                SECURED 256-BIT SSL
               </span>
             </div>
 
-            {/* Sello 4: Great Place To Work */}
-            <div className="bg-white dark:bg-[#0e1422] border border-zinc-200 dark:border-white/10 rounded-2xl p-3 flex flex-col justify-center items-center text-center shadow-xs hover:border-red-400 transition-colors">
-              <div className="bg-[#e11931] text-white px-2 py-1 rounded-md text-center leading-tight mb-1 w-full max-w-[100px]">
-                <span className="text-[8px] font-extrabold uppercase block tracking-tighter">Great Place</span>
-                <span className="text-[8px] font-extrabold uppercase block tracking-tighter">To Work.</span>
+            {/* Sello 4: Great Place To Work Certificada */}
+            <div className="bg-white dark:bg-[#0c121e] border border-zinc-200 dark:border-white/10 rounded-2xl p-3 flex flex-col justify-center items-center text-center shadow-xs hover:shadow-md hover:border-red-500/50 transition-all group">
+              <div className="bg-[#e11931] text-white px-2 py-1 rounded-md text-center leading-tight mb-1 w-full max-w-[95px] shadow-2xs">
+                <span className="text-[8px] font-black uppercase block tracking-tighter">Great Place</span>
+                <span className="text-[8px] font-black uppercase block tracking-tighter">To Work.</span>
               </div>
-              <span className="text-[8px] font-bold text-zinc-800 dark:text-zinc-200 uppercase">
+              <span className="text-[8px] font-bold text-zinc-700 dark:text-zinc-300 uppercase tracking-tight">
                 Certificada México
               </span>
             </div>
@@ -223,84 +227,84 @@ export function Footer() {
       </div>
 
       {/* 2. FRANJA INFERIOR: MÉTODOS DE PAGO SEGUROS + PAQUETERÍAS + PRECIOS IVA */}
-      <div className="border-t border-zinc-200/80 dark:border-white/10 bg-white/70 dark:bg-[#090d16]/80 py-5">
+      <div className="border-t border-zinc-200/80 dark:border-white/10 bg-white/80 dark:bg-[#090d16]/90 py-5">
         <div className="max-w-[1520px] mx-auto px-4 sm:px-6 lg:px-8 flex flex-wrap items-center justify-between gap-6">
           
-          {/* Métodos de Pago Seguros y Bancos */}
-          <div className="flex items-center flex-wrap gap-2 sm:gap-2.5">
-            {/* Tarjeta genérica */}
-            <div className="h-8 px-2.5 rounded-lg bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 flex items-center justify-center shadow-2xs">
-              <CreditCard className="w-4 h-4 text-zinc-600 dark:text-zinc-300" />
-            </div>
-
-            {/* SPEI */}
-            <div className="h-8 px-3 rounded-lg bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 flex items-center justify-center font-black text-xs text-blue-900 dark:text-blue-300 tracking-wider shadow-2xs">
-              SPEI<span className="text-amber-500 font-bold ml-0.5">®</span>
+          {/* Métodos de Pago Seguros y Bancos Oficiales */}
+          <div className="flex items-center flex-wrap gap-2.5 sm:gap-3">
+            
+            {/* SPEI Oficial */}
+            <div className="h-8.5 px-3 rounded-xl bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 flex items-center justify-center shadow-2xs">
+              <span className="font-black text-xs text-[#0a2540] dark:text-blue-300 tracking-wider">
+                SPEI<span className="text-[#f59e0b] font-bold text-[10px] ml-0.5">®</span>
+              </span>
             </div>
 
             {/* Monex */}
-            <div className="h-8 px-3 rounded-lg bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 flex items-center justify-center font-black text-xs text-cyan-800 dark:text-cyan-300 tracking-tight shadow-2xs">
+            <div className="h-8.5 px-3 rounded-xl bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 flex items-center justify-center font-black text-xs text-[#006f8a] dark:text-cyan-300 tracking-tight shadow-2xs">
               monex
             </div>
 
             {/* BBVA */}
-            <div className="h-8 px-3 rounded-lg bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 flex items-center justify-center font-black text-xs text-[#004481] dark:text-blue-400 tracking-wider shadow-2xs">
+            <div className="h-8.5 px-3 rounded-xl bg-[#004481] text-white border border-[#003366] flex items-center justify-center font-black text-xs tracking-wider shadow-2xs">
               BBVA
             </div>
 
             {/* VISA */}
-            <div className="h-8 px-3 rounded-lg bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 flex items-center justify-center font-black text-xs text-[#1a1f71] dark:text-blue-300 italic tracking-wider shadow-2xs">
-              VISA
+            <div className="h-8.5 px-3.5 rounded-xl bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 flex items-center justify-center shadow-2xs">
+              <span className="font-black text-sm text-[#1a1f71] dark:text-blue-400 italic tracking-wider">
+                VISA
+              </span>
             </div>
 
             {/* Mastercard */}
-            <div className="h-8 px-2.5 rounded-lg bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 flex items-center justify-center gap-0.5 shadow-2xs">
-              <div className="w-3.5 h-3.5 rounded-full bg-[#eb001b] opacity-90 -mr-1.5" />
-              <div className="w-3.5 h-3.5 rounded-full bg-[#f79e1b] opacity-90" />
+            <div className="h-8.5 px-3 rounded-xl bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 flex items-center justify-center gap-1 shadow-2xs">
+              <div className="flex items-center -space-x-1.5">
+                <div className="w-4 h-4 rounded-full bg-[#eb001b]" />
+                <div className="w-4 h-4 rounded-full bg-[#f79e1b] mix-blend-multiply opacity-90" />
+              </div>
             </div>
 
             {/* American Express */}
-            <div className="h-8 px-2.5 rounded-lg bg-[#006fcf] text-white flex items-center justify-center font-black text-[9px] uppercase tracking-tighter shadow-2xs">
+            <div className="h-8.5 px-3 rounded-xl bg-[#006fcf] text-white flex items-center justify-center font-black text-[10px] uppercase tracking-tighter shadow-2xs">
               AMEX
             </div>
 
-            {/* PayPal */}
-            <div className="h-8 px-3 rounded-lg bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 flex items-center justify-center font-black text-xs text-[#003087] dark:text-blue-300 shadow-2xs">
-              Pay<span className="text-[#0079c1]">Pal</span>
+            {/* PayPal Oficial */}
+            <div className="h-8.5 px-3.5 rounded-xl bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 flex items-center justify-center font-black text-xs shadow-2xs">
+              <span className="text-[#003087] dark:text-blue-400">Pay</span>
+              <span className="text-[#0079c1] dark:text-cyan-400">Pal</span>
             </div>
           </div>
 
           {/* Paqueterías y Envíos Nacionales */}
-          <div className="flex items-center flex-wrap gap-2 sm:gap-2.5">
-            <div className="h-8 px-2.5 rounded-lg bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 flex items-center justify-center shadow-2xs text-zinc-500">
-              <Truck className="w-4 h-4" />
-            </div>
-
+          <div className="flex items-center flex-wrap gap-2.5 sm:gap-3">
+            
             {/* Estafeta */}
-            <div className="h-8 px-3 rounded-lg bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 flex items-center justify-center font-black text-xs text-[#d32f2f] italic tracking-tight shadow-2xs">
+            <div className="h-8.5 px-3.5 rounded-xl bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 flex items-center justify-center font-black text-xs text-[#d32f2f] italic tracking-tight shadow-2xs">
               estafeta
             </div>
 
-            {/* DHL */}
-            <div className="h-8 px-3.5 rounded-lg bg-[#ffcc00] border border-[#e6b800] flex items-center justify-center font-black text-xs text-[#d40511] italic tracking-widest shadow-2xs">
+            {/* DHL Express */}
+            <div className="h-8.5 px-3.5 rounded-xl bg-[#ffcc00] border border-[#e6b800] flex items-center justify-center font-black text-xs text-[#d40511] italic tracking-widest shadow-2xs">
               DHL
             </div>
 
             {/* Paquetexpress */}
-            <div className="h-8 px-3 rounded-lg bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 flex items-center justify-center font-black text-[10px] text-[#002f6c] dark:text-blue-300 uppercase tracking-tight shadow-2xs">
+            <div className="h-8.5 px-3.5 rounded-xl bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 flex items-center justify-center font-black text-[10px] text-[#002f6c] dark:text-blue-300 uppercase tracking-tight shadow-2xs">
               PAQUETEXPRESS
             </div>
 
             {/* FedEx */}
-            <div className="h-8 px-3 rounded-lg bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 flex items-center justify-center font-black text-xs shadow-2xs">
+            <div className="h-8.5 px-3.5 rounded-xl bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 flex items-center justify-center font-black text-xs shadow-2xs">
               <span className="text-[#4d148c]">Fed</span><span className="text-[#ff6600]">Ex</span>
             </div>
           </div>
 
           {/* Leyenda Precios Incluyendo IVA */}
-          <div className="h-8 px-3 rounded-xl bg-zinc-100 dark:bg-zinc-800/90 border border-zinc-200 dark:border-zinc-700 text-xs font-semibold text-zinc-700 dark:text-zinc-300 flex items-center gap-1.5 shadow-2xs">
+          <div className="h-8.5 px-3.5 rounded-xl bg-zinc-100 dark:bg-zinc-800/90 border border-zinc-200 dark:border-zinc-700 text-xs font-bold text-zinc-700 dark:text-zinc-300 flex items-center gap-1.5 shadow-2xs">
             <span>Precios incluyendo IVA</span>
-            <span className="text-zinc-400">· MXN</span>
+            <span className="text-zinc-400 font-normal">· MXN</span>
           </div>
 
         </div>
