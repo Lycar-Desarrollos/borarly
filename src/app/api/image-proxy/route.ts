@@ -34,7 +34,8 @@ export async function GET(request: NextRequest) {
             'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
             'Accept': 'image/avif,image/webp,image/apng,image/svg+xml,image/*,*/*;q=0.8',
           },
-          cache: 'no-store'
+          cache: 'no-store',
+          signal: AbortSignal.timeout(3000),
         });
 
         const highResContentType = highResRes.headers.get('content-type') || '';
@@ -44,7 +45,9 @@ export async function GET(request: NextRequest) {
             status: 200,
             headers: {
               'Content-Type': highResContentType,
-              'Cache-Control': 'public, max-age=86400, s-maxage=604800, stale-while-revalidate=86400',
+              'Cache-Control': 'public, max-age=86400, stale-while-revalidate=604800',
+              'Netlify-CDN-Cache-Control': 'no-store',
+              'CDN-Cache-Control': 'no-store',
             },
           });
         }
@@ -58,7 +61,8 @@ export async function GET(request: NextRequest) {
         'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
         'Accept': 'image/avif,image/webp,image/apng,image/svg+xml,image/*,*/*;q=0.8',
       },
-      cache: 'no-store'
+      cache: 'no-store',
+      signal: AbortSignal.timeout(6000),
     });
 
     const contentType = res.headers.get('content-type') || '';
@@ -72,7 +76,9 @@ export async function GET(request: NextRequest) {
       status: 200,
       headers: {
         'Content-Type': contentType,
-        'Cache-Control': 'public, max-age=86400, s-maxage=604800, stale-while-revalidate=86400',
+        'Cache-Control': 'public, max-age=86400, stale-while-revalidate=604800',
+        'Netlify-CDN-Cache-Control': 'no-store',
+        'CDN-Cache-Control': 'no-store',
       },
     });
   } catch (error) {
