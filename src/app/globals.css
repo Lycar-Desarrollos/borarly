@@ -118,51 +118,30 @@ body {
   }
 }
 
-/* SYSCOM HTML CONTENT OVERRIDES */
+/* SYSCOM HTML CONTENT - NATIVE API RENDERING */
 .syscom-html-content {
-  @apply text-muted-foreground dark:text-zinc-300 leading-relaxed overflow-hidden;
+  @apply text-foreground dark:text-zinc-200 leading-relaxed;
 }
 
 .syscom-html-content img {
-  @apply max-w-full h-auto rounded-lg my-4 mx-auto block bg-white/10 p-2;
+  @apply max-w-full h-auto rounded-xl my-4 mx-auto block;
 }
 
 .syscom-html-content iframe {
-  @apply w-full aspect-video rounded-xl my-6 border border-border dark:border-slate-800 shadow-2xl;
+  @apply w-full aspect-video rounded-xl my-6 border border-border/60 shadow-lg;
 }
-
-.syscom-html-content h1, 
-.syscom-html-content h2, 
-.syscom-html-content h3 {
-  @apply text-foreground dark:text-white font-bold mt-8 mb-4 tracking-tight;
-}
-
-.syscom-html-content h2 { @apply text-2xl; }
-.syscom-html-content h3 { @apply text-xl; }
 
 .syscom-html-content table {
-  @apply w-full border-collapse my-6 overflow-hidden rounded-lg border border-border dark:border-slate-800 bg-muted/40 dark:bg-slate-900/40;
+  @apply w-full border-collapse my-6 overflow-hidden rounded-lg border border-border/60 bg-muted/20;
 }
 
 .syscom-html-content th, 
 .syscom-html-content td {
-  @apply p-3 border border-border dark:border-slate-800/50 text-sm;
-}
-
-.syscom-html-content th {
-  @apply bg-muted dark:bg-slate-800 text-foreground dark:text-white font-bold text-left;
-}
-
-.syscom-html-content tr:nth-child(even) {
-  @apply bg-muted/50 dark:bg-slate-800/20;
-}
-
-.syscom-html-content p {
-  @apply mb-4;
+  @apply p-3 border border-border/50 text-sm;
 }
 
 .syscom-html-content a {
-  @apply text-[#00E676] hover:underline;
+  @apply text-primary hover:underline font-medium;
 }
 
 @layer utilities {

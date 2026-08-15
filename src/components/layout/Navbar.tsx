@@ -1,8 +1,12 @@
-
 "use client";
 
 import Link from 'next/link';
-import { ShoppingCart, User, Search, LogOut, LayoutDashboard, Heart, Loader2, MessageCircle, Menu, Video, Network, Key, Zap, Server, ChevronLeft, ChevronRight, ChevronDown, Shield, Flame, Cable, Speaker, Hammer } from 'lucide-react'; 
+import { 
+  ShoppingCart, User, Search, LogOut, LayoutDashboard, Heart, Loader2, 
+  MessageCircle, Menu, Video, Network, Key, Zap, Server, ChevronRight, 
+  ChevronDown, Shield, Flame, Cable, Speaker, Hammer, Camera, Mic, MicOff, 
+  Sparkles, X, Check, Box, Tag, ArrowRight, Layers, HelpCircle
+} from 'lucide-react'; 
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useCart } from '@/contexts/CartContext';
@@ -18,45 +22,61 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { FormEvent, useState, useEffect, useRef, useCallback } from 'react';
-import { getProducts, getCategories } from '@/services/productService';
+import { FormEvent, useState, useEffect, useRef, ChangeEvent } from 'react';
+import { getCategories } from '@/services/productService';
 import type { Product, Category } from '@/lib/types';
 import Image from 'next/image';
+import { cn } from '@/lib/utils';
+import { MegaMenu } from './MegaMenu';
+import { CartDropdown } from './CartDropdown';
+import { BorarlyAIChatModal } from '@/components/ai/BorarlyAIChatModal';
 
 export function Navbar() {
   const { cartCount } = useCart();
   const { currentUser, userProfile, signOut, isAdmin } = useAuth();
   const router = useRouter();
   const pathname = usePathname();
+
+  // Search & AI Chat States
   const [searchTerm, setSearchTerm] = useState('');
   const [searchResults, setSearchResults] = useState<Product[]>([]);
   const [isSearching, setIsSearching] = useState(false);
   const [isSearchVisible, setIsSearchVisible] = useState(false);
-  const [categories, setCategories] = useState<Category[]>([]);
+  const [isChatModalOpen, setIsChatModalOpen] = useState(false);
   const searchContainerRef = useRef<HTMLDivElement>(null);
-
   const isCheckoutPhase = pathname === '/checkout';
 
-
-  // Effect to clear search when main navigation happens
+  // Clear search on page navigation
   useEffect(() => {
     setIsSearchVisible(false);
     setSearchTerm('');
   }, [pathname]);
 
+  // Fast live search via /api/search with debounce
   useEffect(() => {
-    async function loadCategories() {
-      try {
-        const allCats = await getCategories();
-        // Solo categorías de nivel 1 que sean visibles Y marcadas para el Navbar
-        const level1Visible = allCats.filter(c => c.level === 1 && c.isVisible !== false && c.showInNavbar !== false);
-        setCategories(level1Visible);
-      } catch (error) {
-        console.error("Error loading navbar categories", error);
+    const fetchResults = async () => {
+      if (searchTerm.length < 2) {
+        setSearchResults([]);
+        setIsSearching(false);
+        return;
       }
-    }
-    loadCategories();
-  }, []);
+      setIsSearching(true);
+      try {
+        const res = await fetch(`/api/search?q=${encodeURIComponent(searchTerm)}`);
+        if (res.ok) {
+          const data = await res.json();
+          setSearchResults(data.results || []);
+        }
+      } catch (error) {
+        console.error("Error fetching live search results", error);
+      } finally {
+        setIsSearching(false);
+      }
+    };
+
+    const debounceTimeout = setTimeout(fetchResults, 250);
+    return () => clearTimeout(debounceTimeout);
+  }, [searchTerm]);
 
   const handleSearchSubmit = (e: FormEvent) => {
     e.preventDefault();
@@ -66,342 +86,419 @@ export function Navbar() {
     }
   };
 
-  useEffect(() => {
-    const fetchResults = async () => {
-      if (searchTerm.length < 2) {
-        setSearchResults([]);
-        setIsSearching(false);
-        return;
-      }
-      setIsSearching(true);
-      const products = await getProducts(undefined, searchTerm, 5);
-      setSearchResults(products);
-      setIsSearching(false);
-    };
-
-    const debounceTimeout = setTimeout(fetchResults, 300);
-    return () => clearTimeout(debounceTimeout);
-  }, [searchTerm]);
-
-
   const handleFocus = () => {
     if (searchTerm.length > 1) {
       setIsSearchVisible(true);
     }
   };
   
-  // Use onBlur on the container to detect when focus leaves the search area
   const handleBlur = (e: React.FocusEvent<HTMLDivElement>) => {
-    // We use a short timeout to allow click events on the results to register before hiding.
-    // `relatedTarget` is the new element gaining focus. If it's outside the search container, we hide.
     if (!e.currentTarget.contains(e.relatedTarget as Node)) {
        setTimeout(() => {
          setIsSearchVisible(false);
-       }, 100);
+       }, 150);
     }
   };
-
 
   const formatCurrency = (amount: number) =>
     new Intl.NumberFormat('es-MX', { style: 'currency', currency: 'MXN' }).format(amount);
 
+  const getCategoryIcon = (name: string) => {
+    const lowerName = name.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+    if (lowerName.includes('video') || lowerName.includes('camara')) return <Video className="h-4 w-4 text-blue-500" />;
+    if (lowerName.includes('red') || lowerName.includes('it') || lowerName.includes('datos') || lowerName.includes('computo') || lowerName.includes('servidor')) return <Network className="h-4 w-4 text-cyan-500" />;
+    if (lowerName.includes('acceso') || lowerName.includes('biometrico') || lowerName.includes('llave') || lowerName.includes('cerradura')) return <Key className="h-4 w-4 text-amber-500" />;
+    if (lowerName.includes('energia') || lowerName.includes('solar') || lowerName.includes('ups') || lowerName.includes('electrico') || lowerName.includes('bateria')) return <Zap className="h-4 w-4 text-yellow-500" />;
+    if (lowerName.includes('radio') || lowerName.includes('comunicacion')) return <Server className="h-4 w-4 text-indigo-500" />;
+    if (lowerName.includes('intrusion') || lowerName.includes('alarma') || lowerName.includes('automatizacion') || lowerName.includes('smart')) return <Shield className="h-4 w-4 text-emerald-500" />;
+    if (lowerName.includes('fuego') || lowerName.includes('incendio') || lowerName.includes('humo')) return <Flame className="h-4 w-4 text-red-500" />;
+    if (lowerName.includes('cable') || lowerName.includes('fibra') || lowerName.includes('estructurado')) return <Cable className="h-4 w-4 text-purple-500" />;
+    if (lowerName.includes('audio') || lowerName.includes('voconeo') || lowerName.includes('sonido') || lowerName.includes('parlante')) return <Speaker className="h-4 w-4 text-teal-500" />;
+    if (lowerName.includes('herramienta') || lowerName.includes('medicion') || lowerName.includes('tester')) return <Hammer className="h-4 w-4 text-orange-500" />;
+    return <Box className="h-4 w-4 text-blue-400" />;
+  };
+
+  // Dropdown de Resultados Instantáneos
   const SearchResultsDropdown = () => (
-    <div className="absolute top-full mt-2 w-full bg-card border rounded-lg shadow-lg z-50 max-h-96 overflow-y-auto">
-      {isSearching ? (
-        <div className="flex items-center justify-center p-4">
-          <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
-          <span className="ml-2 text-sm text-muted-foreground">Buscando...</span>
+    <div className="absolute top-full mt-2 w-full bg-card/95 backdrop-blur-xl border border-border/80 rounded-2xl shadow-2xl z-50 max-h-[480px] overflow-y-auto divide-y divide-border/40 animate-in fade-in-50 zoom-in-95">
+      
+      {/* Estado de carga */}
+      {isSearching && (
+        <div className="flex items-center justify-center p-6 gap-3">
+          <Loader2 className="h-5 w-5 animate-spin text-primary" />
+          <span className="text-sm font-medium text-muted-foreground">Buscando en catálogo nacional...</span>
         </div>
-      ) : searchResults.length > 0 ? (
-        <ul>
-          {searchResults.map(product => (
-            <li key={product.id}>
-              {/* This link structure is now the standard and recommended way */}
-              <Link
-                href={`/products/${product.id}`}
-                className="flex items-center gap-4 p-3 hover:bg-accent transition-colors"
-                // Prevent blur when clicking a link, allowing navigation to happen
-                onMouseDown={(e) => e.preventDefault()}
-              >
-                <div className="relative h-12 w-12 flex-shrink-0 bg-white rounded border">
-                    <Image src={product.imageUrls[0]?.includes('syscom.mx') ? `/api/image-proxy?url=${encodeURIComponent(product.imageUrls[0])}` : (product.imageUrls[0] || 'https://images.unsplash.com/photo-1557597774-9d273605dfa9?q=80&w=800&auto=format&fit=crop')} alt={product.name} fill className="object-contain p-1"/>
-                 </div>
-                <div className="flex-grow overflow-hidden">
-                  <p className="font-medium truncate text-sm">{product.name}</p>
-                  <p className="text-xs text-muted-foreground">{formatCurrency(product.price)}</p>
-                </div>
-              </Link>
-            </li>
-          ))}
-        </ul>
-      ) : (
-        <p className="p-4 text-center text-sm text-muted-foreground">No se encontraron resultados.</p>
+      )}
+
+      {/* Resultados Encontrados */}
+      {!isSearching && searchResults.length > 0 && (
+        <div className="p-2 space-y-1">
+          <div className="px-3 py-1.5 text-[11px] font-bold uppercase tracking-wider text-muted-foreground flex items-center justify-between">
+            <span>Coincidencias ({searchResults.length})</span>
+          </div>
+          <ul>
+            {searchResults.map(product => {
+              const rawImg = product.imageUrls?.[0] || 'https://placehold.co/100x100.png';
+              const thumbUrl = rawImg.includes('syscom.mx') 
+                ? `/api/image-proxy?url=${encodeURIComponent(rawImg)}` 
+                : rawImg;
+
+              return (
+                <li key={product.id}>
+                  <Link
+                    href={`/products/${product.id}`}
+                    className="flex items-center gap-3.5 p-2.5 rounded-xl hover:bg-primary/5 hover:border-primary/20 border border-transparent transition-all group"
+                    onMouseDown={(e) => e.preventDefault()}
+                  >
+                    <div className="relative h-12 w-12 flex-shrink-0 bg-white rounded-lg border border-border/60 overflow-hidden shadow-2xs">
+                      <Image 
+                        src={thumbUrl} 
+                        alt={product.name} 
+                        fill 
+                        className="object-contain p-1 group-hover:scale-105 transition-transform" 
+                      />
+                    </div>
+                    <div className="flex-grow min-w-0">
+                      <div className="flex items-center gap-2">
+                        {product.line && (
+                          <span className="text-[10px] font-mono font-bold bg-primary/10 text-primary px-1.5 py-0.5 rounded">
+                            {product.line}
+                          </span>
+                        )}
+                        {product.brand && (
+                          <span className="text-[10px] text-muted-foreground font-semibold uppercase">
+                            {product.brand}
+                          </span>
+                        )}
+                      </div>
+                      <p className="font-semibold truncate text-xs sm:text-sm text-foreground group-hover:text-primary transition-colors">
+                        {product.name}
+                      </p>
+                      <div className="flex items-center gap-2 text-xs font-bold text-foreground mt-0.5">
+                        <span className="text-primary">{formatCurrency(product.price)}</span>
+                        {product.stock > 0 ? (
+                          <span className="text-[10px] text-emerald-600 dark:text-emerald-400 font-medium">✓ {product.stock} en stock</span>
+                        ) : (
+                          <span className="text-[10px] text-amber-600 font-medium">Bajo Pedido</span>
+                        )}
+                      </div>
+                    </div>
+                  </Link>
+                </li>
+              );
+            })}
+          </ul>
+        </div>
+      )}
+
+      {/* Sugerencias Rápidas de Categorías */}
+      <div className="p-3 bg-muted/30">
+        <p className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground mb-2">Búsquedas Rápidas</p>
+        <div className="flex flex-wrap gap-1.5">
+          <Link
+            href={`/?search=${encodeURIComponent(searchTerm || 'videovigilancia')}&category=22`}
+            className="text-xs bg-card hover:bg-primary/10 border border-border/60 hover:border-primary/40 px-2.5 py-1 rounded-lg text-foreground transition-all"
+            onMouseDown={(e) => e.preventDefault()}
+          >
+            📹 En Videovigilancia
+          </Link>
+          <Link
+            href={`/?search=${encodeURIComponent(searchTerm || 'redes')}&category=21`}
+            className="text-xs bg-card hover:bg-primary/10 border border-border/60 hover:border-primary/40 px-2.5 py-1 rounded-lg text-foreground transition-all"
+            onMouseDown={(e) => e.preventDefault()}
+          >
+            🌐 En Redes e IT
+          </Link>
+          <Link
+            href={`/?search=${encodeURIComponent(searchTerm || 'acceso')}&category=23`}
+            className="text-xs bg-card hover:bg-primary/10 border border-border/60 hover:border-primary/40 px-2.5 py-1 rounded-lg text-foreground transition-all"
+            onMouseDown={(e) => e.preventDefault()}
+          >
+            🔒 En Control de Acceso
+          </Link>
+        </div>
+      </div>
+
+      {/* Botón Ver Todos */}
+      {!isSearching && searchTerm.length > 1 && (
+        <button
+          onClick={handleSearchSubmit}
+          className="w-full p-3 text-center text-xs font-bold text-primary hover:bg-primary/10 transition-colors flex items-center justify-center gap-1.5"
+          onMouseDown={(e) => e.preventDefault()}
+        >
+          <span>Ver todos los resultados para &quot;{searchTerm}&quot;</span>
+          <ArrowRight className="w-3.5 h-3.5" />
+        </button>
+      )}
+
+      {!isSearching && searchResults.length === 0 && (
+        <div className="p-6 text-center text-sm text-muted-foreground space-y-1">
+          <p className="font-semibold text-foreground">No encontramos coincidencias directas para &quot;{searchTerm}&quot;</p>
+          <p className="text-xs">Intenta buscando por modelo (ej. WD11PURZ), marca o descripción general.</p>
+        </div>
       )}
     </div>
   );
 
-  const getCategoryIcon = (name: string) => {
-    // Normalizar para ignorar acentos y mayúsculas
-    const lowerName = name.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
-    
-    if (lowerName.includes('video') || lowerName.includes('camara')) return <Video className="h-4 w-4" />;
-    if (lowerName.includes('red') || lowerName.includes('it') || lowerName.includes('datos') || lowerName.includes('computo') || lowerName.includes('servidor')) return <Network className="h-4 w-4" />;
-    if (lowerName.includes('acceso') || lowerName.includes('biometrico') || lowerName.includes('llave') || lowerName.includes('cerradura')) return <Key className="h-4 w-4" />;
-    if (lowerName.includes('energia') || lowerName.includes('solar') || lowerName.includes('ups') || lowerName.includes('electrico') || lowerName.includes('bateria')) return <Zap className="h-4 w-4" />;
-    if (lowerName.includes('radio') || lowerName.includes('comunicacion')) return <Server className="h-4 w-4" />;
-    if (lowerName.includes('intrusion') || lowerName.includes('alarma') || lowerName.includes('automatizacion') || lowerName.includes('smart')) return <Shield className="h-4 w-4" />;
-    if (lowerName.includes('fuego') || lowerName.includes('incendio') || lowerName.includes('humo')) return <Flame className="h-4 w-4" />;
-    if (lowerName.includes('cable') || lowerName.includes('fibra') || lowerName.includes('estructurado')) return <Cable className="h-4 w-4" />;
-    if (lowerName.includes('audio') || lowerName.includes('voconeo') || lowerName.includes('sonido') || lowerName.includes('parlante')) return <Speaker className="h-4 w-4" />;
-    if (lowerName.includes('herramienta') || lowerName.includes('medicion') || lowerName.includes('tester')) return <Hammer className="h-4 w-4" />;
-    
-    return <ChevronDown className="h-3 w-3" />;
+  // Voice Recognition Ref
+  const recognitionRef = useRef<any>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [isListening, setIsListening] = useState(false);
+
+  // Web Speech API Voice Search
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
+      if (SpeechRecognition) {
+        const recognition = new SpeechRecognition();
+        recognition.continuous = false;
+        recognition.interimResults = false;
+        recognition.lang = 'es-MX';
+
+        recognition.onstart = () => setIsListening(true);
+        recognition.onresult = (event: any) => {
+          const transcript = event.results[0][0].transcript;
+          if (transcript) {
+            setSearchTerm(transcript);
+            setIsSearchVisible(true);
+            router.push(`/?search=${encodeURIComponent(transcript.trim())}`);
+          }
+        };
+        recognition.onerror = () => setIsListening(false);
+        recognition.onend = () => setIsListening(false);
+        recognitionRef.current = recognition;
+      }
+    }
+  }, [router]);
+
+  const toggleVoiceSearch = () => {
+    if (!recognitionRef.current) {
+      alert("El reconocimiento de voz no está disponible en este navegador.");
+      return;
+    }
+    if (isListening) {
+      recognitionRef.current.stop();
+      setIsListening(false);
+    } else {
+      try {
+        recognitionRef.current.start();
+      } catch (e) {
+        console.warn("Voice search already active", e);
+      }
+    }
+  };
+
+  const handleImageSearchClick = () => {
+    if (fileInputRef.current) fileInputRef.current.click();
+  };
+
+  const handleImageFileChange = (e: ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const cleanName = file.name
+        .replace(/\.[^/.]+$/, "")
+        .replace(/[-_]/g, " ")
+        .replace(/IMG|FOTO|PHOTO|PORTADA|DSC/gi, "")
+        .trim();
+      
+      if (cleanName.length > 2) {
+        setSearchTerm(cleanName);
+        setIsSearchVisible(true);
+        router.push(`/?search=${encodeURIComponent(cleanName)}`);
+      } else {
+        router.push(`/?search=${encodeURIComponent(file.name.substring(0, 15))}`);
+      }
+    }
   };
 
   return (
-    <header className="sticky top-0 z-50 w-full border-b bg-background">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between gap-4">
+    <header className="sticky top-0 z-50 w-full border-b border-white/10 bg-[#090d16] text-white shadow-md">
+      
+      {/* 1. BARRA PRINCIPAL SUPERIOR (LOGO, BUSCADOR CENTRADO Y FLUIDO, CARRITO, AVATAR) */}
+      <div className="max-w-[1520px] mx-auto px-4 sm:px-6 lg:px-8 h-20 sm:h-22 flex items-center justify-between gap-4 sm:gap-6 md:gap-8">
         
-        {/* Left: Logo */}
-        <div className="flex items-center md:flex-1 shrink-0 group">
-          <Link href="/" className="flex items-center gap-2 text-xl font-black tracking-tight text-foreground select-none">
+        {/* LOGO NATIVO ORIGINAL BORARLY */}
+        <div className="flex items-center shrink-0">
+          <Link href="/" className="flex items-center select-none group py-1">
             <Image
-              src="/icon-192.png"
-              alt="BORARLY Logo"
-              width={32}
-              height={32}
+              src="/logo-white.png"
+              alt="BORARLY"
+              width={195}
+              height={52}
               priority
-              className="h-8 w-8 object-contain transition-transform group-hover:scale-105"
+              className="h-9 sm:h-11 w-auto object-contain transition-transform group-hover:scale-105"
             />
-            <span className="leading-none hidden sm:block font-black text-2xl tracking-tighter bg-gradient-to-r from-blue-600 to-cyan-500 bg-clip-text text-transparent dark:from-blue-400 dark:to-cyan-400">
-              BORARLY
-            </span>
           </Link>
         </div>
         
-        {/* Center: Search (Perfectly Centered) */}
+        {/* BUSCADOR UNIVERSAL */}
         {!isCheckoutPhase && (
-        <div 
-          ref={searchContainerRef} 
-          className="hidden md:flex relative w-full max-w-md lg:max-w-2xl px-2 shrink"
-          onFocus={handleFocus}
-          onBlur={handleBlur}
-        >
-          <form onSubmit={handleSearchSubmit} className="w-full">
-            <div className="flex items-center gap-2 w-full">
-                <Input
-                type="search"
-                placeholder="Buscar productos..."
-                className="w-full"
-                value={searchTerm}
-                onChange={(e) => {
+          <div 
+            ref={searchContainerRef} 
+            className="flex-1 max-w-3xl relative mx-2 sm:mx-4"
+            onFocus={handleFocus}
+            onBlur={handleBlur}
+          >
+            <form onSubmit={handleSearchSubmit} className="w-full flex items-center">
+              <div className={cn(
+                "relative flex items-center w-full h-12 rounded-full bg-white text-zinc-900 border transition-all duration-200 shadow-sm overflow-hidden px-4",
+                isSearchVisible ? "ring-2 ring-blue-500 border-transparent shadow-md" : "border-zinc-300 hover:border-zinc-400"
+              )}>
+                {/* Icono de búsqueda */}
+                <div className="pr-3 pointer-events-none text-zinc-400">
+                  <Search className="h-5 w-5" />
+                </div>
+
+                {/* Input de texto */}
+                <input
+                  type="text"
+                  placeholder="Buscar productos por nombre, modelo, marca o clave SAT..."
+                  className="w-full py-2.5 text-sm bg-transparent outline-none text-zinc-900 placeholder:text-zinc-400 pr-2 font-medium"
+                  value={searchTerm}
+                  onChange={(e) => {
                     setSearchTerm(e.target.value);
                     if (e.target.value.length > 1) {
-                        setIsSearchVisible(true);
+                      setIsSearchVisible(true);
                     } else {
-                        setIsSearchVisible(false);
+                      setIsSearchVisible(false);
                     }
-                }}
+                  }}
                 />
-                <Button type="submit" variant="outline" size="icon" className="shrink-0 group hover:bg-primary hover:text-primary-foreground transition-colors">
-                    <Search className="h-5 w-5 transition-transform group-hover:scale-110" />
-                </Button>
-            </div>
-          </form>
-          {isSearchVisible && searchTerm.length > 1 && <SearchResultsDropdown />}
-        </div>
+
+                {/* Botón Borrar único si hay texto */}
+                {searchTerm && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setSearchTerm('');
+                      setIsSearchVisible(false);
+                    }}
+                    className="p-1.5 text-zinc-400 hover:text-zinc-700 rounded-full transition-colors mr-1"
+                    title="Borrar búsqueda"
+                  >
+                    <X className="w-4 h-4" />
+                  </button>
+                )}
+              </div>
+            </form>
+
+            {/* Desplegable de Resultados en Vivo */}
+            {isSearchVisible && searchTerm.length > 1 && <SearchResultsDropdown />}
+          </div>
         )}
 
-        {/* Right: Icons */}
-        <div className="flex items-center justify-end md:flex-1 shrink-0">
-          {isCheckoutPhase ? (
-            <div className="flex items-center gap-2 text-green-600 dark:text-green-500 font-bold bg-green-500/10 px-4 py-2 rounded-full border border-green-500/20">
-                <Shield className="w-5 h-5"/>
-                <span className="hidden sm:inline">Checkout Seguro 100%</span>
-            </div>
-          ) : (
-            <nav className="flex items-center gap-1 sm:gap-2 lg:gap-4">
-              <ThemeToggle />
-              <a href="https://wa.me/5219999040931" target="_blank" rel="noopener noreferrer" className="hidden lg:flex items-center gap-2 text-sm font-medium text-muted-foreground hover:text-green-500 transition-colors">
-                <MessageCircle className="h-5 w-5 text-green-500" />
-                <span>WhatsApp</span>
-              </a>
-
-              <Link href="/cart">
-                <Button variant="ghost" size="icon" aria-label="Carrito de Compras" className="relative">
-                  <ShoppingCart className="h-6 w-6" />
-                  {cartCount > 0 && (
-                    <span className="absolute -top-1 -right-1 flex h-5 w-5 items-center justify-center rounded-full bg-primary text-xs text-primary-foreground">
-                      {cartCount}
-                    </span>
-                  )}
-                </Button>
-              </Link>
-
-              {currentUser ? (
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <Button variant="ghost" className="relative h-9 w-9 rounded-full">
-                      <Avatar className="h-9 w-9">
-                        <AvatarImage src={userProfile?.photoURL || undefined} alt={userProfile?.displayName || 'Usuario'} />
-                        <AvatarFallback>{userProfile?.displayName?.charAt(0)?.toUpperCase() || <User className="h-5 w-5"/>}</AvatarFallback>
-                      </Avatar>
-                    </Button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent className="w-56" align="end" forceMount>
-                    <DropdownMenuLabel className="font-normal">
-                      <div className="flex flex-col space-y-1">
-                        <p className="text-sm font-medium leading-none">{userProfile?.displayName || 'Usuario'}</p>
-                        <p className="text-xs leading-none text-muted-foreground">
-                          {userProfile?.email}
-                        </p>
-                      </div>
-                    </DropdownMenuLabel>
-                    <DropdownMenuSeparator />
-                    <DropdownMenuItem asChild>
-                      <Link href="/profile">
-                        <User className="mr-2 h-4 w-4" />
-                        <span>Mi Perfil</span>
-                      </Link>
-                    </DropdownMenuItem>
-                    <DropdownMenuItem asChild>
-                      <Link href="/profile/orders">
-                        <ShoppingCart className="mr-2 h-4 w-4" />
-                        <span>Mis Pedidos</span>
-                      </Link>
-                    </DropdownMenuItem>
-                    <DropdownMenuItem asChild>
-                      <Link href="/profile/wishlist">
-                        <Heart className="mr-2 h-4 w-4" />
-                        <span>Mi Lista de Deseos</span>
-                      </Link>
-                    </DropdownMenuItem>
-                    {isAdmin && (
-                      <DropdownMenuItem asChild>
-                        <Link href="/admin">
-                          <LayoutDashboard className="mr-2 h-4 w-4" />
-                          <span>Panel de Admin</span>
-                        </Link>
-                      </DropdownMenuItem>
-                    )}
-                    <DropdownMenuSeparator />
-                    <DropdownMenuItem onClick={signOut}>
-                      <LogOut className="mr-2 h-4 w-4" />
-                      <span>Cerrar Sesión</span>
-                    </DropdownMenuItem>
-                  </DropdownMenuContent>
-                </DropdownMenu>
-              ) : (
-                <Link href="/login">
-                  <Button variant="outline" className="px-2 sm:px-4">
-                    <User className="h-5 w-5 sm:mr-2" /> 
-                    <span className="hidden sm:inline">Iniciar Sesión</span>
-                  </Button>
-                </Link>
-              )}
-            </nav>
-          )}
-        </div>
-      </div>
-
-      {!isCheckoutPhase && (
-        <div 
-         className="md:hidden p-2 border-t relative"
-         onFocus={handleFocus}
-         onBlur={handleBlur}
-        >
-          <form onSubmit={handleSearchSubmit} className="flex items-center gap-2 w-full">
-            <Input
-              type="search"
-              placeholder="Buscar productos..."
-              className="flex-grow"
-              value={searchTerm}
-              onChange={(e) => {
-                  setSearchTerm(e.target.value);
-                   if (e.target.value.length > 1) {
-                        setIsSearchVisible(true);
-                    } else {
-                        setIsSearchVisible(false);
-                    }
-                }}
-            />
-            <Button type="submit" variant="outline" size="icon">
-              <Search className="h-5 w-5" />
-            </Button>
-          </form>
-          {isSearchVisible && searchTerm.length > 1 && <SearchResultsDropdown />}
-        </div>
-      )}
-
-      {/* Menú Secundario de Categorías (Submenu Dinámico) */}
-      {!isCheckoutPhase && (
-      <div className="hidden md:block border-t bg-muted w-full relative group/nav">
-        {/* Fades para bordes */}
-        <div className="absolute left-0 top-0 bottom-0 w-16 bg-gradient-to-r from-muted to-transparent z-10 pointer-events-none opacity-0 group-hover/nav:opacity-100 transition-opacity" />
-        <div className="absolute right-0 top-0 bottom-0 w-16 bg-gradient-to-l from-muted to-transparent z-10 pointer-events-none opacity-0 group-hover/nav:opacity-100 transition-opacity" />
-        
-        {/* Botones de Navegación (Solo visibles en hover y si hay overflow) */}
-        <button 
-          onClick={() => {
-            const container = document.getElementById('navbar-category-scroll');
-            if (container) container.scrollBy({ left: -250, behavior: 'smooth' });
-          }}
-          className="absolute left-1 top-1/2 -translate-y-1/2 z-20 bg-background/80 backdrop-blur-sm border rounded-full p-1 shadow-md opacity-0 group-hover/nav:opacity-100 transition-opacity hover:scale-110 active:scale-95"
-        >
-          <ChevronLeft className="w-4 h-4" />
-        </button>
-        <button 
-          onClick={() => {
-            const container = document.getElementById('navbar-category-scroll');
-            if (container) container.scrollBy({ left: 250, behavior: 'smooth' });
-          }}
-          className="absolute right-1 top-1/2 -translate-y-1/2 z-20 bg-background/80 backdrop-blur-sm border rounded-full p-1 shadow-md opacity-0 group-hover/nav:opacity-100 transition-opacity hover:scale-110 active:scale-95"
-        >
-          <ChevronRight className="w-4 h-4" />
-        </button>
-
-        <div 
-          id="navbar-category-scroll"
-          className="max-w-7xl mx-auto px-10 h-12 w-full flex items-center justify-start lg:justify-center gap-4 lg:gap-8 text-sm text-muted-foreground font-medium whitespace-nowrap overflow-x-auto no-scrollbar scroll-smooth"
-        >
-          {categories.length > 0 ? (
-            <>
-              {categories.slice(0, 8).map((cat) => (
-                <Link 
-                  key={cat.id} 
-                  href={`/?category=${cat.id}`} 
-                  className="flex items-center gap-2 hover:text-primary transition-colors shrink-0"
+        {/* ACCIONES LATERALES: AVATAR / PERFIL Y CARRITO */}
+        <div className="flex items-center gap-3 sm:gap-3.5 shrink-0 ml-2">
+          
+          {/* Avatar de Usuario Circular / Botón Iniciar Sesión */}
+          {currentUser ? (
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <button 
+                  type="button" 
+                  aria-label="Menú de Usuario" 
+                  className="relative h-10 w-10 sm:h-10.5 sm:w-10.5 rounded-full ring-2 ring-blue-600 ring-offset-2 ring-offset-[#090d16] bg-white text-zinc-950 flex items-center justify-center font-bold text-sm shadow-sm hover:scale-105 transition-transform overflow-hidden select-none outline-none cursor-pointer"
                 >
-                  {getCategoryIcon(cat.alias || cat.name)}
-                  <span>{cat.alias || cat.name}</span>
-                </Link>
-              ))}
-              <Link 
-                href="/?category=all" 
-                className="flex items-center gap-2 bg-primary/5 hover:bg-primary hover:text-primary-foreground text-primary font-bold px-4 py-1.5 rounded-full transition-all shadow-sm shrink-0 ml-4 border border-primary/20"
-              >
-                <span>VER TODAS</span>
-              </Link>
-            </>
+                  <Avatar className="h-full w-full">
+                    <AvatarImage src={userProfile?.photoURL || undefined} alt={userProfile?.displayName || 'Usuario'} />
+                    <AvatarFallback className="bg-white text-zinc-950 font-black text-sm">
+                      {userProfile?.displayName?.charAt(0)?.toUpperCase() || currentUser?.email?.charAt(0)?.toUpperCase() || 'E'}
+                    </AvatarFallback>
+                  </Avatar>
+                </button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent className="w-56" align="end" forceMount>
+                <DropdownMenuLabel className="font-normal">
+                  <div className="flex flex-col space-y-1">
+                    <p className="text-sm font-medium leading-none">{userProfile?.displayName || 'Usuario'}</p>
+                    <p className="text-xs leading-none text-muted-foreground">{userProfile?.email}</p>
+                  </div>
+                </DropdownMenuLabel>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem asChild>
+                  <Link href="/profile">
+                    <User className="mr-2 h-4 w-4" />
+                    <span>Mi Perfil</span>
+                  </Link>
+                </DropdownMenuItem>
+                <DropdownMenuItem asChild>
+                  <Link href="/profile/orders">
+                    <ShoppingCart className="mr-2 h-4 w-4" />
+                    <span>Mis Pedidos</span>
+                  </Link>
+                </DropdownMenuItem>
+                <DropdownMenuItem asChild>
+                  <Link href="/profile/wishlist">
+                    <Heart className="mr-2 h-4 w-4" />
+                    <span>Mi Lista de Deseos</span>
+                  </Link>
+                </DropdownMenuItem>
+                {isAdmin && (
+                  <DropdownMenuItem asChild>
+                    <Link href="/admin">
+                      <LayoutDashboard className="mr-2 h-4 w-4" />
+                      <span>Panel Admin</span>
+                    </Link>
+                  </DropdownMenuItem>
+                )}
+                <DropdownMenuSeparator />
+                <DropdownMenuItem onClick={() => signOut()}>
+                  <LogOut className="mr-2 h-4 w-4" />
+                  <span>Cerrar Sesión</span>
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
           ) : (
-            <>
-              <Link href="/?search=videovigilancia" className="flex items-center gap-2 hover:text-primary transition-colors">
-                <Video className="h-4 w-4" />
-                <span>Videovigilancia</span>
-              </Link>
-              <Link href="/?search=redes" className="flex items-center gap-2 hover:text-primary transition-colors">
-                <Network className="h-4 w-4" />
-                <span>Redes e IT</span>
-              </Link>
-              <Link href="/?search=acceso+intrusion" className="flex items-center gap-2 hover:text-primary transition-colors">
-                <Key className="h-4 w-4" />
-                <span>Control de Acceso</span>
-              </Link>
-            </>
+            <Link href="/login">
+              <Button size="sm" className="bg-primary hover:bg-primary/90 text-primary-foreground font-bold rounded-xl text-xs px-3.5 h-10 cursor-pointer">
+                <User className="h-4 w-4 sm:mr-1.5" /> 
+                <span className="hidden sm:inline">Iniciar Sesión</span>
+              </Button>
+            </Link>
           )}
+
+          {/* Botón Directo al Carrito */}
+          <CartDropdown />
         </div>
       </div>
+
+      {/* 2. SUB-BARRA DE NAVEGACIÓN CON ESPACIADO CÓMODO Y SEPARACIÓN */}
+      {!isCheckoutPhase && (
+        <div className="border-t border-white/10 bg-[#060910] text-xs font-semibold text-zinc-300 py-2 relative z-40">
+          <div className="max-w-[1520px] mx-auto px-4 sm:px-6 lg:px-8 h-14 flex items-center justify-between gap-4 sm:gap-6">
+            
+            {/* Lado Izquierdo: Catálogo de Productos y Servicios */}
+            <div className="flex items-center gap-4 sm:gap-6">
+              {/* Botón Mega Menú ☰ Productos */}
+              <MegaMenu />
+
+              {/* Botón Servicios */}
+              <Link 
+                href="/services" 
+                className="h-11.5 px-6 rounded-2xl text-[13px] sm:text-sm font-bold uppercase tracking-wider text-zinc-200 hover:text-white bg-white/10 hover:bg-white/15 border border-white/15 hover:border-cyan-400/50 flex items-center gap-2.5 transition-all shadow-xs hover:scale-[1.02] active:scale-95 shrink-0 group select-none"
+              >
+                <Layers className="w-4.5 h-4.5 text-cyan-400 group-hover:rotate-6 transition-transform" />
+                <span>Servicios</span>
+              </Link>
+            </div>
+
+            {/* Lado Derecho: Asesor WhatsApp */}
+            <div className="flex items-center shrink-0">
+              <a 
+                href="https://wa.me/5219999040931" 
+                target="_blank" 
+                rel="noopener noreferrer" 
+                className="h-11.5 px-6 rounded-2xl text-[13px] sm:text-sm font-bold uppercase tracking-wider text-emerald-300 hover:text-emerald-200 bg-emerald-500/15 hover:bg-emerald-500/25 border border-emerald-500/40 hover:border-emerald-400/60 flex items-center gap-2.5 transition-all shadow-xs hover:scale-[1.02] active:scale-95 select-none"
+              >
+                <MessageCircle className="h-4.5 w-4.5 text-green-400 fill-green-400/20 group-hover:scale-110 transition-transform" />
+                <span>Asesor WhatsApp</span>
+              </a>
+            </div>
+
+          </div>
+        </div>
       )}
+
     </header>
   );
 }

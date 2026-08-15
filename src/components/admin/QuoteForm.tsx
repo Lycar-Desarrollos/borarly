@@ -32,7 +32,8 @@ import Image from 'next/image';
 // Helper: fetch image as Base64 for PDF
 function getImageBase64(url: string): Promise<string | null> {
   return new Promise((resolve) => {
-    const img = new Image();
+    if (typeof window === 'undefined') return resolve(null);
+    const img = new window.Image();
     img.crossOrigin = 'Anonymous';
     img.onload = () => {
       const canvas = document.createElement('canvas');
@@ -203,7 +204,6 @@ export function QuoteForm({ quote: initialQuote }: { quote?: Quote }) {
       name: '',
       quantity: 1,
       price: 0,
-      stockAtTimeOfQuote: undefined,
     }]);
   };
 

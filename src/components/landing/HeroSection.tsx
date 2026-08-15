@@ -39,37 +39,42 @@ export function HeroSection() {
 
   if (isLoading) {
     return (
-      <section className="relative w-full aspect-[12/5]">
-        <Skeleton className="w-full h-full" />
+      <section className="container mx-auto px-4 md:px-6">
+        <div className="relative w-full aspect-[2/1] rounded-2xl overflow-hidden">
+          <Skeleton className="w-full h-full" />
+        </div>
       </section>
     );
   }
 
   if (slides.length === 0) {
     return (
-      <section className="relative w-full aspect-[12/5] group bg-muted">
-        <Image
-          src="https://placehold.co/1200x500.png"
-          alt="Banner promocional"
-          layout="fill"
-          objectFit="cover"
-          className="transition-transform duration-500 group-hover:scale-105"
-          priority
-          data-ai-hint="store promotion sales"
-        />
-        <div className="absolute inset-0 bg-black/30 flex flex-col items-start justify-end p-6 md:p-12">
-          <div className="bg-white/80 backdrop-blur-sm p-4 md:p-6 rounded-lg max-w-md">
-            <h1 className="text-2xl md:text-4xl font-bold text-gray-900">
-              Bienvenido a <span className="text-primary">BORARLY</span>
-            </h1>
-            <p className="mt-2 text-sm md:text-base text-gray-700">
-              Tu tienda para ofertas increíbles. Configura los slides del carrusel en el panel de admin.
-            </p>
-            <Link href="/?category=all" passHref legacyBehavior>
-              <Button size="lg" className="mt-4 bg-primary hover:bg-primary/90 text-primary-foreground">
-                Comprar Ahora <span className="ml-2 text-lg">›</span>
-              </Button>
-            </Link>
+      <section className="container mx-auto px-4 md:px-6">
+        <div className="relative w-full aspect-[2/1] group bg-muted rounded-2xl overflow-hidden border border-border/40 shadow-sm">
+          <Image
+            src="https://placehold.co/1200x600.png"
+            alt="Banner promocional Borarly"
+            layout="fill"
+            objectFit="cover"
+            objectPosition="center"
+            className="transition-transform duration-500 group-hover:scale-105"
+            priority
+            data-ai-hint="store promotion sales"
+          />
+          <div className="absolute inset-0 bg-black/30 flex flex-col items-start justify-end p-6 md:p-12">
+            <div className="bg-white/90 dark:bg-zinc-900/90 backdrop-blur-md p-4 md:p-6 rounded-xl max-w-md shadow-xl border border-white/20">
+              <h1 className="text-xl md:text-3xl font-extrabold text-gray-900 dark:text-white tracking-tight">
+                Bienvenido a <span className="text-primary">BORARLY</span>
+              </h1>
+              <p className="mt-2 text-xs md:text-sm text-gray-700 dark:text-gray-300">
+                Distribuidor mayorista en seguridad electrónica, videovigilancia y redes.
+              </p>
+              <Link href="/?category=all">
+                <Button size="default" className="mt-4 bg-primary hover:bg-primary/90 text-primary-foreground font-semibold shadow-md">
+                  Explorar Catálogo <span className="ml-2 text-base">›</span>
+                </Button>
+              </Link>
+            </div>
           </div>
         </div>
       </section>
@@ -77,63 +82,79 @@ export function HeroSection() {
   }
 
   return (
-    <section className="relative w-full group">
-      <Carousel
-        opts={{
-          align: "start",
-          loop: true,
-        }}
-        plugins={[
-          Autoplay({
-            delay: 5000,
-            stopOnInteraction: true,
-          }),
-        ]}
-        className="w-full"
-      >
-        <CarouselContent>
-          {slides.map((slide, index) => (
-            <CarouselItem key={slide.id}>
-              <div className="relative w-full aspect-[12/5]">
-                <Image
-                  src={slide.imageUrl || "https://placehold.co/1200x500.png"}
-                  alt={slide.altText}
-                  layout="fill"
-                  objectFit="cover"
-                  className="transition-transform duration-500 group-hover:scale-105"
-                  priority={index === 0}
-                  data-ai-hint={slide.altText.split(' ').slice(0,2).join(' ') || "hero banner"}
-                />
-                 {(slide.title || slide.description || slide.buttonText) && (
-                  <div className="absolute inset-0 bg-black/30 flex flex-col items-start justify-end p-6 md:p-12">
-                    <div className="bg-white/80 backdrop-blur-sm p-4 md:p-6 rounded-lg max-w-md">
-                      {slide.title && (
-                        <h1 className="text-2xl md:text-4xl font-bold text-gray-900">
-                          {slide.title}
-                        </h1>
-                      )}
-                      {slide.description && (
-                        <p className="mt-2 text-sm md:text-base text-gray-700">
-                          {slide.description}
-                        </p>
-                      )}
-                      {slide.buttonText && slide.buttonLink && (
-                        <Link href={slide.buttonLink} passHref legacyBehavior>
-                          <Button size="lg" className="mt-4 bg-primary hover:bg-primary/90 text-primary-foreground">
-                            {slide.buttonText} <span className="ml-2 text-lg">›</span>
+    <section className="container mx-auto px-4 md:px-6">
+      <div className="relative w-full group">
+        <Carousel
+          opts={{
+            align: "start",
+            loop: true,
+          }}
+          plugins={[
+            Autoplay({
+              delay: 5000,
+              stopOnInteraction: true,
+            }),
+          ]}
+          className="w-full"
+        >
+          <CarouselContent>
+            {slides.map((slide, index) => {
+              const hasOverlay = !!(slide.title || slide.description || slide.buttonText);
+              const hasLink = !!slide.buttonLink;
+
+              const slideContent = (
+                <div className="relative w-full aspect-[2/1] overflow-hidden rounded-2xl bg-muted border border-border/40 shadow-sm">
+                  <Image
+                    src={slide.imageUrl || "https://placehold.co/1200x600.png"}
+                    alt={slide.altText || slide.title || "Banner promocional"}
+                    layout="fill"
+                    objectFit="cover"
+                    objectPosition="center"
+                    className={`transition-transform duration-700 ease-out ${hasLink ? 'hover:scale-[1.01] cursor-pointer' : ''}`}
+                    priority={index === 0}
+                    data-ai-hint={slide.altText?.split(' ').slice(0, 2).join(' ') || "hero banner"}
+                  />
+                  {hasOverlay && (
+                    <div className="absolute inset-0 bg-black/30 flex flex-col items-start justify-end p-6 md:p-12">
+                      <div className="bg-white/90 dark:bg-zinc-900/90 backdrop-blur-md p-4 md:p-6 rounded-xl max-w-md shadow-xl border border-white/20">
+                        {slide.title && (
+                          <h1 className="text-xl md:text-3xl font-extrabold text-gray-900 dark:text-white tracking-tight">
+                            {slide.title}
+                          </h1>
+                        )}
+                        {slide.description && (
+                          <p className="mt-2 text-xs md:text-sm text-gray-700 dark:text-gray-300">
+                            {slide.description}
+                          </p>
+                        )}
+                        {slide.buttonText && (
+                          <Button size="default" className="mt-4 bg-primary hover:bg-primary/90 text-primary-foreground font-semibold shadow-md">
+                            {slide.buttonText} <span className="ml-2 text-base">›</span>
                           </Button>
-                        </Link>
-                      )}
+                        )}
+                      </div>
                     </div>
-                  </div>
-                )}
-              </div>
-            </CarouselItem>
-          ))}
-        </CarouselContent>
-        <CarouselPrevious className="absolute left-4 top-1/2 -translate-y-1/2 z-10 bg-white/50 hover:bg-white/80 text-primary" />
-        <CarouselNext className="absolute right-4 top-1/2 -translate-y-1/2 z-10 bg-white/50 hover:bg-white/80 text-primary" />
-      </Carousel>
+                  )}
+                </div>
+              );
+
+              return (
+                <CarouselItem key={slide.id}>
+                  {hasLink ? (
+                    <Link href={slide.buttonLink!} className="block focus:outline-none focus:ring-2 focus:ring-primary rounded-2xl">
+                      {slideContent}
+                    </Link>
+                  ) : (
+                    slideContent
+                  )}
+                </CarouselItem>
+              );
+            })}
+          </CarouselContent>
+          <CarouselPrevious className="absolute left-3 top-1/2 -translate-y-1/2 z-10 h-10 w-10 rounded-full bg-background/80 hover:bg-background text-foreground shadow-lg backdrop-blur-md border border-border/50 opacity-0 group-hover:opacity-100 transition-all hover:scale-105" />
+          <CarouselNext className="absolute right-3 top-1/2 -translate-y-1/2 z-10 h-10 w-10 rounded-full bg-background/80 hover:bg-background text-foreground shadow-lg backdrop-blur-md border border-border/50 opacity-0 group-hover:opacity-100 transition-all hover:scale-105" />
+        </Carousel>
+      </div>
     </section>
   );
 }

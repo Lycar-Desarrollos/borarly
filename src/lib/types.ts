@@ -44,6 +44,12 @@ export interface Product {
   categorias_adicionales?: { id: string, nombre: string, nivel: number }[];
   sat_code?: string;
   sap_code?: string;
+  caracteristicas?: string[];
+  recursos?: { id?: string; recurso: string; path: string; formato?: string }[];
+  iconos?: { id?: string; imagen: string; nombre?: string }[];
+  peso?: string;
+  dimensiones?: string;
+  unidad_de_medida?: string;
 }
 
 export interface CartItem extends Product {

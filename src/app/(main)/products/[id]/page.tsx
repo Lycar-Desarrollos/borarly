@@ -1,5 +1,5 @@
 
-import { getProductById, getProducts, getCategories } from '@/services/productService';
+import { getProductById, getProducts, getCategories, getRelatedProductsForProduct } from '@/services/productService';
 import { notFound } from 'next/navigation';
 import { ProductDetailView } from '@/components/products/ProductDetailView';
 import type { Product, Category } from '@/lib/types';
@@ -112,14 +112,10 @@ export default async function ProductDetailPage(props: ProductDetailPageProps) {
     notFound();
   }
 
-  const [allCategories, allProductsInSameCategory] = await Promise.all([
+  const [allCategories, relatedProducts] = await Promise.all([
     getCategories(),
-    product.categoryId ? getProducts(product.categoryId) : (product.category ? getProducts(product.category) : Promise.resolve([])),
+    getRelatedProductsForProduct(product),
   ]);
-
-  const relatedProducts = allProductsInSameCategory
-    .filter(p => p.id !== product.id)
-    .slice(0, 4);
 
   // SEO: Create JSON-LD structured data for Google Shopping and rich results
   const productSchema = {
@@ -189,14 +185,15 @@ export default async function ProductDetailPage(props: ProductDetailPageProps) {
 
   return (
     <>
-      <JsonLd item={productSchema as any} />
-      <Suspense fallback={<ProductDetailSkeleton />}>
-          <ProductDetailView 
-              product={product} 
-              relatedProducts={relatedProducts} 
-              allCategories={allCategories} 
-          />
-      </Suspense>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(productSchema) }}
+      />
+      <ProductDetailView 
+          product={product} 
+          relatedProducts={relatedProducts} 
+          allCategories={allCategories} 
+      />
     </>
   );
 }

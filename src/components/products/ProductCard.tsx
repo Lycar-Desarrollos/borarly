@@ -3,7 +3,7 @@
 import Image from 'next/image';
 import Link from 'next/link';
 import type { Product } from '@/lib/types';
-import { ShoppingCart, Package, Plus, Minus, Heart, Copy } from 'lucide-react';
+import { ShoppingCart, Package, Plus, Minus, Heart, Copy, Check } from 'lucide-react';
 import { useCart } from '@/contexts/CartContext';
 import { useAuth } from '@/contexts/AuthContext';
 import { AddToWishlistButton } from './AddToWishlistButton';
@@ -25,20 +25,23 @@ export function ProductCard({ product }: ProductCardProps) {
     currency: 'MXN',
   }).format(product.price);
 
-  const rawImage = product.imageUrls && product.imageUrls.length > 0 
+  const primaryImage = product.imageUrls && product.imageUrls.length > 0 
     ? product.imageUrls[0] 
-    : "https://images.unsplash.com/photo-1557597774-9d273605dfa9?q=80&w=800&auto=format&fit=crop";
+    : "https://placehold.co/600x400.png?text=Sin+Imagen";
 
-  const primaryImage = rawImage.includes('syscom.mx')
-    ? `/api/image-proxy?url=${encodeURIComponent(rawImage)}`
-    : rawImage;
+  const [isAdded, setIsAdded] = useState(false);
 
   const handleAddToCart = () => {
     // Add multiple items if quantity > 1
     for (let i = 0; i < quantity; i++) {
         addToCart(product);
     }
-    // Optionally reset quantity to 1 after adding
+    setIsAdded(true);
+    toast({
+      title: "🛒 Producto agregado",
+      description: `${quantity}x ${product.name.substring(0, 45)}... agregado al carrito.`,
+    });
+    setTimeout(() => setIsAdded(false), 2000);
     setQuantity(1);
   };
 
@@ -53,7 +56,10 @@ export function ProductCard({ product }: ProductCardProps) {
             src={primaryImage}
             alt={product.name}
             fill
-            className="object-contain drop-shadow-lg"
+            sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
+            className="object-contain drop-shadow-md transition-transform duration-500 group-hover:scale-105"
+            loading="lazy"
+            decoding="async"
             unoptimized={true}
           />
         </div>
@@ -146,9 +152,23 @@ export function ProductCard({ product }: ProductCardProps) {
                 <button 
                     onClick={handleAddToCart}
                     disabled={!product.stock || product.stock <= 0}
-                    className="flex-1 flex items-center justify-center gap-2 bg-[#FFD54F] hover:bg-[#FFE082] disabled:bg-slate-700 disabled:text-slate-500 text-[#1A1F2D] font-black rounded-lg transition-colors text-sm shadow-sm"
+                    className={`flex-1 flex items-center justify-center gap-1.5 font-black rounded-lg transition-all text-xs sm:text-sm shadow-sm ${
+                      isAdded 
+                        ? 'bg-emerald-400 text-zinc-950 font-black' 
+                        : 'bg-[#FFD54F] hover:bg-[#FFE082] disabled:bg-slate-700 disabled:text-slate-500 text-[#1A1F2D]'
+                    }`}
                 >
-                    <ShoppingCart className="w-4 h-4" /> Agregar
+                    {isAdded ? (
+                      <>
+                        <Check className="w-4 h-4 text-zinc-950 stroke-[3]" />
+                        <span>¡Agregado!</span>
+                      </>
+                    ) : (
+                      <>
+                        <ShoppingCart className="w-4 h-4" />
+                        <span>Agregar</span>
+                      </>
+                    )}
                 </button>
             </div>
         </div>

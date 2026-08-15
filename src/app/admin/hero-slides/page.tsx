@@ -152,13 +152,13 @@ export default function AdminHeroSlidesPage() {
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
-    if (!imagePreview || !currentSlide.altText) {
-      toast({ variant: "destructive", title: "Error de Validación", description: "Se requiere una imagen y un Texto Alternativo." });
+    if (!imagePreview && !currentSlide.imageUrl && !imageFile) {
+      toast({ variant: "destructive", title: "Error de Validación", description: "Debes subir una imagen o ingresar una URL de imagen." });
       return;
     }
     setIsSubmitting(true);
 
-    let finalImageUrl = currentSlide.imageUrl || imagePreview;
+    let finalImageUrl = currentSlide.imageUrl || imagePreview || '';
 
     if (imageFile) {
         setIsUploading(true);
@@ -182,17 +182,17 @@ export default function AdminHeroSlidesPage() {
         setIsUploading(false);
     }
 
-    const constructedButtonLink = linkType === 'url' ? linkValue : `/?${linkType}=${linkValue}`;
+    const constructedButtonLink = linkValue ? (linkType === 'url' ? linkValue : `/?${linkType}=${linkValue}`) : '';
 
     const slidePayload = {
       imageUrl: finalImageUrl,
-      altText: currentSlide.altText!,
+      altText: currentSlide.altText?.trim() || currentSlide.title?.trim() || 'Banner promocional Borarly',
       order: Number(currentSlide.order) || 0,
-      title: currentSlide.title || '',
-      description: currentSlide.description || '',
-      buttonText: currentSlide.buttonText || '',
-      buttonLink: (currentSlide.buttonText && linkValue) ? constructedButtonLink : '',
-      isActive: !!currentSlide.isActive,
+      title: currentSlide.title?.trim() || '',
+      description: currentSlide.description?.trim() || '',
+      buttonText: currentSlide.buttonText?.trim() || '',
+      buttonLink: constructedButtonLink,
+      isActive: currentSlide.isActive !== undefined ? !!currentSlide.isActive : true,
     };
 
     try {
@@ -221,29 +221,57 @@ export default function AdminHeroSlidesPage() {
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <h1 className="text-3xl font-bold">Gestionar Carrusel (Hero)</h1>
+        <div>
+          <h1 className="text-3xl font-bold">Gestionar Carrusel (Banners / Hero)</h1>
+          <p className="text-sm text-muted-foreground mt-1">
+            Sube y administra los banners promocionales principales de la tienda.
+          </p>
+        </div>
         <Button onClick={handleAddNew}>
           <PlusCircle className="mr-2 h-5 w-5" /> Añadir Nuevo Slide
         </Button>
       </div>
 
+      {/* Guía visual de medidas estándar */}
+      <div className="bg-primary/5 border border-primary/20 rounded-xl p-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+        <div className="space-y-1">
+          <div className="flex items-center gap-2">
+            <span className="bg-primary text-primary-foreground text-xs font-bold px-2 py-0.5 rounded-full uppercase tracking-wider">
+              Medida Estándar Recomendada
+            </span>
+            <span className="font-bold text-foreground text-sm">1200 × 600 px (Proporción 2:1)</span>
+          </div>
+          <p className="text-xs text-muted-foreground">
+            También compatible con formato panorámico <strong>1200 × 500 px (2.4:1)</strong> o Full HD <strong>1920 × 960 px</strong>. Formatos admitidos: JPG, PNG, WebP (menos de 1MB recomendado).
+          </p>
+        </div>
+        <div className="text-xs text-muted-foreground bg-background px-3 py-1.5 rounded-lg border shrink-0">
+          ✨ Todos los textos son 100% opcionales
+        </div>
+      </div>
+
       {showForm && (
-        <Card className="shadow-lg">
+        <Card className="shadow-lg border-primary/20">
           <CardHeader>
             <CardTitle>{currentSlide.id ? 'Editar Slide' : 'Añadir Nuevo Slide'}</CardTitle>
-            <CardDescription>Sube una imagen o pega una URL. Dimensiones recomendadas: 1200x500px.</CardDescription>
+            <CardDescription>
+              Solo la imagen es necesaria. Puedes dejar los títulos vacíos si tu banner ya incluye el diseño y texto integrado.
+            </CardDescription>
           </CardHeader>
           <form onSubmit={handleSubmit}>
             <CardContent className="space-y-4">
               {/* Image Handling */}
               <div>
-                <Label htmlFor="imageUrl">Imagen del Slide</Label>
-                <div className="mt-2 flex items-center gap-4">
-                    <div className="w-48 h-20 relative border rounded bg-muted flex items-center justify-center">
+                <Label htmlFor="imageUrl" className="font-semibold">Imagen del Banner / Slide (Requerido)</Label>
+                <div className="mt-2 flex flex-col sm:flex-row items-start sm:items-center gap-4">
+                    <div className="w-full sm:w-56 aspect-[2/1] relative border rounded-lg bg-muted flex items-center justify-center overflow-hidden shadow-inner shrink-0">
                         {imagePreview ? (
                             <NextImage src={imagePreview} alt="Vista previa" layout="fill" objectFit="cover" />
                         ) : (
-                            <ImageIcon className="h-10 w-10 text-muted-foreground"/>
+                            <div className="text-center p-2">
+                              <ImageIcon className="h-8 w-8 text-muted-foreground mx-auto mb-1"/>
+                              <span className="text-[10px] text-muted-foreground">1200x600 (2:1)</span>
+                            </div>
                         )}
                     </div>
                     <div className="w-full space-y-2">
@@ -253,53 +281,89 @@ export default function AdminHeroSlidesPage() {
                             name="imageUrl" 
                             value={currentSlide.imageUrl || ''} 
                             onChange={handleInputChange} 
-                            placeholder="O pega una URL de imagen aquí" 
+                            placeholder="O pega una URL de imagen externa aquí" 
                         />
                     </div>
                 </div>
                 {isUploading && <Progress value={uploadProgress} className="w-full h-2 mt-2" />}
               </div>
 
-              <div>
-                <Label htmlFor="altText">Texto Alternativo (para accesibilidad)</Label>
-                <Input id="altText" name="altText" value={currentSlide.altText || ''} onChange={handleInputChange} required />
-              </div>
-              <div>
-                <Label htmlFor="order">Orden (ej. 1, 2, 3)</Label>
-                <Input id="order" name="order" type="number" value={currentSlide.order || 0} onChange={handleInputChange} />
-              </div>
-              
               <div className="grid md:grid-cols-2 gap-4">
                 <div>
-                  <Label htmlFor="title">Título (Opcional - para texto superpuesto)</Label>
-                  <Input id="title" name="title" value={currentSlide.title || ''} onChange={handleInputChange} />
+                  <Label htmlFor="altText">Texto Alternativo (Opcional - para SEO)</Label>
+                  <Input 
+                    id="altText" 
+                    name="altText" 
+                    placeholder="Ej. Promoción Acceso Inteligente Ubiquiti" 
+                    value={currentSlide.altText || ''} 
+                    onChange={handleInputChange} 
+                  />
                 </div>
                 <div>
-                  <Label htmlFor="description">Descripción (Opcional)</Label>
-                  <Textarea id="description" name="description" value={currentSlide.description || ''} onChange={handleInputChange} rows={1} />
+                  <Label htmlFor="order">Orden de aparición (Opcional)</Label>
+                  <Input 
+                    id="order" 
+                    name="order" 
+                    type="number" 
+                    placeholder="1, 2, 3..." 
+                    value={currentSlide.order || 0} 
+                    onChange={handleInputChange} 
+                  />
+                </div>
+              </div>
+              
+              <div className="grid md:grid-cols-2 gap-4 border-t pt-4">
+                <div>
+                  <Label htmlFor="title">Título Superpuesto (Opcional)</Label>
+                  <Input 
+                    id="title" 
+                    name="title" 
+                    placeholder="Dejar vacío si el banner ya tiene texto" 
+                    value={currentSlide.title || ''} 
+                    onChange={handleInputChange} 
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="description">Descripción Superpuesta (Opcional)</Label>
+                  <Textarea 
+                    id="description" 
+                    name="description" 
+                    placeholder="Dejar vacío si el banner ya tiene texto" 
+                    value={currentSlide.description || ''} 
+                    onChange={handleInputChange} 
+                    rows={1} 
+                  />
                 </div>
               </div>
               
               {/* Link Handling */}
-              <div>
-                 <Label>Enlace del Botón (Opcional)</Label>
-                 <div className="grid md:grid-cols-3 gap-2 mt-1">
-                    <Input name="buttonText" placeholder="Texto del botón (ej. Comprar)" value={currentSlide.buttonText || ''} onChange={handleInputChange} />
+              <div className="border-t pt-4">
+                 <Label className="font-semibold">Destino al hacer clic en el Banner (Opcional)</Label>
+                 <p className="text-xs text-muted-foreground mb-2">
+                    Si seleccionas una categoría, marca o URL, el banner completo será cliqueable.
+                 </p>
+                 <div className="grid md:grid-cols-3 gap-2">
+                    <Input 
+                      name="buttonText" 
+                      placeholder="Texto botón (Opcional)" 
+                      value={currentSlide.buttonText || ''} 
+                      onChange={handleInputChange} 
+                    />
                     <Select value={linkType} onValueChange={(v: LinkType) => setLinkType(v)}>
                         <SelectTrigger><SelectValue /></SelectTrigger>
                         <SelectContent>
-                            <SelectItem value="url">URL Externa</SelectItem>
-                            <SelectItem value="category">Categoría</SelectItem>
-                            <SelectItem value="brand">Marca</SelectItem>
+                            <SelectItem value="url">URL Libre / Externa</SelectItem>
+                            <SelectItem value="category">Filtrar por Categoría</SelectItem>
+                            <SelectItem value="brand">Filtrar por Marca</SelectItem>
                         </SelectContent>
                     </Select>
                     
-                    {linkType === 'url' && <Input placeholder="https://ejemplo.com" value={linkValue} onChange={e => setLinkValue(e.target.value)} />}
+                    {linkType === 'url' && <Input placeholder="https://borarly.com/... o enlace externo" value={linkValue} onChange={e => setLinkValue(e.target.value)} />}
                     {linkType === 'category' && (
                         <Select value={linkValue} onValueChange={setLinkValue}>
                             <SelectTrigger><SelectValue placeholder="Elige una categoría" /></SelectTrigger>
                             <SelectContent>
-                                {categories.map(c => <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>)}
+                                {categories.map(c => <SelectItem key={c.id} value={c.id}>{c.alias || c.name}</SelectItem>)}
                             </SelectContent>
                         </Select>
                     )}
@@ -307,7 +371,7 @@ export default function AdminHeroSlidesPage() {
                          <Select value={linkValue} onValueChange={setLinkValue}>
                             <SelectTrigger><SelectValue placeholder="Elige una marca" /></SelectTrigger>
                             <SelectContent>
-                                {brands.map(b => <SelectItem key={b.id} value={b.id}>{b.name}</SelectItem>)}
+                                {brands.map(b => <SelectItem key={b.id} value={b.name}>{b.name}</SelectItem>)}
                             </SelectContent>
                         </Select>
                     )}

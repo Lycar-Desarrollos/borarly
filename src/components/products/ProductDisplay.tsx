@@ -72,14 +72,53 @@ export function ProductDisplay({
             onFilterChange={handleFilterChange}
           />
       </aside>
-      <section className="flex-grow min-w-0">
+      <section className="flex-grow min-w-0 space-y-6">
+        {/* Banner de Nuevos */}
+        {currentNuevo && !currentCategory && !currentSearch && (
+          <div className="flex items-center justify-between bg-amber-500/10 border border-amber-500/30 p-4 rounded-2xl">
+            <div>
+              <h2 className="text-xl sm:text-2xl font-bold text-foreground flex items-center gap-2">
+                ⚡ Nuevos Lanzamientos de Catálogo
+              </h2>
+              <p className="text-xs text-muted-foreground mt-0.5">Últimas tecnologías e innovaciones añadidas al catálogo</p>
+            </div>
+            <span className="text-xs font-bold text-amber-600 bg-amber-500/10 px-3 py-1 rounded-full">{initialProducts.length} productos</span>
+          </div>
+        )}
+
+        {/* Banner de Ofertas */}
+        {currentOferta && !currentCategory && !currentSearch && (
+          <div className="flex items-center justify-between bg-red-500/10 border border-red-500/30 p-4 rounded-2xl">
+            <div>
+              <h2 className="text-xl sm:text-2xl font-bold text-foreground flex items-center gap-2">
+                🔥 Ofertas y Precios Especiales
+              </h2>
+              <p className="text-xs text-muted-foreground mt-0.5">Descuentos mayoristas y promociones activas por tiempo limitado</p>
+            </div>
+            <span className="text-xs font-bold text-red-600 bg-red-500/10 px-3 py-1 rounded-full">{initialProducts.length} productos</span>
+          </div>
+        )}
+
+        {/* Banner de En Existencia */}
+        {currentEnExistencia && !currentCategory && !currentSearch && (
+          <div className="flex items-center justify-between bg-emerald-500/10 border border-emerald-500/30 p-4 rounded-2xl">
+            <div>
+              <h2 className="text-xl sm:text-2xl font-bold text-foreground flex items-center gap-2">
+                📦 Inventario en Existencia Inmediata
+              </h2>
+              <p className="text-xs text-muted-foreground mt-0.5">Productos con stock disponible para envío nacional inmediato</p>
+            </div>
+            <span className="text-xs font-bold text-emerald-600 bg-emerald-500/10 px-3 py-1 rounded-full">{initialProducts.length} productos</span>
+          </div>
+        )}
+
         {currentSearch && !currentCategory && (
-          <h2 className="text-2xl font-semibold mb-6">
+          <h2 className="text-2xl font-semibold">
             Resultados de búsqueda para: <span className="text-primary">{currentSearch}</span>
           </h2>
         )}
         {currentCategory && categories.find(c => c.id === currentCategory) && (
-            <h2 className="text-2xl font-semibold mb-6">
+            <h2 className="text-2xl font-semibold">
                 Productos en: <span className="text-primary">
                     {(() => {
                         const cat = categories.find(c => c.id === currentCategory);

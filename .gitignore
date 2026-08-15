@@ -54,3 +54,5 @@ Boratech-Syscom
 check_*.ts
 fetch_*.mjs
 test_*.mjs
+scratch/
+

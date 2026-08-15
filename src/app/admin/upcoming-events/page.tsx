@@ -88,21 +88,21 @@ export default function AdminUpcomingEventsPage() {
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
-    if (!currentEvent.title || !currentEvent.imageUrl || !currentEvent.buttonText) {
-      toast({ variant: "destructive", title: "Error de Validación", description: "Título, URL de Imagen y Texto del Botón son obligatorios." });
+    if (!currentEvent.imageUrl) {
+      toast({ variant: "destructive", title: "Error de Validación", description: "La URL o archivo de Imagen es obligatorio." });
       return;
     }
     setIsSubmitting(true);
 
     const eventPayload = {
-      title: currentEvent.title,
-      subtitle: currentEvent.subtitle || '',
+      title: currentEvent.title?.trim() || 'Evento Especial Borarly',
+      subtitle: currentEvent.subtitle?.trim() || '',
       imageUrl: currentEvent.imageUrl,
       brandLogoUrl: currentEvent.brandLogoUrl || '',
-      buttonText: currentEvent.buttonText,
+      buttonText: currentEvent.buttonText?.trim() || 'Ver Más',
       buttonLink: currentEvent.buttonLink || '#',
       order: Number(currentEvent.order) || 0,
-      isActive: !!currentEvent.isActive,
+      isActive: currentEvent.isActive !== undefined ? !!currentEvent.isActive : true,
     };
 
     try {

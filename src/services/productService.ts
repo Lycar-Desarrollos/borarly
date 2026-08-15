@@ -24,7 +24,7 @@ import {
   addDoc,
 } from 'firebase/firestore';
 import { getExchangeRate, getVatRate } from './settingsService';
-import { getProductosSyscomMerida, getProductoSyscomById, getCategoriasSyscom, getSucursalesSyscom } from './syscom';
+import { getProductosSyscomMerida, getProductoSyscomById, getCategoriasSyscom, getSucursalesSyscom, getRelacionadosSyscom } from './syscom';
 const PRODUCTS_COLLECTION = 'products';
 const CATEGORIES_COLLECTION = 'categories';
 
@@ -157,6 +157,87 @@ export async function getProductsByIds(ids: string[]): Promise<Product[]> {
         console.error("Error fetching Syscom products by IDs:", error);
         return [];
     }
+}
+
+/**
+ * Obtiene accesorios y productos verdaderamente relacionados al producto actual:
+ * 1. Consulta el endpoint oficial de Syscom (/productos/{id}/relacionados)
+ * 2. Si se requieren más complementos, consulta la subcategoría específica más profunda
+ * 3. Si aún faltan, realiza una búsqueda inteligente por marca y palabras clave del producto
+ */
+export async function getRelatedProductsForProduct(product: Product): Promise<Product[]> {
+  try {
+    let results: Product[] = [];
+
+    // 1. Accesorios e ingeniería oficial de Syscom
+    try {
+      const directRelacionados = await getRelacionadosSyscom(product.id);
+      if (Array.isArray(directRelacionados)) {
+        results = directRelacionados.filter(p => p && p.id && p.id !== product.id);
+      }
+    } catch (e) {
+      console.warn("Error buscando relacionados directos Syscom:", e);
+    }
+
+    // 2. Si no hay suficientes, buscar en la subcategoría específica más profunda
+    if (results.length < 8) {
+      try {
+        const catId = product.categorias_adicionales && product.categorias_adicionales.length > 0
+          ? String(product.categorias_adicionales[product.categorias_adicionales.length - 1].id)
+          : (product.categoryId ? String(product.categoryId) : undefined);
+
+        if (catId) {
+          const categoryProducts = await getProductosSyscomMerida(catId, undefined, undefined, undefined, undefined, undefined, undefined, true);
+          if (Array.isArray(categoryProducts)) {
+            const filtered = categoryProducts.filter(p => p && p.id && p.id !== product.id && !results.some(r => r.id === p.id));
+            results = [...results, ...filtered];
+          }
+        }
+      } catch (e) {
+        console.warn("Error buscando productos por subcategoría:", e);
+      }
+    }
+
+    // 3. Si aún faltan, buscar por palabras clave principales del nombre del producto
+    if (results.length < 4 && product.name) {
+      try {
+        const keywords = product.name
+          .replace(/[^\w\s]/gi, ' ')
+          .split(/\s+/)
+          .filter(w => w.length > 3 && !['para', 'con', 'las', 'los', 'del', 'por'].includes(w.toLowerCase()))
+          .slice(0, 2)
+          .join(' ');
+
+        if (keywords) {
+          const keywordProducts = await getProductosSyscomMerida(undefined, keywords, undefined, undefined, undefined, undefined, undefined, true);
+          if (Array.isArray(keywordProducts)) {
+            const filtered = keywordProducts.filter(p => p && p.id && p.id !== product.id && !results.some(r => r.id === p.id));
+            results = [...results, ...filtered];
+          }
+        }
+      } catch (e) {
+        console.warn("Error buscando productos por palabras clave:", e);
+      }
+    }
+
+    // 4. Fallback por Marca
+    if (results.length < 4 && product.brand) {
+      try {
+        const brandProducts = await getProductosSyscomMerida(undefined, undefined, product.brand, undefined, undefined, undefined, undefined, true);
+        if (Array.isArray(brandProducts)) {
+          const filtered = brandProducts.filter(p => p && p.id && p.id !== product.id && !results.some(r => r.id === p.id));
+          results = [...results, ...filtered];
+        }
+      } catch (e) {
+        console.warn("Error buscando productos por marca:", e);
+      }
+    }
+
+    return results.slice(0, 8);
+  } catch (error) {
+    console.error("Error global fetching intelligent related products:", error);
+    return [];
+  }
 }
 
 
@@ -525,3 +606,9 @@ export async function getFeaturedProducts(): Promise<Product[]> {
     return [];
   }
 }
+
+export async function searchProductsAI(query: string, page = 1) {
+  const { busquedaIASyscom } = await import('./syscom');
+  return busquedaIASyscom(query, page);
+}
+

@@ -1,19 +1,18 @@
 "use client"; 
 
-import React from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import Image from 'next/image';
-import { Button } from '@/components/ui/button';
-import { ArrowLeft, X, ChevronRight, ChevronDown, Package, CheckCircle2, Share2, Heart, Info, ShoppingCart, Zap, ShieldCheck, Copy } from 'lucide-react'; 
-import { AddToCartButton } from '@/components/products/AddToCartButton';
-import { AddToWishlistButton } from '@/components/products/AddToWishlistButton'; 
-import { ShareButtons } from '@/components/products/ShareButtons';
-import { ProductList } from '@/components/products/ProductList';
 import Link from 'next/link';
-import { Badge } from '@/components/ui/badge';
-import { Separator } from '@/components/ui/separator';
-import { useState, useMemo, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import type { Product, Category } from '@/lib/types';
+import { 
+  ArrowLeft, ChevronRight, ChevronDown, Package, CheckCircle2, 
+  Share2, Heart, ShoppingCart, Zap, ShieldCheck, Copy, 
+  FileText, ExternalLink, MessageSquare, Layers, Check
+} from 'lucide-react'; 
+
+import { Button } from '@/components/ui/button';
+import { Separator } from '@/components/ui/separator';
+import { ProductList } from '@/components/products/ProductList';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { cn } from "@/lib/utils";
 
@@ -21,6 +20,7 @@ import { useCart } from '@/contexts/CartContext';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/hooks/use-toast';
 import { getProfitMargin, getShippingSettings } from '@/services/settingsService';
+import type { Product, Category } from '@/lib/types';
 
 interface ProductDetailViewProps {
     product: Product;
@@ -60,10 +60,6 @@ export function ProductDetailView({ product, relatedProducts, allCategories }: P
     }
     return path;
   }, [product.category, allCategories]);
-
-  const handleThumbnailClick = (index: number) => {
-    setSelectedImageIndex(index);
-  };
 
   const handleMainImageDoubleClick = () => {
     if (product.imageUrls && product.imageUrls.length > 0) {
@@ -124,163 +120,180 @@ export function ProductDetailView({ product, relatedProducts, allCategories }: P
     }
   };
 
-  const formattedPrice = new Intl.NumberFormat('es-MX', {
-    style: 'currency',
-    currency: 'MXN',
-  }).format(product.price);
-
-  const mainImageUrl = product.imageUrls && product.imageUrls.length > 0 
+  const rawMainImageUrl = product.imageUrls && product.imageUrls.length > 0 
     ? product.imageUrls[selectedImageIndex] 
     : "https://placehold.co/600x400.png?text=Sin+Imagen";
-  
-  const mainImageAiHint = (product.imageUrls && product.imageUrls.length > 0 && product.imageUrls[selectedImageIndex].includes('placehold.co')) || !product.imageUrls || product.imageUrls.length === 0
-    ? (product.name.split(" ").slice(0,2).join(" ").toLowerCase() || `imagen de producto ${selectedImageIndex + 1}`) 
-    : undefined;
+
+  const mainImageUrl = rawMainImageUrl.includes('syscom.mx') 
+    ? `/api/image-proxy?url=${encodeURIComponent(rawMainImageUrl)}` 
+    : rawMainImageUrl;
+
+  const whatsappMessage = encodeURIComponent(
+    `Hola, me interesa el producto: ${product.name} (Modelo: ${product.line || product.id}). ¿Tienen disponibilidad y precio por volumen?`
+  );
 
   return (
     <div className="space-y-8">
-      <div className="flex items-baseline gap-6">
-        <Link href="/" legacyBehavior passHref>
-          <Button variant="outline">
-            <ArrowLeft className="mr-2 h-4 w-4" /> Volver a Productos
+      {/* NAVEGACIÓN SUPERIOR / BREADCRUMBS */}
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+        <Link href="/">
+          <Button variant="outline" size="sm" className="gap-2 rounded-xl">
+            <ArrowLeft className="h-4 w-4" /> Volver a Productos
           </Button>
         </Link>
-      <div className="flex flex-wrap items-center text-[13px] text-muted-foreground gap-1.5 py-2">
-        <Link href="/" className="hover:text-white transition-colors">Inicio</Link>
-        <ChevronRight className="h-3 w-3" />
-        {product.categorias_adicionales && product.categorias_adicionales.length > 0 ? (
-          product.categorias_adicionales.map((cat, index) => (
-            <React.Fragment key={cat.id}>
-               <Link href={`/?category=${cat.id}`} className="hover:text-white transition-colors truncate">
-                  {cat.nombre}
-               </Link>
-               {index < (product.categorias_adicionales?.length || 0) - 1 && <ChevronRight className="h-3 w-3 shrink-0" />}
-            </React.Fragment>
-          ))
-        ) : (
-          categoryPath.map((cat, index) => (
-            <React.Fragment key={cat.id}>
-                <Link href={`/?category=${cat.id}`} className="hover:text-white transition-colors">
-                    {cat.alias || cat.name}
-                </Link>
-                {index < categoryPath.length - 1 && <ChevronRight className="h-3 w-3 shrink-0" />}
-            </React.Fragment>
-          ))
-        )}
-        <ChevronRight className="h-3 w-3" />
-        <span className="text-zinc-500 truncate">{product.line}</span>
-      </div>
+        <div className="flex flex-wrap items-center text-xs text-muted-foreground gap-1.5 py-1">
+          <Link href="/" className="hover:text-foreground transition-colors">Inicio</Link>
+          <ChevronRight className="h-3 w-3" />
+          {product.categorias_adicionales && product.categorias_adicionales.length > 0 ? (
+            product.categorias_adicionales.map((cat, index) => (
+              <React.Fragment key={cat.id}>
+                 <Link href={`/?category=${cat.id}`} className="hover:text-foreground transition-colors truncate">
+                    {cat.nombre}
+                 </Link>
+                 {index < (product.categorias_adicionales?.length || 0) - 1 && <ChevronRight className="h-3 w-3 shrink-0" />}
+              </React.Fragment>
+            ))
+          ) : (
+            categoryPath.map((cat, index) => (
+              <React.Fragment key={cat.id}>
+                  <Link href={`/?category=${cat.id}`} className="hover:text-foreground transition-colors">
+                      {cat.alias || cat.name}
+                  </Link>
+                  {index < categoryPath.length - 1 && <ChevronRight className="h-3 w-3 shrink-0" />}
+              </React.Fragment>
+            ))
+          )}
+          <ChevronRight className="h-3 w-3" />
+          <span className="text-foreground font-semibold truncate">{product.line || product.id}</span>
+        </div>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
         
-        {/* COLUMNA IZQUIERDA: GALERIA Y CARACTERISTICAS (8 COL) */}
-        <div className="lg:col-span-8 space-y-8">
+        {/* COLUMNA IZQUIERDA: HERO GALERÍA, BADGES Y PUNTOS CLAVE (7 COL) */}
+        <div className="lg:col-span-7 space-y-6">
             <div className="grid grid-cols-1 md:grid-cols-12 gap-4">
-                {/* Galería con Carrusel Interactiva */}
+                {/* Galería con Miniaturas */}
                 <div className="md:col-span-2 order-2 md:order-1 relative group h-full">
                     <div className="flex md:flex-col gap-2 overflow-x-auto md:overflow-y-auto no-scrollbar scroll-smooth h-full max-h-[480px] pb-2 md:pb-0 pr-1 select-none" id="thumbnail-container">
                         {product.imageUrls && product.imageUrls.map((url, index) => {
-                            const proxyUrl = url.includes('syscom.mx') ? `/api/image-proxy?url=${encodeURIComponent(url)}` : url;
+                            const thumbUrl = url.includes('syscom.mx') 
+                              ? `/api/image-proxy?url=${encodeURIComponent(url)}` 
+                              : url;
                             return (
                               <div
                                   key={index}
                                   className={cn(
-                                      "w-16 h-16 md:w-full aspect-square relative rounded-lg border-2 cursor-pointer bg-white shrink-0 transition-all hover:border-primary/50",
-                                      index === selectedImageIndex ? "border-primary shadow-sm" : "border-slate-100 dark:border-slate-800"
+                                      "w-16 h-16 md:w-full aspect-square relative rounded-xl border-2 cursor-pointer bg-white shrink-0 transition-all hover:border-primary/50 overflow-hidden shadow-sm",
+                                      index === selectedImageIndex ? "border-primary ring-2 ring-primary/20" : "border-border/60"
                                   )}
                                   onClick={() => setSelectedImageIndex(index)}
                               >
-                                  <Image src={proxyUrl} alt={`thumbnail-${index}`} fill className="object-contain p-1.5 rounded-md" />
+                                  <Image src={thumbUrl} alt={`thumbnail-${index}`} fill className="object-contain p-1.5" />
                               </div>
                             );
                         })}
                     </div>
-                    
-                    {/* Botones de Navegación del Carrusel (Solo si hay más de 5 imágenes) */}
-                    {product.imageUrls && product.imageUrls.length > 5 && (
-                        <>
-                            <div className="absolute top-0 left-0 right-0 h-10 bg-gradient-to-b from-background to-transparent pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity hidden md:block z-10" />
-                            <div className="absolute bottom-0 left-0 right-0 h-10 bg-gradient-to-t from-background to-transparent pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity hidden md:block z-10" />
-                            
-                            <button 
-                                onClick={() => {
-                                    const container = document.getElementById('thumbnail-container');
-                                    if (container) container.scrollBy({ top: -120, behavior: 'smooth' });
-                                }}
-                                className="absolute -top-3 left-1/2 -translate-x-1/2 bg-popover border rounded-full p-1.5 shadow-xl opacity-0 group-hover:opacity-100 transition-all hover:scale-110 hidden md:block z-20"
-                            >
-                                <ChevronDown className="w-4 h-4 rotate-180" />
-                            </button>
-                            <button 
-                                onClick={() => {
-                                    const container = document.getElementById('thumbnail-container');
-                                    if (container) container.scrollBy({ top: 120, behavior: 'smooth' });
-                                }}
-                                className="absolute -bottom-3 left-1/2 -translate-x-1/2 bg-popover border rounded-full p-1.5 shadow-xl opacity-0 group-hover:opacity-100 transition-all hover:scale-110 hidden md:block z-20"
-                            >
-                                <ChevronDown className="w-4 h-4" />
-                            </button>
-                        </>
-                    )}
                 </div>
 
                 {/* Imagen Principal */}
                 <div className="md:col-span-10 order-1 md:order-2">
-                    <div className="aspect-[4/3] relative rounded-xl overflow-hidden bg-white border border-slate-800 group cursor-zoom-in"
+                    <div className="aspect-[4/3] relative rounded-2xl overflow-hidden bg-white border border-border/60 group cursor-zoom-in shadow-sm"
                          onDoubleClick={handleMainImageDoubleClick}>
                         <Image
-                            src={mainImageUrl.includes('syscom.mx') ? `/api/image-proxy?url=${encodeURIComponent(mainImageUrl)}` : mainImageUrl}
+                            src={mainImageUrl}
                             alt={product.name}
                             fill
                             priority
                             unoptimized={true}
-                            className="object-contain p-8 transition-transform group-hover:scale-105"
+                            className="object-contain p-8 transition-transform duration-300 group-hover:scale-105"
                         />
+                        <div className="absolute bottom-3 right-3 text-[10px] text-zinc-400 bg-white/80 dark:bg-black/60 px-2 py-1 rounded-md backdrop-blur-sm pointer-events-none">
+                          Doble clic para ampliar
+                        </div>
                     </div>
                 </div>
             </div>
 
+            {/* Badges / Iconos Tecnológicos de Syscom */}
+            {product.iconos && product.iconos.length > 0 && (
+              <div className="bg-card/50 border border-border/60 rounded-2xl p-4 flex flex-wrap items-center gap-3 shadow-sm">
+                <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider flex items-center gap-1.5">
+                  <Layers className="w-4 h-4 text-primary" /> Tecnologías:
+                </span>
+                <div className="flex flex-wrap gap-2">
+                  {product.iconos.map((ico, idx) => (
+                    <div key={idx} className="flex items-center gap-1.5 bg-background border px-2.5 py-1 rounded-lg text-xs font-medium shadow-xs" title={ico.nombre || ''}>
+                      {ico.imagen && (
+                        <img src={ico.imagen} alt={ico.nombre || 'icono'} className="w-4 h-4 object-contain" />
+                      )}
+                      <span>{ico.nombre || 'Certificación'}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
             {/* Puntos Clave */}
-            <div className="space-y-6">
-                {product.puntos_clave && product.puntos_clave.length > 0 && (
-                    <div className="grid grid-cols-1 gap-3">
+            {product.puntos_clave && product.puntos_clave.length > 0 && (
+                <div className="space-y-4">
+                    <div className="grid grid-cols-1 gap-2.5">
                         {product.puntos_clave.map((punto: string, i: number) => (
-                            <div key={i} className="flex items-start gap-3">
-                                <CheckCircle2 className="w-5 h-5 text-[#00E676] shrink-0 mt-0.5" />
-                                <span className="text-[15px] text-zinc-300">{punto}</span>
+                            <div key={i} className="flex items-start gap-3 p-3 rounded-xl bg-card border border-border/40">
+                                <CheckCircle2 className="w-4 h-4 text-green-500 shrink-0 mt-0.5" />
+                                <span className="text-xs sm:text-sm text-foreground/90 font-medium leading-snug">{punto}</span>
                             </div>
                         ))}
                     </div>
+                </div>
+            )}
+
+            {/* Resumen Físico y Datos Técnicos Rápidos */}
+            {(product.peso || product.dimensiones || product.sat_code || product.brand || product.line) && (
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 bg-card/60 p-4 rounded-2xl border border-border/50 shadow-xs">
+                {product.brand && (
+                  <div className="space-y-0.5">
+                    <p className="text-[10px] text-muted-foreground uppercase font-bold">Marca</p>
+                    <p className="text-xs sm:text-sm font-bold text-foreground">{product.brand}</p>
+                  </div>
                 )}
-            </div>
-            
-            <Separator className="bg-slate-800" />
-            
-            <div className="space-y-4">
-                <h3 className="text-xl font-bold text-foreground dark:text-white uppercase tracking-tighter">Especificaciones Técnicas</h3>
-                {product.description && product.description.includes('<') ? (
-                    <div 
-                        className="prose dark:prose-invert max-w-none text-muted-foreground dark:text-zinc-400 text-sm leading-relaxed syscom-html-content"
-                        dangerouslySetInnerHTML={{ __html: product.description }}
-                    />
-                ) : (
-                    <div className="prose dark:prose-invert max-w-none text-muted-foreground dark:text-zinc-400 text-sm leading-relaxed">
-                        {product.description}
-                    </div>
+                {product.line && (
+                  <div className="space-y-0.5">
+                    <p className="text-[10px] text-muted-foreground uppercase font-bold">Modelo</p>
+                    <p className="text-xs sm:text-sm font-bold text-foreground">{product.line}</p>
+                  </div>
                 )}
-            </div>
+                {product.peso && (
+                  <div className="space-y-0.5">
+                    <p className="text-[10px] text-muted-foreground uppercase font-bold">Peso</p>
+                    <p className="text-xs sm:text-sm font-bold text-foreground">{product.peso} kg</p>
+                  </div>
+                )}
+                {product.dimensiones && (
+                  <div className="space-y-0.5">
+                    <p className="text-[10px] text-muted-foreground uppercase font-bold">Dimensiones</p>
+                    <p className="text-xs sm:text-sm font-bold text-foreground">{product.dimensiones}</p>
+                  </div>
+                )}
+                {product.sat_code && (
+                  <div className="space-y-0.5">
+                    <p className="text-[10px] text-muted-foreground uppercase font-bold">Clave SAT</p>
+                    <p className="text-xs sm:text-sm font-bold text-foreground">{product.sat_code}</p>
+                  </div>
+                )}
+              </div>
+            )}
         </div>
 
-        {/* COLUMNA DERECHA: PREMIUM BUY BOX (4 COL) */}
-        <div className="lg:col-span-4 sticky top-24 z-10 transition-all duration-300">
-            <div className="bg-card/80 dark:bg-[#0b1120]/80 backdrop-blur-xl border border-border dark:border-slate-800 rounded-3xl p-5 xl:p-6 shadow-[0_20px_50px_rgba(0,0,0,0.5)] space-y-5">
+        {/* COLUMNA DERECHA: PREMIUM BUY BOX (5 COL) */}
+        <div className="lg:col-span-5 sticky top-24 z-10 transition-all duration-300">
+            <div className="bg-card/90 backdrop-blur-xl border border-border rounded-3xl p-5 xl:p-6 shadow-xl space-y-5">
                 
-                {/* 1. PRODUCT HEADER (Compact & Elegant) */}
+                {/* 1. PRODUCT HEADER */}
                 <div className="space-y-3">
                     <div className="flex justify-between items-start gap-4">
                         {product.brand && (
-                            <span className="px-2 py-1 bg-[#00E676]/10 text-[#00E676] text-[10px] md:text-[11px] font-black rounded-full uppercase tracking-widest border border-[#00E676]/20">
+                            <span className="px-2.5 py-1 bg-primary/10 text-primary text-xs font-extrabold rounded-full uppercase tracking-wider border border-primary/20">
                                 {product.brand}
                             </span>
                         )}
@@ -291,77 +304,74 @@ export function ProductDetailView({ product, relatedProducts, allCategories }: P
                                     alt="brand" 
                                     width={48} 
                                     height={48} 
-                                    className="object-contain h-10 w-10 md:h-12 md:w-12 rounded-xl bg-white/5 p-1 border border-white/10 shadow-sm"
+                                    className="object-contain h-10 w-10 md:h-12 md:w-12 rounded-xl bg-white p-1 border border-border shadow-xs"
                                     unoptimized={true}
                                 />
                             </div>
                         )}
                     </div>
                     
-                    <h1 className="text-[17px] md:text-[19px] font-black text-foreground dark:text-white leading-snug tracking-tighter">
+                    <h1 className="text-lg md:text-xl font-extrabold text-foreground leading-snug tracking-tight">
                         {product.name}
                     </h1>
 
-                    <div className="flex flex-wrap items-center gap-x-4 gap-y-2 pb-2">
+                    <div className="flex flex-wrap items-center gap-x-4 gap-y-1.5 pb-1">
                         <div className="flex items-center gap-1.5 group">
-                            <p className="text-[10px] md:text-[11px] font-bold text-[#007AFF] tracking-wider uppercase">
-                                Modelo: <span className="text-muted-foreground dark:text-zinc-300 ml-0.5">{product.line}</span>
+                            <p className="text-xs font-bold text-primary tracking-wider uppercase">
+                                Modelo: <span className="text-muted-foreground ml-0.5">{product.line || product.id}</span>
                             </p>
                             <button 
                                 onClick={() => {
-                                    navigator.clipboard.writeText(product.line || '');
+                                    navigator.clipboard.writeText(product.line || product.id || '');
                                     toast({ description: "Modelo copiado al portapapeles" });
                                 }}
-                                className="text-muted-foreground opacity-50 group-hover:opacity-100 dark:text-zinc-500 hover:text-foreground dark:hover:text-white transition-opacity"
+                                className="text-muted-foreground opacity-60 hover:opacity-100 transition-opacity"
                                 title="Copiar Modelo"
                             >
-                                <Copy className="w-3 h-3" />
+                                <Copy className="w-3.5 h-3.5" />
                             </button>
                         </div>
                         {product.sat_code && (
-                            <p className="text-[11px] md:text-xs font-bold text-zinc-500 tracking-wider uppercase">
-                                Código SAT: <span className="text-muted-foreground dark:text-zinc-300 ml-0.5">{product.sat_code}</span>
+                            <p className="text-xs text-muted-foreground font-medium">
+                                SAT: <span className="font-semibold">{product.sat_code}</span>
                             </p>
                         )}
                     </div>
                 </div>
 
-                <Separator className="bg-slate-800/50" />
+                <Separator />
 
                 {/* 2. PRICING SECTION */}
-                <div className="relative overflow-hidden group">
-                    <div className="absolute -inset-1 bg-gradient-to-r from-[#00E676]/10 to-transparent rounded-2xl blur opacity-25 group-hover:opacity-60 transition duration-1000"></div>
-                    <div className="relative">
-                        <p className="text-[10px] text-zinc-500 font-black uppercase tracking-[0.2em] mb-1">Precio final</p>
-                        <div className="flex items-baseline gap-1">
-                            <span className="text-3xl md:text-4xl font-black text-foreground dark:text-white tracking-tighter drop-shadow-sm">
-                                MXN {new Intl.NumberFormat('es-MX', { style: 'currency', currency: 'MXN' }).format(product.price).replace('MXN', '').trim()}
-                            </span>
-                        </div>
-                        <p className="text-[10px] text-[#00E676] font-bold flex flex-wrap items-center gap-1.5 mt-2 leading-tight">
-                            <CheckCircle2 className="w-3.5 h-3.5 shrink-0" /> <span className="whitespace-nowrap">IVA INCLUIDO</span> <span className="hidden sm:inline">•</span> <span className="whitespace-nowrap">ENTREGA INMEDIATA</span>
-                        </p>
+                <div className="space-y-1">
+                    <p className="text-[11px] text-muted-foreground font-bold uppercase tracking-widest">Precio Mayorista</p>
+                    <div className="flex items-baseline gap-1.5">
+                        <span className="text-3xl md:text-4xl font-black text-foreground tracking-tight">
+                            MXN {new Intl.NumberFormat('es-MX', { style: 'currency', currency: 'MXN' }).format(product.price).replace('MXN', '').trim()}
+                        </span>
                     </div>
+                    <p className="text-xs text-green-600 dark:text-green-400 font-bold flex items-center gap-1.5 pt-1">
+                        <CheckCircle2 className="w-4 h-4 shrink-0" /> IVA Incluido &middot; Facturación Disponible
+                    </p>
                 </div>
 
                 {/* 3. PRIMARY ACTIONS */}
                 <div className="space-y-3">
                     <div className="flex gap-3">
-                        {/* Selector de Cantidad Premium */}
-                        <div className="flex items-center bg-muted dark:bg-slate-900/50 border border-border dark:border-slate-800 rounded-xl px-1.5 py-1">
+                        {/* Selector de Cantidad */}
+                        <div className="flex items-center bg-muted border border-border rounded-xl px-1.5 py-1">
                             <Button 
                                 variant="ghost" 
                                 size="icon" 
-                                className="h-8 w-8 text-muted-foreground dark:text-zinc-400 hover:text-foreground dark:hover:text-white rounded-lg"
+                                className="h-8 w-8 text-muted-foreground hover:text-foreground rounded-lg"
                                 onClick={() => setQuantity(q => Math.max(1, q - 1))}
                             >
                                 -
                             </Button>
-                            <span className="text-foreground dark:text-white font-black text-sm w-6 text-center">{quantity}</span>
+                            <span className="text-foreground font-extrabold text-sm w-7 text-center">{quantity}</span>
                             <Button 
                                 variant="ghost" 
                                 size="icon" 
-                                className="h-8 w-8 text-muted-foreground dark:text-zinc-400 hover:text-foreground dark:hover:text-white rounded-lg"
+                                className="h-8 w-8 text-muted-foreground hover:text-foreground rounded-lg"
                                 onClick={() => setQuantity(q => q + 1)}
                             >
                                 +
@@ -370,70 +380,175 @@ export function ProductDetailView({ product, relatedProducts, allCategories }: P
                         {/* Add to Cart */}
                         <Button 
                             onClick={handleAddToCart}
-                            className="flex-1 bg-foreground hover:bg-zinc-800 dark:bg-white dark:hover:bg-zinc-200 text-background dark:text-black h-12 font-black rounded-xl gap-2 shadow-lg transition-all text-sm group"
+                            variant="outline"
+                            className="flex-1 h-12 font-bold rounded-xl gap-2 shadow-sm text-sm"
                         >
-                            <ShoppingCart className="w-4 h-4 group-hover:-translate-y-0.5 transition-transform" />
-                            Añadir
+                            <ShoppingCart className="w-4 h-4" />
+                            Añadir al Carrito
                         </Button>
                     </div>
 
-                    {/* Quick Checkout (Highlight) */}
+                    {/* Quick Buy Now */}
                     <Button 
                         onClick={handleBuyNow}
-                        className="w-full bg-[#007AFF] hover:bg-blue-600 text-white h-14 font-black rounded-xl gap-2 text-sm md:text-base uppercase tracking-wider transition-all shadow-[0_8px_25px_rgba(0,122,255,0.25)] group"
+                        className="w-full bg-primary hover:bg-primary/90 text-primary-foreground h-14 font-extrabold rounded-xl gap-2 text-sm md:text-base uppercase tracking-wider shadow-lg transition-all"
                     >
-                        <Zap className="w-5 h-5 fill-white flex-shrink-0 group-hover:scale-110 transition-transform" />
+                        <Zap className="w-5 h-5 fill-current flex-shrink-0" />
                         Comprar Ahora
                     </Button>
+
+                    {/* Botón Asesor Especialista WhatsApp */}
+                    <a
+                      href={`https://wa.me/5219999040931?text=${whatsappMessage}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="block w-full"
+                    >
+                      <Button
+                        type="button"
+                        variant="secondary"
+                        className="w-full h-11 rounded-xl font-bold text-xs gap-2 text-green-700 dark:text-green-400 bg-green-500/10 hover:bg-green-500/20 border border-green-500/20 transition-all"
+                      >
+                        <MessageSquare className="w-4 h-4" />
+                        Consultar con un Asesor por WhatsApp
+                      </Button>
+                    </a>
                 </div>
 
                 {/* 4. TRUST BADGES GRID */}
                 <div className="grid grid-cols-2 gap-3 pt-2">
-                    <div className="bg-muted/50 dark:bg-slate-900/40 border border-border dark:border-slate-800/50 rounded-xl p-3 flex flex-col items-center justify-center text-center group hover:border-[#007AFF]/30 transition-colors">
-                        <Package className="w-5 h-5 text-[#007AFF] mb-1.5 group-hover:-translate-y-0.5 transition-transform" />
-                        <p className="text-[9px] text-muted-foreground dark:text-zinc-500 font-black uppercase tracking-tighter">Existencias</p>
-                        <p className="text-sm font-black text-foreground dark:text-white leading-none mt-1">{product.stock >= 500 ? '500+' : product.stock}</p>
+                    <div className="bg-muted/40 border border-border/60 rounded-xl p-3 flex flex-col items-center justify-center text-center">
+                        <Package className="w-5 h-5 text-primary mb-1" />
+                        <p className="text-[10px] text-muted-foreground font-bold uppercase tracking-wider">Inventario</p>
+                        <p className="text-sm font-extrabold text-foreground">{product.stock > 0 ? `${product.stock >= 500 ? '500+' : product.stock} en stock` : 'Agotado'}</p>
                     </div>
-                    <div className="bg-muted/50 dark:bg-slate-900/40 border border-border dark:border-slate-800/50 rounded-xl p-3 flex flex-col items-center justify-center text-center group hover:border-[#00E676]/30 transition-colors">
-                        <ShieldCheck className="w-5 h-5 text-[#00E676] mb-1.5 group-hover:-translate-y-0.5 transition-transform" />
-                        <p className="text-[9px] text-muted-foreground dark:text-zinc-500 font-black uppercase tracking-tighter">Garantía</p>
-                        <p className="text-sm font-black text-foreground dark:text-white leading-none mt-1">3 Años</p>
+                    <div className="bg-muted/40 border border-border/60 rounded-xl p-3 flex flex-col items-center justify-center text-center">
+                        <ShieldCheck className="w-5 h-5 text-green-600 mb-1" />
+                        <p className="text-[10px] text-muted-foreground font-bold uppercase tracking-wider">Garantía</p>
+                        <p className="text-sm font-extrabold text-foreground">Oficial de Fábrica</p>
                     </div>
                 </div>
 
-                {/* 5. SECONDARY METADATA & ACTIONS */}
-                <div className="pt-3">
-                    <div className="grid grid-cols-2 gap-3 mt-4">
-                        <Button 
-                            variant="ghost" 
-                            onClick={handleToggleWishlist}
-                            className={cn(
-                                "h-8 text-[10px] font-black uppercase rounded-lg gap-2 transition-colors",
-                                isInWishlist 
-                                    ? "text-destructive hover:bg-destructive/10" 
-                                    : "text-muted-foreground hover:text-foreground dark:text-zinc-500 dark:hover:text-white"
-                            )}
-                        >
-                            <Heart className={cn("w-3.5 h-3.5", isInWishlist && "fill-destructive")} /> 
-                            {isInWishlist ? 'Guardado' : 'Guardar'}
-                        </Button>
-                        <Button 
-                            variant="ghost" 
-                            onClick={handleShare}
-                            className="text-muted-foreground hover:text-foreground dark:text-zinc-500 dark:hover:text-white dark:hover:bg-white/5 h-8 text-[10px] font-black uppercase rounded-lg gap-2"
-                        >
-                            <Share2 className="w-3.5 h-3.5" /> Compartir
-                        </Button>
-                    </div>
+                {/* 5. SECONDARY ACTIONS */}
+                <div className="grid grid-cols-2 gap-3 pt-1 border-t">
+                    <Button 
+                        variant="ghost" 
+                        size="sm"
+                        onClick={handleToggleWishlist}
+                        className={cn(
+                            "text-xs font-bold gap-2 rounded-xl",
+                            isInWishlist ? "text-destructive hover:bg-destructive/10" : "text-muted-foreground"
+                        )}
+                    >
+                        <Heart className={cn("w-4 h-4", isInWishlist && "fill-destructive")} /> 
+                        {isInWishlist ? 'Guardado' : 'Guardar'}
+                    </Button>
+                    <Button 
+                        variant="ghost" 
+                        size="sm"
+                        onClick={handleShare}
+                        className="text-xs font-bold gap-2 text-muted-foreground rounded-xl"
+                    >
+                        <Share2 className="w-4 h-4" /> Compartir
+                    </Button>
                 </div>
 
             </div>
         </div>
       </div>
 
+      {/* SECCIÓN PRINCIPAL: ESPECIFICACIONES TÉCNICAS Y CONTENIDO HTML NATIVO (FULL WIDTH) */}
+      <div suppressHydrationWarning className="w-full space-y-8 mt-10">
+        <div suppressHydrationWarning className="bg-card border border-border/80 rounded-3xl p-6 sm:p-10 shadow-sm space-y-6">
+          <h2 className="text-2xl sm:text-3xl font-bold tracking-tight text-foreground border-b border-border/50 pb-4">
+            Especificaciones
+          </h2>
+
+          {product.description ? (
+            product.description.includes('<') ? (
+              <div 
+                suppressHydrationWarning
+                className="syscom-html-content text-sm sm:text-base leading-relaxed overflow-x-auto"
+                dangerouslySetInnerHTML={{ __html: product.description }}
+              />
+            ) : (
+              <div className="prose dark:prose-invert max-w-none text-muted-foreground text-sm leading-relaxed whitespace-pre-line">
+                {product.description}
+              </div>
+            )
+          ) : null}
+
+          {/* Características Técnicas de Fábrica adicionales si existen */}
+          {product.caracteristicas && product.caracteristicas.length > 0 && (
+            <div className="space-y-4 pt-8 border-t border-border/50">
+              <h3 className="text-lg font-bold text-foreground flex items-center gap-2">
+                <CheckCircle2 className="w-5 h-5 text-primary" /> Características Técnicas de Fábrica
+              </h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                {product.caracteristicas.map((carac: string, idx: number) => (
+                  <div key={idx} className="flex items-start gap-2.5 p-3.5 rounded-xl bg-muted/40 border border-border/50 shadow-xs">
+                    <span className="text-primary font-bold select-none">•</span>
+                    <span className="text-xs sm:text-sm text-foreground/90 leading-snug">{carac}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* Fichas Técnicas y Manuales Descargables */}
+        {product.recursos && product.recursos.length > 0 && (
+          <div className="bg-card/50 border border-border/60 rounded-3xl p-6 sm:p-8 shadow-xs space-y-4">
+            <h3 className="text-lg font-bold text-foreground flex items-center gap-2">
+              <FileText className="w-5 h-5 text-primary" /> Documentos y Manuales Oficiales
+            </h3>
+            <div className="grid sm:grid-cols-2 md:grid-cols-3 gap-3">
+              {product.recursos.map((rec, index) => (
+                <a
+                  key={index}
+                  href={rec.path}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center justify-between p-4 rounded-2xl bg-card border border-border/60 hover:border-primary hover:bg-primary/5 transition-all group shadow-xs"
+                >
+                  <div className="flex items-center gap-3">
+                    <FileText className="w-5 h-5 text-primary group-hover:scale-110 transition-transform" />
+                    <div>
+                      <p className="text-xs sm:text-sm font-bold text-foreground group-hover:text-primary transition-colors">
+                        {rec.recurso || 'Documento Oficial'}
+                      </p>
+                      <p className="text-[10px] text-muted-foreground uppercase font-bold">{rec.formato || 'PDF'}</p>
+                    </div>
+                  </div>
+                  <ExternalLink className="w-4 h-4 text-muted-foreground group-hover:text-primary transition-colors" />
+                </a>
+              ))}
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* SECCIÓN DE ACCESORIOS Y PRODUCTOS RELACIONADOS (ESTILO SYSCOM) */}
       {relatedProducts.length > 0 && (
-        <div className="mt-16">
-          <h2 className="text-2xl font-semibold mb-6">Productos Relacionados</h2>
+        <div className="mt-16 pt-8 border-t border-border/80 space-y-6">
+          <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-2">
+            <div>
+              <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-blue-500/10 text-blue-500 border border-blue-500/20 text-[11px] font-black uppercase tracking-wider mb-2">
+                <ShieldCheck className="w-3.5 h-3.5" />
+                <span>Accesorios Compatibles & Ecosistema</span>
+              </div>
+              <h2 className="text-2xl sm:text-3xl font-black tracking-tight text-foreground">
+                Accesorios y Productos Relacionados
+              </h2>
+              <p className="text-xs sm:text-sm text-muted-foreground mt-0.5">
+                Componentes de instalación, accesorios certificados y complementos directos para este modelo.
+              </p>
+            </div>
+            <span className="text-xs font-bold text-muted-foreground self-start sm:self-auto">
+              {relatedProducts.length} productos compatibles
+            </span>
+          </div>
+
           <ProductList products={relatedProducts} />
         </div>
       )}
@@ -441,7 +556,7 @@ export function ProductDetailView({ product, relatedProducts, allCategories }: P
       <Dialog open={isZoomModalOpen} onOpenChange={setIsZoomModalOpen}>
         <DialogContent className="bg-transparent border-none shadow-none w-auto h-auto max-w-[90vw] max-h-[90vh] p-6 flex flex-col items-center justify-center">
           <DialogHeader className="w-full">
-            <DialogTitle className="text-center text-sm text-primary-foreground mb-2">
+            <DialogTitle className="text-center text-sm text-white mb-2">
               {product.name}
             </DialogTitle>
           </DialogHeader>
@@ -451,8 +566,7 @@ export function ProductDetailView({ product, relatedProducts, allCategories }: P
             width={1200} 
             height={800} 
             objectFit="contain"
-            className="block max-w-full max-h-full rounded-md"
-            data-ai-hint={product.name.split(" ").slice(0,2).join(" ").toLowerCase() || "zoomed product image"}
+            className="block max-w-full max-h-full rounded-2xl bg-white p-4"
           />
         </DialogContent>
       </Dialog>

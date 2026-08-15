@@ -74,18 +74,41 @@ async function getNextQuoteNumber(): Promise<string> {
 }
 
 
+// Helper to sanitize objects for Firestore (removes undefined values recursively)
+function sanitizeForFirestore<T>(obj: T): T {
+  if (obj === null || obj === undefined) {
+    return null as unknown as T;
+  }
+  if (typeof obj !== 'object') {
+    return obj;
+  }
+  if (obj instanceof Date || (obj as any).constructor?.name === 'Timestamp' || typeof (obj as any).toMillis === 'function') {
+    return obj;
+  }
+  if (Array.isArray(obj)) {
+    return obj.map(item => sanitizeForFirestore(item)) as unknown as T;
+  }
+  const sanitized: Record<string, any> = {};
+  for (const [key, value] of Object.entries(obj as Record<string, any>)) {
+    if (value !== undefined) {
+      sanitized[key] = sanitizeForFirestore(value);
+    }
+  }
+  return sanitized as T;
+}
+
 // Create a new quote
 export async function addQuote(quoteData: Omit<Quote, 'id' | 'createdAt' | 'updatedAt' | 'quoteNumber'>): Promise<Quote> {
   try {
     const quoteNumber = await getNextQuoteNumber();
-    const newQuoteData = {
+    const newQuoteData = sanitizeForFirestore({
       ...quoteData,
       quoteNumber,
       createdAt: Timestamp.now(),
       updatedAt: Timestamp.now(),
       expiresAt: Timestamp.fromDate(new Date(quoteData.expiresAt)),
       showBankDetails: typeof quoteData.showBankDetails === 'boolean' ? quoteData.showBankDetails : true,
-    };
+    });
     const docRef = await addDoc(collection(db, QUOTES_COLLECTION), newQuoteData);
     const newDoc = await getDoc(docRef);
     return docToQuote(newDoc);
@@ -127,15 +150,20 @@ export async function getQuoteById(id: string): Promise<Quote | null> {
 export async function updateQuote(id: string, quoteData: Partial<Omit<Quote, 'id' | 'createdAt'>>): Promise<Quote | null> {
   try {
     const quoteDocRef = doc(db, QUOTES_COLLECTION, id);
-    const updateData: {[k: string]: any} = {
-        ...quoteData,
-        updatedAt: Timestamp.now(),
-        ...(quoteData.expiresAt && { expiresAt: Timestamp.fromDate(new Date(quoteData.expiresAt)) }),
+    const rawUpdateData: Record<string, any> = {
+      ...quoteData,
+      updatedAt: Timestamp.now(),
     };
 
-    if (typeof quoteData.showBankDetails === 'boolean') {
-        updateData.showBankDetails = quoteData.showBankDetails;
+    if (quoteData.expiresAt) {
+      rawUpdateData.expiresAt = Timestamp.fromDate(new Date(quoteData.expiresAt));
     }
+
+    if (typeof quoteData.showBankDetails === 'boolean') {
+      rawUpdateData.showBankDetails = quoteData.showBankDetails;
+    }
+
+    const updateData = sanitizeForFirestore(rawUpdateData);
 
     await updateDoc(quoteDocRef, updateData);
     const updatedDoc = await getDoc(quoteDocRef);

@@ -47,11 +47,15 @@ export function FeaturedCategoriesSection({ categories }: FeaturedCategoriesSect
   };
 
   return (
-    <section className="container px-4 md:px-6 py-8">
-      <div className="flex justify-between items-center mb-6">
-        <h2 className="text-2xl font-bold">CATEGORÍAS DESTACADAS</h2>
+    <section className="w-full py-4 space-y-4">
+      <div className="flex justify-between items-center">
+        <h2 className="text-2xl sm:text-3xl font-black tracking-tight text-foreground">
+          CATEGORÍAS DESTACADAS
+        </h2>
         <Link href="/?category=all" legacyBehavior passHref>
-           <Button variant="link" className="text-primary hover:underline">Mostrar todas</Button>
+           <Button variant="link" className="text-primary hover:underline font-bold text-xs sm:text-sm">
+             Mostrar todas
+           </Button>
         </Link>
       </div>
       
@@ -108,9 +112,12 @@ export function FeaturedCategoriesSection({ categories }: FeaturedCategoriesSect
                         <Image
                           src={imageUrl}
                           alt={category.alias || category.name}
-                          layout="fill"
-                          objectFit="contain"
-                          className="transition-transform duration-300 group-hover:scale-105 p-3"
+                          fill
+                          sizes="(max-width: 768px) 192px, 224px"
+                          className="object-contain transition-transform duration-300 group-hover:scale-105 p-3"
+                          loading="lazy"
+                          decoding="async"
+                          unoptimized={true}
                           {...(aiHint && { "data-ai-hint": aiHint })}
                         />
                       </div>
