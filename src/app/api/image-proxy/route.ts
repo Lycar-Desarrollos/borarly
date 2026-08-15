@@ -1,5 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
+
 const FALLBACK_IMAGE_URL = 'https://placehold.co/600x400.png?text=Sin+Imagen';
 
 export async function GET(request: NextRequest) {
@@ -11,7 +14,11 @@ export async function GET(request: NextRequest) {
   }
 
   try {
-    let cleanUrl = imageUrl;
+    let cleanUrl = imageUrl.trim();
+
+    if (!cleanUrl.startsWith('http://') && !cleanUrl.startsWith('https://')) {
+      return NextResponse.redirect(FALLBACK_IMAGE_URL);
+    }
 
     // 1. Limpiar transformaciones reductoras de Cloudflare CDN y solicitar 1200px a 95% de calidad
     if (cleanUrl.includes('/cdn-cgi/image/')) {
@@ -27,17 +34,17 @@ export async function GET(request: NextRequest) {
             'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
             'Accept': 'image/avif,image/webp,image/apng,image/svg+xml,image/*,*/*;q=0.8',
           },
-          next: { revalidate: 86400 }
+          cache: 'no-store'
         });
 
-        if (highResRes.ok) {
-          const contentType = highResRes.headers.get('content-type') || 'image/png';
+        const highResContentType = highResRes.headers.get('content-type') || '';
+        if (highResRes.ok && highResContentType.startsWith('image/')) {
           const buffer = await highResRes.arrayBuffer();
           return new Response(buffer, {
             status: 200,
             headers: {
-              'Content-Type': contentType,
-              'Cache-Control': 'public, max-age=31536000, immutable',
+              'Content-Type': highResContentType,
+              'Cache-Control': 'public, max-age=86400, s-maxage=604800, stale-while-revalidate=86400',
             },
           });
         }
@@ -51,21 +58,21 @@ export async function GET(request: NextRequest) {
         'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
         'Accept': 'image/avif,image/webp,image/apng,image/svg+xml,image/*,*/*;q=0.8',
       },
-      next: { revalidate: 86400 }
+      cache: 'no-store'
     });
 
-    if (!res.ok) {
+    const contentType = res.headers.get('content-type') || '';
+    if (!res.ok || !contentType.startsWith('image/')) {
       return NextResponse.redirect(FALLBACK_IMAGE_URL);
     }
 
-    const contentType = res.headers.get('content-type') || 'image/png';
     const buffer = await res.arrayBuffer();
 
     return new Response(buffer, {
       status: 200,
       headers: {
         'Content-Type': contentType,
-        'Cache-Control': 'public, max-age=31536000, immutable',
+        'Cache-Control': 'public, max-age=86400, s-maxage=604800, stale-while-revalidate=86400',
       },
     });
   } catch (error) {

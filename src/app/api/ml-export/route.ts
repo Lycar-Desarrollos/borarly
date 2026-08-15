@@ -50,6 +50,9 @@ function productToMLRow(product: Product, categoriaNombre: string) {
   };
 }
 
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
+
 export async function GET() {
   try {
     // 1. Obtener categorías dinámicamente de Syscom
