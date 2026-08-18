@@ -3,7 +3,7 @@
 import React from 'react';
 import Link from 'next/link';
 import { 
-  Globe, GraduationCap, Cpu, Headphones, ArrowRight, Sparkles, 
+  Globe, Bot, Cpu, Headphones, ArrowRight, Sparkles, 
   ShieldCheck, CheckCircle2, Layers, Award, BookOpen
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
@@ -35,16 +35,16 @@ const BORARLY_SERVICES: ServiceCard[] = [
     gradient: 'from-sky-950/40 via-card to-card hover:border-sky-500/50'
   },
   {
-    id: 'certifications',
-    title: 'Capacitación & Certificaciones',
-    subtitle: 'Academia Técnica & Constancias DC-3',
-    description: 'Programas de certificación oficial presencial y online en marcas líderes como Hikvision, Ubiquiti, Ruijie y Epcom para integradores.',
-    icon: <GraduationCap className="w-7 h-7 text-amber-400" />,
-    badge: 'Certificación',
-    badgeColor: 'bg-amber-500/10 text-amber-400 border-amber-500/30',
-    features: ['Certificaciones Hikvision HCSA', 'Cursos Ubiquiti & Ruijie', 'Constancias Oficiales DC-3'],
-    href: '/services/certifications',
-    gradient: 'from-amber-950/40 via-card to-card hover:border-amber-500/50'
+    id: 'chatbots',
+    title: 'Chatbots & Agentes de IA 24/7',
+    subtitle: 'Automatización & Asistentes Virtuales',
+    description: 'Tu propio agente de IA privado, siempre activo las 24 horas del día. Atiende clientes, califica prospectos, cotiza productos y automatiza tareas incluso mientras duermes.',
+    icon: <Bot className="w-7 h-7 text-purple-400" />,
+    badge: 'Inteligencia Artificial',
+    badgeColor: 'bg-purple-500/10 text-purple-400 border-purple-500/30',
+    features: ['Atención 24/7 en WhatsApp, Telegram y Web', 'Cotizaciones Automáticas con tu Catálogo', 'Cero Mantenimiento y Configuración Rápida'],
+    href: '/services/chatbots',
+    gradient: 'from-purple-950/40 via-card to-card hover:border-purple-500/50'
   },
   {
     id: 'value-projects',
