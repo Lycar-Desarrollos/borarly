@@ -130,7 +130,7 @@ export default async function HomePage(props: HomePageProps) {
           <h1 className="sr-only">Borarly — Mayorista Tecnológico en Seguridad Electrónica, Videovigilancia y Redes en México</h1>
           <HeroSection />
           
-          <div className="max-w-[1520px] mx-auto px-4 sm:px-6 lg:px-8 space-y-12">
+          <div className="max-w-[1520px] mx-auto px-0 sm:px-6 lg:px-8 space-y-10 sm:space-y-12">
             {/* 1. CATEGORÍAS DESTACADAS */}
             <FeaturedCategoriesSection categories={featuredCategoriesForSection} /> 
 
@@ -159,7 +159,7 @@ export default async function HomePage(props: HomePageProps) {
           </div>
         </>
       ) : (
-        <div className="container mx-auto py-8">
+        <div className="container mx-auto px-0 py-4 sm:py-8">
            <Suspense fallback={<ProductDisplaySkeleton categories={categories} />}>
             <ProductDisplay
               initialProducts={productsToDisplay}

@@ -5,8 +5,8 @@ import Image from 'next/image';
 
 export default function AuthLayout({ children }: { children: ReactNode }) {
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen bg-secondary/50 p-4">
-      <div className="mb-8">
+    <div className="flex flex-col items-center justify-center min-h-screen bg-secondary/50 px-4 py-8 pb-safe">
+      <div className="mb-6 sm:mb-8">
         <Link href="/" className="flex items-center gap-2 text-2xl font-black tracking-tight text-foreground select-none">
           <Image
             src="/icon-192.png"

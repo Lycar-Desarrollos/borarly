@@ -4,10 +4,40 @@
 
 html {
   font-size: 14px;
+  /* Evita que iOS/Android reescale el texto al girar el dispositivo */
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+  scroll-behavior: smooth;
 }
 
 body {
   font-family: var(--font-geist-sans), Arial, Helvetica, sans-serif;
+  /* `clip` (a diferencia de `hidden`) evita el scroll horizontal SIN romper
+     los elementos `position: sticky` como el header o el buy box. */
+  overflow-x: clip;
+  /* Respeta el notch / isla dinámica en iPhone y equipos con muescas */
+  padding-left: env(safe-area-inset-left);
+  padding-right: env(safe-area-inset-right);
+  /* Quita el destello gris al tocar en móviles */
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* Ningún medio debe poder desbordar la pantalla en móvil */
+img,
+svg,
+video,
+canvas {
+  max-width: 100%;
+}
+
+/* iOS Safari hace zoom automático al enfocar inputs con fuente < 16px.
+   Forzamos 16px sólo en móvil para que el formulario no "salte". */
+@media (max-width: 767px) {
+  input,
+  select,
+  textarea {
+    font-size: 16px !important;
+  }
 }
 
 @layer base {
@@ -135,7 +165,19 @@ body {
   @apply w-full border-collapse my-6 overflow-hidden rounded-lg border border-border/60 bg-muted/20;
 }
 
-.syscom-html-content th, 
+/* En móvil las tablas de fabricante son muy anchas: las volvemos deslizables
+   en lugar de dejar que rompan el ancho de la página. */
+@media (max-width: 767px) {
+  .syscom-html-content table {
+    display: block;
+    width: 100%;
+    overflow-x: auto;
+    white-space: nowrap;
+    -webkit-overflow-scrolling: touch;
+  }
+}
+
+.syscom-html-content th,
 .syscom-html-content td {
   @apply p-3 border border-border/50 text-sm;
 }
@@ -151,5 +193,26 @@ body {
   .no-scrollbar {
     -ms-overflow-style: none; /* IE and Edge */
     scrollbar-width: none; /* Firefox */
+  }
+
+  /* Carruseles táctiles: inercia en iOS + encaje de tarjetas al deslizar */
+  .touch-carousel {
+    -webkit-overflow-scrolling: touch;
+    scroll-snap-type: x mandatory;
+    overscroll-behavior-x: contain;
+  }
+  .touch-carousel > * {
+    scroll-snap-align: start;
+  }
+
+  /* Espacio inferior seguro en equipos con barra de gestos */
+  .pb-safe {
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+
+  /* Área mínima recomendada por Apple/Google para elementos tocables */
+  .tap-target {
+    min-height: 44px;
+    min-width: 44px;
   }
 }

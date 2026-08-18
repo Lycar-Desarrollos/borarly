@@ -48,8 +48,8 @@ export function FeaturedCategoriesSection({ categories }: FeaturedCategoriesSect
 
   return (
     <section className="w-full py-4 space-y-4">
-      <div className="flex justify-between items-center">
-        <h2 className="text-2xl sm:text-3xl font-black tracking-tight text-foreground">
+      <div className="flex justify-between items-center gap-2">
+        <h2 className="text-xl sm:text-3xl font-black tracking-tight text-foreground">
           CATEGORÍAS DESTACADAS
         </h2>
         <Link href="/?category=all" legacyBehavior passHref>
@@ -96,7 +96,7 @@ export function FeaturedCategoriesSection({ categories }: FeaturedCategoriesSect
           <div 
             ref={scrollContainerRef}
             onScroll={checkScroll}
-            className="w-full flex space-x-4 pb-4 overflow-x-auto no-scrollbar scroll-smooth"
+            className="w-full flex space-x-3 sm:space-x-4 pb-4 overflow-x-auto no-scrollbar touch-carousel scroll-smooth"
           >
             {categories.map((category) => {
               const imageUrl = category.featuredImageUrl || "https://placehold.co/300x200.png";
@@ -106,14 +106,14 @@ export function FeaturedCategoriesSection({ categories }: FeaturedCategoriesSect
 
               return (
                 <Link key={category.id} href={`/?category=${encodeURIComponent(category.id)}`} passHref legacyBehavior>
-                  <a className="block w-48 md:w-56 shrink-0 group">
+                  <a className="block w-40 sm:w-48 md:w-56 shrink-0 group">
                     <Card className="overflow-hidden shadow-md hover:shadow-lg transition-transform duration-300 hover:-translate-y-1 rounded-lg h-full flex flex-col border border-border/50">
                       <div className="relative w-full aspect-[3/2] bg-white">
                         <Image
                           src={imageUrl}
                           alt={category.alias || category.name}
                           fill
-                          sizes="(max-width: 768px) 192px, 224px"
+                          sizes="(max-width: 640px) 160px, (max-width: 768px) 192px, 224px"
                           className="object-contain transition-transform duration-300 group-hover:scale-105 p-3"
                           loading="lazy"
                           decoding="async"

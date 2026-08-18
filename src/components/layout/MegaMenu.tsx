@@ -458,9 +458,16 @@ const MEGA_MENU_DATA: MainCategory[] = [
 export function MegaMenu() {
   const [isOpen, setIsOpen] = useState(false);
   const [activeCategoryId, setActiveCategoryId] = useState<string>(MEGA_MENU_DATA[0].id);
+  // En móvil el menú funciona como acordeón: sólo una categoría abierta a la vez.
+  const [expandedMobileId, setExpandedMobileId] = useState<string | null>(null);
   const menuRef = useRef<HTMLDivElement>(null);
 
   const activeCategory = MEGA_MENU_DATA.find(c => c.id === activeCategoryId) || MEGA_MENU_DATA[0];
+
+  const closeMenu = () => {
+    setIsOpen(false);
+    setExpandedMobileId(null);
+  };
 
   // Cerrar al hacer clic fuera
   useEffect(() => {
@@ -485,7 +492,10 @@ export function MegaMenu() {
   // Cerrar con Escape
   useEffect(() => {
     function handleKeyDown(e: KeyboardEvent) {
-      if (e.key === 'Escape') setIsOpen(false);
+      if (e.key === 'Escape') {
+        setIsOpen(false);
+        setExpandedMobileId(null);
+      }
     }
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
@@ -493,62 +503,155 @@ export function MegaMenu() {
 
   return (
     <div ref={menuRef} className="relative">
-      
+
       {/* BOTÓN DISPARADOR ☰ PRODUCTOS */}
       <button
         type="button"
         onClick={() => setIsOpen(!isOpen)}
+        aria-expanded={isOpen}
+        aria-label="Abrir catálogo de productos"
         className={cn(
-          "h-11.5 px-6 rounded-2xl text-[13px] sm:text-sm font-black uppercase tracking-wider flex items-center gap-2.5 transition-all select-none outline-none border shrink-0 shadow-sm",
-          isOpen 
-            ? "bg-blue-600 text-white border-blue-400 shadow-md shadow-blue-600/30 ring-2 ring-blue-500/40" 
+          "h-10 sm:h-11 px-3.5 sm:px-6 rounded-xl sm:rounded-2xl text-[12px] sm:text-sm font-black uppercase tracking-wider flex items-center gap-2 sm:gap-2.5 transition-all select-none outline-none border shrink-0 shadow-sm",
+          isOpen
+            ? "bg-blue-600 text-white border-blue-400 shadow-md shadow-blue-600/30 ring-2 ring-blue-500/40"
             : "bg-blue-600 hover:bg-blue-500 text-white border-blue-500/80 shadow-md shadow-blue-600/20 hover:scale-[1.02] active:scale-95"
         )}
       >
-        <Menu className="w-4.5 h-4.5 text-white" />
+        <Menu className="w-4 h-4 sm:w-5 sm:h-5 text-white shrink-0" />
         <span>Productos</span>
-        <ChevronDown className={cn("w-4 h-4 text-blue-200 transition-transform duration-200", isOpen && "rotate-180")} />
+        <ChevronDown className={cn("w-4 h-4 text-blue-200 transition-transform duration-200 shrink-0", isOpen && "rotate-180")} />
       </button>
 
       {/* MODAL / DESPLEGABLE MEGA MENÚ FLOTANTE */}
       {isOpen && (
         <>
           {/* Backdrop Blur oscuro */}
-          <div 
-            className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50" 
-            onClick={() => setIsOpen(false)} 
+          <div
+            className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50"
+            onClick={closeMenu}
           />
 
-          {/* Contenedor del Mega Menú */}
-          <div className="fixed sm:absolute top-36 sm:top-full left-2 right-2 sm:left-0 sm:right-auto sm:mt-3 sm:w-[960px] md:w-[1100px] lg:w-[1240px] max-h-[80vh] sm:max-h-[640px] bg-[#0c101c] text-white border border-white/15 rounded-3xl shadow-2xl z-50 overflow-hidden flex flex-col animate-in fade-in zoom-in-95 duration-150">
-            
+          {/* Contenedor del Mega Menú:
+              — móvil: hoja a pantalla completa con acordeón
+              — escritorio (sm+): panel flotante de dos columnas (sin cambios) */}
+          <div className="fixed inset-0 sm:inset-auto sm:absolute sm:top-full sm:left-0 sm:mt-3 sm:w-[960px] md:w-[1100px] lg:w-[1240px] sm:max-h-[640px] bg-[#0c101c] text-white border-0 sm:border sm:border-white/15 rounded-none sm:rounded-3xl shadow-2xl z-50 overflow-hidden flex flex-col animate-in fade-in sm:zoom-in-95 duration-150">
+
             {/* Header del Mega Menú */}
-            <div className="px-6 py-3.5 border-b border-white/10 bg-[#090d16] flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <Menu className="w-4 h-4 text-blue-400" />
-                <span className="font-black text-sm uppercase tracking-wider text-white">Catálogo Mayorista de Productos</span>
+            <div className="px-4 sm:px-6 py-3 sm:py-3.5 border-b border-white/10 bg-[#090d16] flex items-center justify-between gap-3 shrink-0">
+              <div className="flex items-center gap-2 min-w-0">
+                <Menu className="w-4 h-4 text-blue-400 shrink-0" />
+                <span className="font-black text-[13px] sm:text-sm uppercase tracking-wider text-white truncate">
+                  <span className="sm:hidden">Catálogo de Productos</span>
+                  <span className="hidden sm:inline">Catálogo Mayorista de Productos</span>
+                </span>
               </div>
-              <div className="flex items-center gap-3">
+              <div className="flex items-center gap-3 shrink-0">
                 <Link
                   href="/?category=all"
-                  onClick={() => setIsOpen(false)}
-                  className="text-xs font-bold text-blue-400 hover:text-blue-300 flex items-center gap-1 transition-colors"
+                  onClick={closeMenu}
+                  className="hidden sm:flex text-xs font-bold text-blue-400 hover:text-blue-300 items-center gap-1 transition-colors"
                 >
                   <span>Ver todo el catálogo</span>
                   <ArrowRight className="w-3.5 h-3.5" />
                 </Link>
                 <button
-                  onClick={() => setIsOpen(false)}
-                  className="p-1 rounded-lg text-zinc-400 hover:text-white hover:bg-white/10 transition-colors"
+                  onClick={closeMenu}
+                  aria-label="Cerrar catálogo"
+                  className="p-2 -mr-1 rounded-lg text-zinc-300 hover:text-white hover:bg-white/10 transition-colors"
                 >
-                  <X className="w-4 h-4" />
+                  <X className="w-5 h-5 sm:w-4 sm:h-4" />
                 </button>
               </div>
             </div>
 
-            {/* CUERPO DEL MEGA MENÚ (2 COLUMNAS: LATERAL IZQUIERDA Y PANEL DERECHO) */}
-            <div className="flex flex-1 overflow-hidden">
-              
+            {/* ══════════ VISTA MÓVIL: ACORDEÓN VERTICAL A PANTALLA COMPLETA ══════════ */}
+            <div className="sm:hidden flex-1 overflow-y-auto overscroll-contain divide-y divide-white/5 pb-safe">
+              <Link
+                href="/?category=all"
+                onClick={closeMenu}
+                className="flex items-center justify-between gap-2 px-4 py-3.5 bg-blue-600/15 text-blue-300 font-black text-xs uppercase tracking-wider active:bg-blue-600/25"
+              >
+                <span>Ver todo el catálogo</span>
+                <ArrowRight className="w-4 h-4 shrink-0" />
+              </Link>
+
+              {MEGA_MENU_DATA.map((cat) => {
+                const isExpanded = expandedMobileId === cat.id;
+                return (
+                  <div key={cat.id}>
+                    <button
+                      type="button"
+                      onClick={() => setExpandedMobileId(isExpanded ? null : cat.id)}
+                      aria-expanded={isExpanded}
+                      className={cn(
+                        "w-full px-4 py-4 flex items-center justify-between gap-3 text-left transition-colors",
+                        isExpanded ? "bg-white/5 text-white" : "text-zinc-300 active:bg-white/5"
+                      )}
+                    >
+                      <span className="flex items-center gap-3 min-w-0">
+                        <span className={cn("shrink-0", isExpanded ? "text-blue-400" : "text-zinc-500")}>
+                          {cat.icon}
+                        </span>
+                        <span className="text-[13px] font-bold truncate">{cat.name}</span>
+                      </span>
+                      <ChevronDown
+                        className={cn(
+                          "w-4 h-4 shrink-0 transition-transform duration-200",
+                          isExpanded ? "rotate-180 text-blue-400" : "text-zinc-600"
+                        )}
+                      />
+                    </button>
+
+                    {isExpanded && (
+                      <div className="bg-[#080b14] px-4 pt-1 pb-5 space-y-5 animate-in fade-in slide-in-from-top-1 duration-150">
+                        {cat.categoryId && (
+                          <Link
+                            href={`/?category=${cat.categoryId}`}
+                            onClick={closeMenu}
+                            className="flex items-center justify-between gap-2 px-3 py-2.5 rounded-xl bg-white/5 border border-white/10 text-xs font-bold text-blue-400 active:bg-white/10"
+                          >
+                            <span>Ver toda la categoría</span>
+                            <ExternalLink className="w-3.5 h-3.5 shrink-0" />
+                          </Link>
+                        )}
+
+                        {cat.groups.map((group, gIdx) => (
+                          <div key={gIdx} className="space-y-1">
+                            <h4 className="text-[11px] font-black uppercase tracking-wider text-white/90 border-b border-white/10 pb-1.5 mb-1">
+                              {group.title}
+                            </h4>
+                            <ul>
+                              {group.items.map((item, iIdx) => {
+                                const href = item.categoryId
+                                  ? `/?category=${item.categoryId}`
+                                  : `/?search=${encodeURIComponent(item.query || item.name)}`;
+
+                                return (
+                                  <li key={iIdx}>
+                                    <Link
+                                      href={href}
+                                      onClick={closeMenu}
+                                      className="flex items-center justify-between gap-2 py-2.5 text-[13px] text-zinc-400 active:text-blue-400 transition-colors"
+                                    >
+                                      <span>{item.name}</span>
+                                      <ChevronRight className="w-3.5 h-3.5 shrink-0 text-zinc-700" />
+                                    </Link>
+                                  </li>
+                                );
+                              })}
+                            </ul>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+
+            {/* ══════════ VISTA ESCRITORIO: DOS COLUMNAS ══════════ */}
+            <div className="hidden sm:flex flex-1 overflow-hidden">
+
               {/* 1. COLUMNA LATERAL IZQUIERDA: CATEGORÍAS PRINCIPALES */}
               <div className="w-[240px] sm:w-[280px] bg-[#080b14] border-r border-white/10 overflow-y-auto py-2 shrink-0">
                 {MEGA_MENU_DATA.map((cat) => {
@@ -560,8 +663,8 @@ export function MegaMenu() {
                       onClick={() => setActiveCategoryId(cat.id)}
                       className={cn(
                         "w-full px-4 py-2.5 flex items-center justify-between text-left text-xs font-bold transition-all group",
-                        isActive 
-                          ? "bg-blue-600/20 text-blue-400 border-l-4 border-blue-500 font-black pl-3" 
+                        isActive
+                          ? "bg-blue-600/20 text-blue-400 border-l-4 border-blue-500 font-black pl-3"
                           : "text-zinc-400 hover:text-white hover:bg-white/5"
                       )}
                     >
@@ -579,7 +682,7 @@ export function MegaMenu() {
 
               {/* 2. PANEL DERECHO: SUBCATEGORÍAS EN GRID MULTI-COLUMNA (IDÉNTICO A LA CAPTURA) */}
               <div className="flex-1 p-6 sm:p-8 bg-[#0c101c] overflow-y-auto">
-                
+
                 {/* Título de la Categoría Activa */}
                 <div className="flex items-center justify-between mb-6 pb-3 border-b border-white/10">
                   <div className="flex items-center gap-2.5">
@@ -594,7 +697,7 @@ export function MegaMenu() {
                   {activeCategory.categoryId && (
                     <Link
                       href={`/?category=${activeCategory.categoryId}`}
-                      onClick={() => setIsOpen(false)}
+                      onClick={closeMenu}
                       className="px-3 py-1.5 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-xs font-bold text-blue-400 hover:text-blue-300 flex items-center gap-1.5 transition-colors"
                     >
                       <span>Ver toda la categoría</span>
@@ -612,15 +715,15 @@ export function MegaMenu() {
                       </h4>
                       <ul className="space-y-1.5">
                         {group.items.map((item, iIdx) => {
-                          const href = item.categoryId 
-                            ? `/?category=${item.categoryId}` 
+                          const href = item.categoryId
+                            ? `/?category=${item.categoryId}`
                             : `/?search=${encodeURIComponent(item.query || item.name)}`;
 
                           return (
                             <li key={iIdx}>
                               <Link
                                 href={href}
-                                onClick={() => setIsOpen(false)}
+                                onClick={closeMenu}
                                 className="text-xs text-zinc-400 hover:text-blue-400 transition-colors block py-0.5 hover:translate-x-1 duration-150"
                               >
                                 {item.name}
@@ -638,7 +741,7 @@ export function MegaMenu() {
             </div>
 
             {/* Footer Informativo del Mega Menú */}
-            <div className="px-6 py-2.5 bg-[#080b14] border-t border-white/10 flex items-center justify-between text-[11px] text-zinc-400">
+            <div className="hidden sm:flex px-6 py-2.5 bg-[#080b14] border-t border-white/10 items-center justify-between text-[11px] text-zinc-400">
               <div className="flex items-center gap-2">
                 <Sparkles className="w-3.5 h-3.5 text-blue-400" />
                 <span>¿Buscas un modelo específico? Escríbelo directamente en el buscador superior.</span>

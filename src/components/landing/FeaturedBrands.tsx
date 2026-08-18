@@ -70,19 +70,19 @@ export function FeaturedBrands() {
   const displayBrands = [...brands, ...brands];
 
   return (
-    <section className="py-16 md:py-24 bg-gradient-to-b from-transparent to-slate-900/50 overflow-hidden">
-      <div className="container px-4 mx-auto mb-12 text-center">
-        <h2 className="text-sm font-black text-[#00E676] uppercase tracking-[0.3em] mb-3">Nuestros Aliados</h2>
-        <h3 className="text-3xl md:text-4xl font-black text-white tracking-tighter">MARCAS DESTACADAS</h3>
+    <section className="py-10 sm:py-16 md:py-24 bg-gradient-to-b from-transparent to-slate-900/50 overflow-hidden">
+      <div className="container px-4 mx-auto mb-8 sm:mb-12 text-center">
+        <h2 className="text-xs sm:text-sm font-black text-[#00E676] uppercase tracking-[0.2em] sm:tracking-[0.3em] mb-3">Nuestros Aliados</h2>
+        <h3 className="text-2xl sm:text-3xl md:text-4xl font-black text-white tracking-tighter">MARCAS DESTACADAS</h3>
       </div>
 
       <div className="relative flex overflow-hidden">
-        <div className="flex gap-8 md:gap-12 animate-marquee whitespace-nowrap py-4">
+        <div className="flex gap-5 sm:gap-8 md:gap-12 animate-marquee whitespace-nowrap py-4">
           {displayBrands.map((brand, index) => (
-            <Link 
-              key={`${brand.id}-${index}`} 
+            <Link
+              key={`${brand.id}-${index}`}
               href={`/?marca=${encodeURIComponent(brand.name)}`}
-              className="group relative flex items-center justify-center bg-white p-6 rounded-2xl w-40 md:w-56 h-20 md:h-28 shadow-xl hover:shadow-2xl hover:shadow-[#00E676]/20 transition-all duration-500 hover:-translate-y-2 shrink-0 border border-transparent hover:border-[#00E676]/30"
+              className="group relative flex items-center justify-center bg-white p-4 sm:p-6 rounded-2xl w-32 sm:w-40 md:w-56 h-16 sm:h-20 md:h-28 shadow-xl hover:shadow-2xl hover:shadow-[#00E676]/20 transition-all duration-500 hover:-translate-y-2 shrink-0 border border-transparent hover:border-[#00E676]/30"
             >
               <Image
                 src={brand.logoUrl}

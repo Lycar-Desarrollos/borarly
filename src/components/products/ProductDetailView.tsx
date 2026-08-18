@@ -133,11 +133,11 @@ export function ProductDetailView({ product, relatedProducts, allCategories }: P
   );
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-6 sm:space-y-8">
       {/* NAVEGACIÓN SUPERIOR / BREADCRUMBS */}
-      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-4">
         <Link href="/">
-          <Button variant="outline" size="sm" className="gap-2 rounded-xl">
+          <Button variant="outline" size="sm" className="h-10 gap-2 rounded-xl">
             <ArrowLeft className="h-4 w-4" /> Volver a Productos
           </Button>
         </Link>
@@ -168,14 +168,14 @@ export function ProductDetailView({ product, relatedProducts, allCategories }: P
         </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
-        
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 lg:gap-8 items-start">
+
         {/* COLUMNA IZQUIERDA: HERO GALERÍA, BADGES Y PUNTOS CLAVE (7 COL) */}
-        <div className="lg:col-span-7 space-y-6">
-            <div className="grid grid-cols-1 md:grid-cols-12 gap-4">
+        <div className="lg:col-span-7 space-y-5 sm:space-y-6">
+            <div className="grid grid-cols-1 md:grid-cols-12 gap-3 md:gap-4">
                 {/* Galería con Miniaturas */}
                 <div className="md:col-span-2 order-2 md:order-1 relative group h-full">
-                    <div className="flex md:flex-col gap-2 overflow-x-auto md:overflow-y-auto no-scrollbar scroll-smooth h-full max-h-[480px] pb-2 md:pb-0 pr-1 select-none" id="thumbnail-container">
+                    <div className="flex md:flex-col gap-2 overflow-x-auto md:overflow-y-auto no-scrollbar touch-carousel md:[scroll-snap-type:none] scroll-smooth h-full max-h-[110px] md:max-h-[480px] pb-2 md:pb-0 pr-1 select-none" id="thumbnail-container">
                         {product.imageUrls && product.imageUrls.map((url, index) => {
                             const thumbUrl = url.includes('syscom.mx') 
                               ? `/api/image-proxy?url=${encodeURIComponent(url)}` 
@@ -198,7 +198,7 @@ export function ProductDetailView({ product, relatedProducts, allCategories }: P
 
                 {/* Imagen Principal */}
                 <div className="md:col-span-10 order-1 md:order-2">
-                    <div className="aspect-[4/3] relative rounded-2xl overflow-hidden bg-white border border-border/60 group cursor-zoom-in shadow-sm"
+                    <div className="aspect-square sm:aspect-[4/3] relative rounded-2xl overflow-hidden bg-white border border-border/60 group cursor-zoom-in shadow-sm"
                          onDoubleClick={handleMainImageDoubleClick}>
                         <Image
                             src={mainImageUrl}
@@ -206,10 +206,11 @@ export function ProductDetailView({ product, relatedProducts, allCategories }: P
                             fill
                             priority
                             unoptimized={true}
-                            className="object-contain p-8 transition-transform duration-300 group-hover:scale-105"
+                            className="object-contain p-4 sm:p-8 transition-transform duration-300 group-hover:scale-105"
                         />
                         <div className="absolute bottom-3 right-3 text-[10px] text-zinc-400 bg-white/80 dark:bg-black/60 px-2 py-1 rounded-md backdrop-blur-sm pointer-events-none">
-                          Doble clic para ampliar
+                          <span className="sm:hidden">Doble toque para ampliar</span>
+                          <span className="hidden sm:inline">Doble clic para ampliar</span>
                         </div>
                     </div>
                 </div>
@@ -286,8 +287,8 @@ export function ProductDetailView({ product, relatedProducts, allCategories }: P
         </div>
 
         {/* COLUMNA DERECHA: PREMIUM BUY BOX (5 COL) */}
-        <div className="lg:col-span-5 sticky top-24 z-10 transition-all duration-300">
-            <div className="bg-card/90 backdrop-blur-xl border border-border rounded-3xl p-5 xl:p-6 shadow-xl space-y-5">
+        <div className="lg:col-span-5 lg:sticky lg:top-24 z-10 transition-all duration-300">
+            <div className="bg-card/90 backdrop-blur-xl border border-border rounded-3xl p-4 sm:p-5 xl:p-6 shadow-xl space-y-4 sm:space-y-5">
                 
                 {/* 1. PRODUCT HEADER */}
                 <div className="space-y-3">
@@ -311,7 +312,7 @@ export function ProductDetailView({ product, relatedProducts, allCategories }: P
                         )}
                     </div>
                     
-                    <h1 className="text-lg md:text-xl font-extrabold text-foreground leading-snug tracking-tight">
+                    <h1 className="text-base sm:text-lg md:text-xl font-extrabold text-foreground leading-snug tracking-tight">
                         {product.name}
                     </h1>
 
@@ -345,7 +346,7 @@ export function ProductDetailView({ product, relatedProducts, allCategories }: P
                 <div className="space-y-1">
                     <p className="text-[11px] text-muted-foreground font-bold uppercase tracking-widest">Precio Mayorista</p>
                     <div className="flex items-baseline gap-1.5">
-                        <span className="text-3xl md:text-4xl font-black text-foreground tracking-tight">
+                        <span className="text-2xl sm:text-3xl md:text-4xl font-black text-foreground tracking-tight break-all">
                             MXN {new Intl.NumberFormat('es-MX', { style: 'currency', currency: 'MXN' }).format(product.price).replace('MXN', '').trim()}
                         </span>
                     </div>
@@ -356,35 +357,37 @@ export function ProductDetailView({ product, relatedProducts, allCategories }: P
 
                 {/* 3. PRIMARY ACTIONS */}
                 <div className="space-y-3">
-                    <div className="flex gap-3">
+                    <div className="flex gap-2 sm:gap-3">
                         {/* Selector de Cantidad */}
-                        <div className="flex items-center bg-muted border border-border rounded-xl px-1.5 py-1">
-                            <Button 
-                                variant="ghost" 
-                                size="icon" 
-                                className="h-8 w-8 text-muted-foreground hover:text-foreground rounded-lg"
+                        <div className="flex items-center bg-muted border border-border rounded-xl px-1.5 py-1 shrink-0">
+                            <Button
+                                variant="ghost"
+                                size="icon"
+                                className="h-9 w-9 sm:h-8 sm:w-8 text-muted-foreground hover:text-foreground rounded-lg"
                                 onClick={() => setQuantity(q => Math.max(1, q - 1))}
+                                aria-label="Disminuir cantidad"
                             >
                                 -
                             </Button>
                             <span className="text-foreground font-extrabold text-sm w-7 text-center">{quantity}</span>
-                            <Button 
-                                variant="ghost" 
-                                size="icon" 
-                                className="h-8 w-8 text-muted-foreground hover:text-foreground rounded-lg"
+                            <Button
+                                variant="ghost"
+                                size="icon"
+                                className="h-9 w-9 sm:h-8 sm:w-8 text-muted-foreground hover:text-foreground rounded-lg"
                                 onClick={() => setQuantity(q => q + 1)}
+                                aria-label="Aumentar cantidad"
                             >
                                 +
                             </Button>
                         </div>
                         {/* Add to Cart */}
-                        <Button 
+                        <Button
                             onClick={handleAddToCart}
                             variant="outline"
-                            className="flex-1 h-12 font-bold rounded-xl gap-2 shadow-sm text-sm"
+                            className="flex-1 min-w-0 h-12 font-bold rounded-xl gap-2 shadow-sm text-xs sm:text-sm"
                         >
-                            <ShoppingCart className="w-4 h-4" />
-                            Añadir al Carrito
+                            <ShoppingCart className="w-4 h-4 shrink-0" />
+                            <span className="truncate">Añadir al Carrito</span>
                         </Button>
                     </div>
 
@@ -407,10 +410,11 @@ export function ProductDetailView({ product, relatedProducts, allCategories }: P
                       <Button
                         type="button"
                         variant="secondary"
-                        className="w-full h-11 rounded-xl font-bold text-xs gap-2 text-green-700 dark:text-green-400 bg-green-500/10 hover:bg-green-500/20 border border-green-500/20 transition-all"
+                        className="w-full h-11 rounded-xl font-bold text-[11px] sm:text-xs gap-2 text-green-700 dark:text-green-400 bg-green-500/10 hover:bg-green-500/20 border border-green-500/20 transition-all"
                       >
-                        <MessageSquare className="w-4 h-4" />
-                        Consultar con un Asesor por WhatsApp
+                        <MessageSquare className="w-4 h-4 shrink-0" />
+                        <span className="sm:hidden">Consultar con un Asesor</span>
+                        <span className="hidden sm:inline">Consultar con un Asesor por WhatsApp</span>
                       </Button>
                     </a>
                 </div>
@@ -459,8 +463,8 @@ export function ProductDetailView({ product, relatedProducts, allCategories }: P
 
       {/* SECCIÓN PRINCIPAL: ESPECIFICACIONES TÉCNICAS Y CONTENIDO HTML NATIVO (FULL WIDTH) */}
       <div suppressHydrationWarning className="w-full space-y-8 mt-10">
-        <div suppressHydrationWarning className="bg-card border border-border/80 rounded-3xl p-6 sm:p-10 shadow-sm space-y-6">
-          <h2 className="text-2xl sm:text-3xl font-bold tracking-tight text-foreground border-b border-border/50 pb-4">
+        <div suppressHydrationWarning className="bg-card border border-border/80 rounded-3xl p-4 sm:p-6 md:p-10 shadow-sm space-y-6">
+          <h2 className="text-xl sm:text-3xl font-bold tracking-tight text-foreground border-b border-border/50 pb-3 sm:pb-4">
             Especificaciones
           </h2>
 
@@ -498,7 +502,7 @@ export function ProductDetailView({ product, relatedProducts, allCategories }: P
 
         {/* Fichas Técnicas y Manuales Descargables */}
         {product.recursos && product.recursos.length > 0 && (
-          <div className="bg-card/50 border border-border/60 rounded-3xl p-6 sm:p-8 shadow-xs space-y-4">
+          <div className="bg-card/50 border border-border/60 rounded-3xl p-4 sm:p-8 shadow-xs space-y-4">
             <h3 className="text-lg font-bold text-foreground flex items-center gap-2">
               <FileText className="w-5 h-5 text-primary" /> Documentos y Manuales Oficiales
             </h3>
@@ -530,14 +534,14 @@ export function ProductDetailView({ product, relatedProducts, allCategories }: P
 
       {/* SECCIÓN DE ACCESORIOS Y PRODUCTOS RELACIONADOS (ESTILO SYSCOM) */}
       {relatedProducts.length > 0 && (
-        <div className="mt-16 pt-8 border-t border-border/80 space-y-6">
+        <div className="mt-10 sm:mt-16 pt-8 border-t border-border/80 space-y-6">
           <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-2">
             <div>
-              <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-blue-500/10 text-blue-500 border border-blue-500/20 text-[11px] font-black uppercase tracking-wider mb-2">
-                <ShieldCheck className="w-3.5 h-3.5" />
+              <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-blue-500/10 text-blue-500 border border-blue-500/20 text-[10px] sm:text-[11px] font-black uppercase tracking-wider mb-2">
+                <ShieldCheck className="w-3.5 h-3.5 shrink-0" />
                 <span>Accesorios Compatibles & Ecosistema</span>
               </div>
-              <h2 className="text-2xl sm:text-3xl font-black tracking-tight text-foreground">
+              <h2 className="text-xl sm:text-3xl font-black tracking-tight text-foreground">
                 Accesorios y Productos Relacionados
               </h2>
               <p className="text-xs sm:text-sm text-muted-foreground mt-0.5">
@@ -554,7 +558,7 @@ export function ProductDetailView({ product, relatedProducts, allCategories }: P
       )}
 
       <Dialog open={isZoomModalOpen} onOpenChange={setIsZoomModalOpen}>
-        <DialogContent className="bg-transparent border-none shadow-none w-auto h-auto max-w-[90vw] max-h-[90vh] p-6 flex flex-col items-center justify-center">
+        <DialogContent className="bg-transparent border-none shadow-none w-auto h-auto max-w-[95vw] sm:max-w-[90vw] max-h-[90vh] p-3 sm:p-6 flex flex-col items-center justify-center">
           <DialogHeader className="w-full">
             <DialogTitle className="text-center text-sm text-white mb-2">
               {product.name}
