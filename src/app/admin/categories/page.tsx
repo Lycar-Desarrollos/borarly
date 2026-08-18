@@ -32,6 +32,7 @@ import {
 import Image from 'next/image';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { cn } from '@/lib/utils';
+import { safeImageSrc } from '@/lib/imageUrl';
 
 const DEFAULT_CATEGORY: Partial<Category> = { 
     name: '', 
@@ -296,7 +297,7 @@ export default function AdminCategoriesPage() {
                 />
                 {currentCategory.featuredImageUrl && (
                   <div className="mt-2 w-24 h-16 relative border rounded overflow-hidden">
-                    <Image src={currentCategory.featuredImageUrl} alt="Vista previa destacada" layout="fill" objectFit="cover" data-ai-hint="category image"/>
+                    <Image src={safeImageSrc(currentCategory.featuredImageUrl)} alt="Vista previa destacada" layout="fill" objectFit="cover" data-ai-hint="category image"/>
                   </div>
                 )}
               </div>
@@ -375,7 +376,7 @@ export default function AdminCategoriesPage() {
                     <TableCell className="text-center">
                       {category.featuredImageUrl ? (
                          <div className="w-16 h-10 relative border rounded overflow-hidden mx-auto group">
-                            <Image src={category.featuredImageUrl} alt={category.name} layout="fill" objectFit="cover" data-ai-hint="category image" />
+                            <Image src={safeImageSrc(category.featuredImageUrl)} alt={category.name} layout="fill" objectFit="cover" data-ai-hint="category image" />
                             <a href={category.featuredImageUrl} target="_blank" rel="noopener noreferrer" className="absolute inset-0 bg-black/50 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
                                <ArrowUpRightFromSquare className="h-5 w-5 text-white"/>
                             </a>

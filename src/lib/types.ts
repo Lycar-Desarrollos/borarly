@@ -121,15 +121,19 @@ export interface Order {
   createdAt: string; 
   updatedAt?: string; 
   shippingAddress: {
+    firstName?: string;
+    lastName?: string;
     street: string;
     city: string;
+    state?: string;
     zip: string;
     country: string;
     phone: string;
     contactEmail: string;
   };
   requiresBilling?: boolean;
-  billingDetails?: BillingData; // Datos capturados de facturación
+  // La facturación puede capturarse despues de la compra, por eso es parcial.
+  billingDetails?: Partial<BillingData>; // Datos capturados de facturación
   paymentDetails?: {
     method: string;
     transactionId?: string;

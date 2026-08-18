@@ -9,6 +9,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { AddToWishlistButton } from './AddToWishlistButton';
 import { useState } from 'react';
 import { useToast } from '@/hooks/use-toast';
+import { safeImageSrc } from '@/lib/imageUrl';
 
 interface ProductCardProps {
   product: Product;
@@ -53,7 +54,7 @@ export function ProductCard({ product }: ProductCardProps) {
         <div className="absolute inset-0 bg-gradient-to-t from-card dark:from-[#1A1F2D] to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 z-10 pointer-events-none" />
         <div className="relative w-full h-full max-h-[180px] z-0 transition-transform duration-500 group-hover:scale-110">
           <Image
-            src={primaryImage}
+            src={safeImageSrc(primaryImage)}
             alt={product.name}
             fill
             sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"

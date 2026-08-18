@@ -1,11 +1,12 @@
 
 import { ProductForm } from '@/components/admin/ProductForm';
 import { getCategories } from '@/services/productService';
+import type { Category } from '@/lib/types';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { AlertTriangle } from 'lucide-react';
 
 export default async function NewProductPage() {
-  let categories = [];
+  let categories: Category[] = [];
   let categoryError = null;
 
   try {

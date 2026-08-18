@@ -2,12 +2,18 @@
 import { NextRequest, NextResponse } from 'next/server';
 import paypal from '@paypal/checkout-server-sdk';
 
-const environment = process.env.PAYPAL_ENV === 'live'
-  ? new paypal.core.LiveEnvironment(process.env.PAYPAL_CLIENT_ID || 'dummy', process.env.PAYPAL_CLIENT_SECRET || 'dummy')
-  : new paypal.core.SandboxEnvironment(process.env.PAYPAL_CLIENT_ID || 'dummy', process.env.PAYPAL_CLIENT_SECRET || 'dummy');
+const PAYPAL_CLIENT_ID = process.env.PAYPAL_CLIENT_ID;
+const PAYPAL_CLIENT_SECRET = process.env.PAYPAL_CLIENT_SECRET;
 
-const client = new paypal.core.PayPalHttpClient(environment);
-
+function getPayPalClient() {
+  if (!PAYPAL_CLIENT_ID || !PAYPAL_CLIENT_SECRET) {
+    return null;
+  }
+  const environment = process.env.PAYPAL_ENV === 'live'
+    ? new paypal.core.LiveEnvironment(PAYPAL_CLIENT_ID, PAYPAL_CLIENT_SECRET)
+    : new paypal.core.SandboxEnvironment(PAYPAL_CLIENT_ID, PAYPAL_CLIENT_SECRET);
+  return new paypal.core.PayPalHttpClient(environment);
+}
 
 // POST /api/orders/[orderID]/capture
 // Captura el pago para una orden de PayPal existente
@@ -21,6 +27,12 @@ export async function POST(
         return NextResponse.json({ error: "Missing orderID" }, { status: 400 });
     }
 
+    const client = getPayPalClient();
+    if (!client) {
+        console.error("PayPal no esta configurado: faltan PAYPAL_CLIENT_ID / PAYPAL_CLIENT_SECRET.");
+        return NextResponse.json({ error: "El pago con PayPal no esta disponible en este momento." }, { status: 503 });
+    }
+
     try {
         const captureRequest = new paypal.orders.OrdersCaptureRequest(orderID);
         captureRequest.requestBody({});
@@ -31,9 +43,6 @@ export async function POST(
 
     } catch (error: any) {
         console.error("Failed to capture PayPal order:", error);
-        if (error.statusCode) {
-             return NextResponse.json({ error: error.message }, { status: error.statusCode });
-        }
-        return NextResponse.json({ error: "Failed to capture order." }, { status: 500 });
+        return NextResponse.json({ error: "No se pudo confirmar el pago. Si el cargo aparece en tu cuenta, contacta a soporte." }, { status: 502 });
     }
 }

@@ -1,0 +1,108 @@
+rules_version = '2';
+
+// PROPUESTA DE REGLAS DE SEGURIDAD DE FIRESTORE
+//
+// IMPORTANTE: este archivo NO se aplica con el deploy de Netlify. Hay que publicarlo en
+// Firebase (consola > Firestore > Reglas, o `firebase deploy --only firestore:rules`).
+//
+// Contexto: hoy la base de datos responde lecturas sin autenticacion, por lo que
+// `users` (correos, direcciones) y `orders` (historial de compra, RFC) quedan expuestos.
+// Estas reglas cierran ese acceso manteniendo el funcionamiento de la tienda:
+//   - Catalogo, categorias, banners y ajustes: lectura publica (la tienda los necesita).
+//   - Datos personales y pedidos: solo su dueño o un administrador.
+//   - Escrituras de contenido: solo administradores.
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isOwner(userId) {
+      return isSignedIn() && request.auth.uid == userId;
+    }
+
+    function isAdmin() {
+      return isSignedIn()
+        && exists(/databases/$(database)/documents/users/$(request.auth.uid))
+        && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
+    }
+
+    function changedKeys() {
+      return request.resource.data.diff(resource.data).affectedKeys();
+    }
+
+    // Perfiles de usuario: cada quien ve y edita el suyo. El campo `role` no puede
+    // modificarse desde el cliente para evitar auto-escalar privilegios a admin.
+    match /users/{userId} {
+      allow read: if isOwner(userId) || isAdmin();
+      allow create: if isOwner(userId) && request.resource.data.role == 'customer';
+      allow update: if isAdmin() || (isOwner(userId) && !changedKeys().hasAny(['role']));
+      allow delete: if isAdmin();
+    }
+
+    // Pedidos: visibles para su dueño y para administracion. El cliente solo puede
+    // completar sus datos de facturacion despues de la compra.
+    match /orders/{orderId} {
+      allow read: if isAdmin() || (isSignedIn() && resource.data.userId == request.auth.uid);
+      allow create: if isSignedIn() && request.resource.data.userId == request.auth.uid;
+      allow update: if isAdmin()
+        || (isSignedIn() && resource.data.userId == request.auth.uid
+            && changedKeys().hasOnly(['requiresBilling', 'billingDetails', 'updatedAt']));
+      allow delete: if isAdmin();
+    }
+
+    // Contenido publico de la tienda: lectura abierta, escritura solo administracion.
+    // NOTA: con esta regla, /api/admin/bulk-upload-products deja de poder escribir, porque
+    // ese endpoint usa el SDK de cliente sin sesion. Para mantenerlo hay que migrarlo a
+    // firebase-admin con una cuenta de servicio. El descuento de stock local del checkout
+    // tambien dejara de escribir, pero ya esta tolerado con try/catch y el stock real
+    // proviene de Syscom.
+    match /products/{productId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    match /categories/{categoryId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    match /settings/{settingId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    match /heroSlides/{slideId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    match /upcomingEvents/{eventId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    match /featuredBrands/{brandId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    // Cotizaciones y avisos internos: uso exclusivo de administracion.
+    // Los avisos se crean al confirmar un pedido, por eso `create` permite usuarios con sesion.
+    match /quotes/{quoteId} {
+      allow read, write: if isAdmin();
+    }
+
+    match /adminNotifications/{notificationId} {
+      allow read, update, delete: if isAdmin();
+      allow create: if isSignedIn();
+    }
+
+    // Todo lo que no este declarado arriba queda cerrado.
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

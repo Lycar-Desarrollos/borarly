@@ -160,7 +160,7 @@ export async function createOrderFromQuote(quote: Quote): Promise<Order> {
     const firestoreOrderData = {
       ...newOrderData,
       createdAt: Timestamp.fromDate(new Date(newOrderData.createdAt)),
-      updatedAt: Timestamp.fromDate(new Date(newOrderData.updatedAt)),
+      updatedAt: Timestamp.fromDate(new Date(newOrderData.updatedAt || newOrderData.createdAt)),
     };
     const docRef = await addDoc(ordersCollectionRef, firestoreOrderData);
 

@@ -129,7 +129,7 @@ export default function CheckoutPage() {
   const shippingCost = useMemo(() => {
     if (loadingSettings || cartItems.length === 0) return null;
     const { cost, freeShippingThreshold } = shippingSettings;
-    if (freeShippingThreshold !== null && freeShippingThreshold > 0 && cartSubtotal >= freeShippingThreshold) {
+    if (freeShippingThreshold !== null && freeShippingThreshold !== undefined && freeShippingThreshold > 0 && cartSubtotal >= freeShippingThreshold) {
       return 0; // Envío gratis detectado
     }
     return cost;
@@ -253,7 +253,9 @@ export default function CheckoutPage() {
       createdAt: new Date().toISOString(), 
       updatedAt: new Date().toISOString(),
       shippingAddress: { 
-          street: activeAddress.street, city: activeAddress.city, zip: activeAddress.zip, country: activeAddress.country, phone: activeAddress.phone, contactEmail: contactEmail 
+          firstName: activeAddress.firstName, lastName: activeAddress.lastName,
+          street: activeAddress.street, city: activeAddress.city, state: activeAddress.state,
+          zip: activeAddress.zip, country: activeAddress.country, phone: activeAddress.phone, contactEmail: contactEmail 
       },
       requiresBilling: requiresBilling,
       paymentReference: transactionId,
@@ -281,7 +283,7 @@ export default function CheckoutPage() {
       const firestoreOrderData = {
         ...finalOrderData,
         createdAt: Timestamp.fromDate(new Date(finalOrderData.createdAt)),
-        updatedAt: Timestamp.fromDate(new Date(finalOrderData.updatedAt)),
+        updatedAt: Timestamp.fromDate(new Date(finalOrderData.updatedAt || finalOrderData.createdAt)),
       };
       await addDoc(ordersCollectionRef, firestoreOrderData);
       await addDoc(collection(db, 'adminNotifications'), adminNotification);
@@ -702,6 +704,7 @@ export default function CheckoutPage() {
                                         city: finalAddr.city,
                                         state: finalAddr.state,
                                         zip: finalAddr.zip,
+                                        phone: finalAddr.phone,
                                         contactEmail: contactEmail
                                     };
                                     
@@ -724,13 +727,19 @@ export default function CheckoutPage() {
                                     if (orderData.id) {
                                         return orderData.id;
                                     } else {
+                                        // El servidor revalida precios y envio: su mensaje es el util para el cliente.
                                         const errorDetail = orderData?.details?.[0];
-                                        const errorMessage = errorDetail ? `${errorDetail.issue} ${errorDetail.description}` : JSON.stringify(orderData);
+                                        const errorMessage = orderData?.error
+                                            || (errorDetail ? `${errorDetail.issue} ${errorDetail.description}` : 'No se pudo iniciar el pago.');
                                         throw new Error(errorMessage);
                                     }
                                 } catch (error) {
                                     console.error(error);
-                                    toast({ title: "Error Cifrado", description: "No pudimos conectar con la pasarela bancaria.", variant: "destructive" });
+                                    toast({
+                                        title: "No se pudo iniciar el pago",
+                                        description: error instanceof Error ? error.message : "No pudimos conectar con la pasarela bancaria.",
+                                        variant: "destructive"
+                                    });
                                     throw error;
                                 }
                             }}

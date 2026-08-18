@@ -51,7 +51,7 @@ export function CategoryFilter({ categories, selectedCategory, onSelectCategory 
     let currentId: string | null = selectedCategory;
 
     while(currentId) {
-        const parentId = parentMap[currentId];
+        const parentId: string | null = parentMap[currentId] ?? null;
         if(parentId) {
             openItems.add(parentId);
         }

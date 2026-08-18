@@ -2,6 +2,7 @@
 import { ProductForm } from '@/components/admin/ProductForm';
 import { getProductById, getCategories } from '@/services/productService';
 import { notFound } from 'next/navigation';
+import type { Category } from '@/lib/types';
 import React from 'react'; 
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { AlertTriangle } from 'lucide-react';
@@ -31,7 +32,7 @@ function ErrorDisplay({ error, productId }: { error: Error; productId: string })
 export default async function EditProductPage(props: EditProductPageProps) {
   const params = await props.params;
   const { id: productId } = params;
-  let categories = [];
+  let categories: Category[] = [];
   let categoryError = null;
 
   if (!productId) {
