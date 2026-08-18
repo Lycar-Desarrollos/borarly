@@ -6,10 +6,10 @@ export function Footer() {
 
   return (
     <footer className="mt-auto border-t bg-card text-card-foreground">
-      <div className="container mx-auto px-6 py-12">
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-12">
+      <div className="container mx-auto px-4 sm:px-6 py-10 sm:py-12 pb-safe">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-8 md:gap-12">
           {/* Logo y Descripción */}
-          <div className="md:col-span-1 space-y-4">
+          <div className="col-span-2 md:col-span-1 space-y-4">
             <h2 className="text-2xl font-black tracking-tighter text-primary">BORARLY</h2>
             <p className="text-sm text-muted-foreground leading-relaxed">
               Distribuidor mayorista líder en equipo de seguridad electrónica, videovigilancia y redes. Calidad y servicio garantizado.
@@ -58,7 +58,7 @@ export function Footer() {
           </div>
 
           {/* Contacto - COMPLETO para Google Merchant Center */}
-          <div className="space-y-4">
+          <div className="col-span-2 md:col-span-1 space-y-4">
             <h3 className="text-sm font-bold uppercase tracking-widest text-foreground">Contacto</h3>
             <ul className="space-y-3 text-sm text-muted-foreground">
               <li className="flex items-start gap-3">
@@ -88,8 +88,8 @@ export function Footer() {
         </div>
 
         {/* Datos Fiscales + Copyright */}
-        <div className="mt-12 pt-8 border-t border-border/50 text-center space-y-2">
-          <p className="text-xs text-muted-foreground">
+        <div className="mt-10 sm:mt-12 pt-8 border-t border-border/50 text-center space-y-2">
+          <p className="text-xs text-muted-foreground break-words">
             Edgar Ydalimir Arevalo Escobedo &middot; RFC: AEEE991122MA7 &middot; Persona Física con Actividad Empresarial
           </p>
           <p className="text-xs text-muted-foreground">

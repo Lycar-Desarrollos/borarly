@@ -125,20 +125,20 @@ export function CategoryShowcaseCarousel({
     <section id={sectionId} className="space-y-4 my-10 scroll-mt-24">
       
       {/* 1. HEADER: TÍTULO Y BOTONES DE NAVEGACIÓN */}
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-2.5">
+      <div className="flex items-center justify-between gap-3">
+        <div className="flex items-center gap-2 sm:gap-2.5 min-w-0">
           {icon === 'trend' ? (
-            <Flame className="w-6 h-6 text-amber-500" />
+            <Flame className="w-5 h-5 sm:w-6 sm:h-6 shrink-0 text-amber-500" />
           ) : (
-            <Sparkles className="w-6 h-6 text-cyan-500" />
+            <Sparkles className="w-5 h-5 sm:w-6 sm:h-6 shrink-0 text-cyan-500" />
           )}
-          <h2 className="text-2xl sm:text-3xl font-black tracking-tight text-foreground">
+          <h2 className="text-xl sm:text-3xl font-black tracking-tight text-foreground truncate">
             {title}
           </h2>
         </div>
 
-        {/* Flechas de desplazamiento */}
-        <div className="flex items-center gap-1.5">
+        {/* Flechas de desplazamiento (ocultas en móvil: ahí se desliza con el dedo) */}
+        <div className="hidden sm:flex items-center gap-1.5 shrink-0">
           <Button
             variant="outline"
             size="icon"
@@ -190,7 +190,7 @@ export function CategoryShowcaseCarousel({
         ) : products.length > 0 ? (
           <div 
             ref={scrollContainerRef}
-            className="flex gap-4 overflow-x-auto no-scrollbar scroll-smooth py-2 px-0.5"
+            className="flex gap-3 sm:gap-4 overflow-x-auto no-scrollbar touch-carousel scroll-smooth py-2 px-0.5"
           >
             {products.map((product) => {
               const rawImg = product.imageUrls?.[0] || 'https://placehold.co/400x400.png';
@@ -204,7 +204,7 @@ export function CategoryShowcaseCarousel({
               return (
                 <div 
                   key={product.id}
-                  className="w-[240px] sm:w-[260px] flex-shrink-0 flex flex-col justify-between bg-card border border-border/70 rounded-2xl p-3.5 shadow-xs hover:shadow-md hover:border-primary/40 transition-all group"
+                  className="w-[215px] sm:w-[260px] flex-shrink-0 flex flex-col justify-between bg-card border border-border/70 rounded-2xl p-3 sm:p-3.5 shadow-xs hover:shadow-md hover:border-primary/40 transition-all group"
                 >
                   <div>
                     {/* Imagen del Producto con Zoom Hover */}

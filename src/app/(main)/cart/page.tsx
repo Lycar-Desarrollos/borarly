@@ -75,30 +75,30 @@ export default function CartPage() {
 
   if (cartItems.length === 0) {
     return (
-      <div className="text-center py-12">
-        <ShoppingCart className="mx-auto h-24 w-24 text-muted-foreground mb-6" />
-        <h1 className="text-3xl font-semibold mb-4">Tu Carrito está Vacío</h1>
-        <p className="text-muted-foreground mb-8">Parece que aún no has añadido nada a tu carrito.</p>
+      <div className="text-center py-10 sm:py-12 px-4">
+        <ShoppingCart className="mx-auto h-16 w-16 sm:h-24 sm:w-24 text-muted-foreground mb-5 sm:mb-6" />
+        <h1 className="text-2xl sm:text-3xl font-semibold mb-3 sm:mb-4">Tu Carrito está Vacío</h1>
+        <p className="text-muted-foreground mb-8 text-sm sm:text-base">Parece que aún no has añadido nada a tu carrito.</p>
         <Link href="/" legacyBehavior passHref>
-          <Button size="lg">Empezar a Comprar</Button>
+          <Button size="lg" className="w-full sm:w-auto">Empezar a Comprar</Button>
         </Link>
       </div>
     );
   }
 
   return (
-    <div className="grid lg:grid-cols-3 gap-8">
+    <div className="grid lg:grid-cols-3 gap-5 lg:gap-8">
       <div className="lg:col-span-2 space-y-6">
         <Card className="shadow-lg">
-          <CardHeader>
-            <div className="flex justify-between items-center">
-              <CardTitle className="text-2xl">Tu Carrito ({cartItems.reduce((acc, item) => acc + item.quantity, 0)})</CardTitle>
-              <Button variant="outline" onClick={clearCart} className="text-destructive border-destructive hover:bg-destructive/10 text-xs sm:text-sm h-8 sm:h-auto">
+          <CardHeader className="p-4 sm:p-6">
+            <div className="flex flex-wrap justify-between items-center gap-2">
+              <CardTitle className="text-lg sm:text-2xl">Tu Carrito ({cartItems.reduce((acc, item) => acc + item.quantity, 0)})</CardTitle>
+              <Button variant="outline" onClick={clearCart} className="text-destructive border-destructive hover:bg-destructive/10 text-xs sm:text-sm h-9 sm:h-10 px-3">
                 <Trash2 className="mr-1 h-4 w-4" /> Vaciar Carrito
               </Button>
             </div>
           </CardHeader>
-          <CardContent className="divide-y">
+          <CardContent className="divide-y p-4 pt-0 sm:p-6 sm:pt-0">
             {cartItems.map((item) => {
               const imageSrc = item.imageUrls && item.imageUrls.length > 0 
                 ? item.imageUrls[0] 
@@ -107,8 +107,8 @@ export default function CartPage() {
                 ? "cart item" 
                 : undefined;
               return (
-                <div key={item.id} className="py-6 grid grid-cols-12 gap-4 items-center">
-                  <div className="col-span-3 sm:col-span-2 relative h-20 w-20 sm:h-24 sm:w-24 rounded-md overflow-hidden border bg-white">
+                <div key={item.id} className="py-4 sm:py-6 flex gap-3 items-start sm:grid sm:grid-cols-12 sm:gap-4 sm:items-center">
+                  <div className="col-span-3 sm:col-span-2 shrink-0 relative h-20 w-20 sm:h-24 sm:w-24 rounded-md overflow-hidden border bg-white">
                     <Image
                       src={imageSrc}
                       alt={item.name}
@@ -118,33 +118,37 @@ export default function CartPage() {
                       className="p-1"
                     />
                   </div>
-                  <div className="col-span-9 sm:col-span-10 grid grid-cols-1 md:grid-cols-12 gap-4 items-center">
-                    <div className="md:col-span-5">
+                  <div className="col-span-9 sm:col-span-10 flex-1 min-w-0 grid grid-cols-1 md:grid-cols-12 gap-3 md:gap-4 items-center">
+                    <div className="md:col-span-5 min-w-0">
                       <Link href={`/products/${item.id}`} className="hover:text-primary">
-                        <h3 className="font-semibold text-base sm:text-lg line-clamp-2">{item.name}</h3>
+                        <h3 className="font-semibold text-sm sm:text-lg line-clamp-2">{item.name}</h3>
                       </Link>
-                      <p className="text-sm text-muted-foreground">{formatCurrency(item.price)}</p>
+                      <p className="text-xs sm:text-sm text-muted-foreground">{formatCurrency(item.price)}</p>
                     </div>
-                    <div className="md:col-span-4 flex items-center border rounded-md justify-between">
-                      <Button variant="ghost" size="icon" className="h-10 w-10 rounded-r-none" onClick={() => updateQuantity(item.id, item.quantity - 1)} disabled={item.quantity <= 1}>
-                        <Minus className="h-4 w-4" />
-                      </Button>
-                      <Input
-                        type="number"
-                        value={item.quantity}
-                        onChange={(e) => updateQuantity(item.id, parseInt(e.target.value) || 1)}
-                        className="w-12 h-10 text-center border-none focus-visible:ring-0 focus-visible:ring-offset-0 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
-                        min="1"
-                      />
-                      <Button variant="ghost" size="icon" className="h-10 w-10 rounded-l-none" onClick={() => updateQuantity(item.id, item.quantity + 1)}>
-                        <Plus className="h-4 w-4" />
-                      </Button>
-                    </div>
-                    <p className="font-semibold md:col-span-2 md:text-right">{formatCurrency(item.price * item.quantity)}</p>
-                    <div className="md:col-span-1 flex justify-end">
-                      <Button variant="ghost" size="icon" onClick={() => removeFromCart(item.id)} className="text-destructive hover:text-destructive-foreground hover:bg-destructive">
-                        <Trash2 className="h-5 w-5" />
-                      </Button>
+                    {/* En móvil cantidad, importe y eliminar comparten una sola fila */}
+                    <div className="flex items-center justify-between gap-2 md:contents">
+                      <div className="md:col-span-4 shrink-0 flex items-center border rounded-md justify-between">
+                        <Button variant="ghost" size="icon" className="h-9 w-9 sm:h-10 sm:w-10 rounded-r-none" onClick={() => updateQuantity(item.id, item.quantity - 1)} disabled={item.quantity <= 1}>
+                          <Minus className="h-4 w-4" />
+                        </Button>
+                        <Input
+                          type="number"
+                          value={item.quantity}
+                          onChange={(e) => updateQuantity(item.id, parseInt(e.target.value) || 1)}
+                          className="w-11 sm:w-12 h-9 sm:h-10 text-center border-none focus-visible:ring-0 focus-visible:ring-offset-0 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                          min="1"
+                          aria-label={`Cantidad de ${item.name}`}
+                        />
+                        <Button variant="ghost" size="icon" className="h-9 w-9 sm:h-10 sm:w-10 rounded-l-none" onClick={() => updateQuantity(item.id, item.quantity + 1)}>
+                          <Plus className="h-4 w-4" />
+                        </Button>
+                      </div>
+                      <p className="font-semibold text-sm sm:text-base md:col-span-2 md:text-right whitespace-nowrap">{formatCurrency(item.price * item.quantity)}</p>
+                      <div className="md:col-span-1 flex justify-end shrink-0">
+                        <Button variant="ghost" size="icon" onClick={() => removeFromCart(item.id)} className="h-9 w-9 sm:h-10 sm:w-10 text-destructive hover:text-destructive-foreground hover:bg-destructive" aria-label="Eliminar del carrito">
+                          <Trash2 className="h-5 w-5" />
+                        </Button>
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -155,11 +159,11 @@ export default function CartPage() {
       </div>
 
       <div className="lg:col-span-1 space-y-6">
-        <Card className="shadow-lg sticky top-24">
-          <CardHeader>
-            <CardTitle className="text-2xl">Resumen del Pedido</CardTitle>
+        <Card className="shadow-lg lg:sticky lg:top-24">
+          <CardHeader className="p-4 sm:p-6">
+            <CardTitle className="text-lg sm:text-2xl">Resumen del Pedido</CardTitle>
           </CardHeader>
-          <CardContent className="space-y-3">
+          <CardContent className="space-y-3 p-4 pt-0 sm:p-6 sm:pt-0 text-sm sm:text-base">
             <div className="flex justify-between">
               <p>Subtotal (Sin IVA)</p>
               <p>{formatCurrency(netSubtotal)}</p>
@@ -189,12 +193,12 @@ export default function CartPage() {
                 </div>
             )}
           </CardContent>
-          <CardFooter className="flex-col gap-3">
+          <CardFooter className="flex-col gap-3 p-4 pt-0 sm:p-6 sm:pt-0">
             <Link href="/checkout" className="w-full" legacyBehavior passHref>
-              <Button size="lg" className="w-full bg-primary hover:bg-primary/90 text-white">Proceder al Pago</Button>
+              <Button size="lg" className="w-full h-12 bg-primary hover:bg-primary/90 text-white">Proceder al Pago</Button>
             </Link>
             <Link href="/" className="w-full" legacyBehavior passHref>
-              <Button variant="outline" className="w-full">Continuar Comprando</Button>
+              <Button variant="outline" className="w-full h-11">Continuar Comprando</Button>
             </Link>
           </CardFooter>
         </Card>
@@ -211,15 +215,15 @@ function CartPageSkeleton() {
           <CardHeader><Skeleton className="h-8 w-3/4" /></CardHeader>
           <CardContent className="divide-y">
             {[...Array(2)].map((_, i) => (
-              <div key={i} className="flex items-center gap-4 py-6">
-                <Skeleton className="h-24 w-24 rounded-md" />
-                <div className="flex-grow space-y-2">
+              <div key={i} className="flex items-center gap-3 sm:gap-4 py-6">
+                <Skeleton className="h-20 w-20 sm:h-24 sm:w-24 shrink-0 rounded-md" />
+                <div className="flex-grow space-y-2 min-w-0">
                   <Skeleton className="h-6 w-3/4" />
                   <Skeleton className="h-4 w-1/2" />
                 </div>
-                <Skeleton className="h-10 w-28 rounded-md" />
-                <Skeleton className="h-6 w-20" />
-                <Skeleton className="h-10 w-10 rounded-md" />
+                <Skeleton className="hidden sm:block h-10 w-28 rounded-md" />
+                <Skeleton className="hidden sm:block h-6 w-20" />
+                <Skeleton className="h-10 w-10 shrink-0 rounded-md" />
               </div>
             ))}
           </CardContent>

@@ -11,8 +11,9 @@ export function CartDropdown() {
   return (
     <Link
       href="/cart"
-      className="h-11 sm:h-12 px-4 sm:px-5 rounded-2xl flex items-center gap-2.5 sm:gap-3 transition-all duration-200 outline-none cursor-pointer group select-none border bg-[#131b2e] hover:bg-[#1a2540] border-slate-700/80 hover:border-blue-500/50 text-slate-100 shadow-md hover:shadow-lg hover:shadow-blue-950/30 active:scale-[0.98]"
+      className="h-10 sm:h-12 px-3 sm:px-5 rounded-xl sm:rounded-2xl flex items-center gap-2.5 sm:gap-3 transition-all duration-200 outline-none cursor-pointer group select-none border bg-[#131b2e] hover:bg-[#1a2540] border-slate-700/80 hover:border-blue-500/50 text-slate-100 shadow-md hover:shadow-lg hover:shadow-blue-950/30 active:scale-[0.98] shrink-0"
       title="Ir al Carrito de compras"
+      aria-label="Ir al carrito de compras"
     >
       <div className="relative flex items-center justify-center">
         <ShoppingCart className="w-5 h-5 text-blue-400 group-hover:scale-110 transition-transform stroke-[2.2]" />

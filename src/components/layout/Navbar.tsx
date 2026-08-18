@@ -120,7 +120,7 @@ export function Navbar() {
 
   // Dropdown de Resultados Instantáneos
   const SearchResultsDropdown = () => (
-    <div className="absolute top-full mt-2 w-full bg-card/95 backdrop-blur-xl border border-border/80 rounded-2xl shadow-2xl z-50 max-h-[480px] overflow-y-auto divide-y divide-border/40 animate-in fade-in-50 zoom-in-95">
+    <div className="absolute top-full mt-2 w-full bg-card/95 backdrop-blur-xl border border-border/80 rounded-2xl shadow-2xl z-50 max-h-[60vh] sm:max-h-[480px] overflow-y-auto overscroll-contain divide-y divide-border/40 animate-in fade-in-50 zoom-in-95">
       
       {/* Estado de carga */}
       {isSearching && (
@@ -315,8 +315,10 @@ export function Navbar() {
     <header className="sticky top-0 z-50 w-full border-b border-white/10 bg-[#090d16] text-white shadow-md">
       
       {/* 1. BARRA PRINCIPAL SUPERIOR (LOGO, BUSCADOR CENTRADO Y FLUIDO, CARRITO, AVATAR) */}
-      <div className="max-w-[1520px] mx-auto px-4 sm:px-6 lg:px-8 h-20 sm:h-22 flex items-center justify-between gap-4 sm:gap-6 md:gap-8">
-        
+      {/* En móvil el buscador baja a una segunda línea a todo lo ancho (flex-wrap);
+          desde `sm` vuelve a la fila única de escritorio. */}
+      <div className="max-w-[1520px] mx-auto px-3 sm:px-6 lg:px-8 flex flex-wrap items-center justify-between gap-x-3 gap-y-2.5 py-2.5 sm:flex-nowrap sm:py-0 sm:h-20 md:h-24 sm:gap-6 md:gap-8">
+
         {/* LOGO NATIVO ORIGINAL BORARLY */}
         <div className="flex items-center shrink-0">
           <Link href="/" className="flex items-center select-none group py-1">
@@ -326,33 +328,33 @@ export function Navbar() {
               width={195}
               height={52}
               priority
-              className="h-9 sm:h-11 w-auto object-contain transition-transform group-hover:scale-105"
+              className="h-8 sm:h-10 md:h-11 w-auto object-contain transition-transform group-hover:scale-105"
             />
           </Link>
         </div>
-        
+
         {/* BUSCADOR UNIVERSAL */}
         {!isCheckoutPhase && (
-          <div 
-            ref={searchContainerRef} 
-            className="flex-1 max-w-3xl relative mx-2 sm:mx-4"
+          <div
+            ref={searchContainerRef}
+            className="order-last w-full relative sm:order-none sm:w-auto sm:flex-1 sm:max-w-3xl sm:mx-4"
             onFocus={handleFocus}
             onBlur={handleBlur}
           >
             <form onSubmit={handleSearchSubmit} className="w-full flex items-center">
               <div className={cn(
-                "relative flex items-center w-full h-12 rounded-full bg-white text-zinc-900 border transition-all duration-200 shadow-sm overflow-hidden px-4",
+                "relative flex items-center w-full h-11 sm:h-12 rounded-full bg-white text-zinc-900 border transition-all duration-200 shadow-sm overflow-hidden px-3 sm:px-4",
                 isSearchVisible ? "ring-2 ring-blue-500 border-transparent shadow-md" : "border-zinc-300 hover:border-zinc-400"
               )}>
                 {/* Icono de búsqueda */}
-                <div className="pr-3 pointer-events-none text-zinc-400">
+                <div className="pr-2 sm:pr-3 pointer-events-none text-zinc-400">
                   <Search className="h-5 w-5" />
                 </div>
 
-                {/* Input de texto */}
+                {/* Input de texto: placeholder corto en móvil, completo en escritorio */}
                 <input
                   type="text"
-                  placeholder="Buscar productos por nombre, modelo, marca o clave SAT..."
+                  placeholder="Buscar productos, modelo o marca..."
                   className="w-full py-2.5 text-sm bg-transparent outline-none text-zinc-900 placeholder:text-zinc-400 pr-2 font-medium"
                   value={searchTerm}
                   onChange={(e) => {
@@ -373,8 +375,9 @@ export function Navbar() {
                       setSearchTerm('');
                       setIsSearchVisible(false);
                     }}
-                    className="p-1.5 text-zinc-400 hover:text-zinc-700 rounded-full transition-colors mr-1"
+                    className="p-2 -mr-1 text-zinc-400 hover:text-zinc-700 rounded-full transition-colors shrink-0"
                     title="Borrar búsqueda"
+                    aria-label="Borrar búsqueda"
                   >
                     <X className="w-4 h-4" />
                   </button>
@@ -388,7 +391,7 @@ export function Navbar() {
         )}
 
         {/* ACCIONES LATERALES: AVATAR / PERFIL Y CARRITO */}
-        <div className="flex items-center gap-3 sm:gap-3.5 shrink-0 ml-2">
+        <div className="flex items-center gap-2 sm:gap-3.5 shrink-0">
           
           {/* Avatar de Usuario Circular / Botón Iniciar Sesión */}
           {currentUser ? (
@@ -397,7 +400,7 @@ export function Navbar() {
                 <button 
                   type="button" 
                   aria-label="Menú de Usuario" 
-                  className="relative h-10 w-10 sm:h-10.5 sm:w-10.5 rounded-full ring-2 ring-blue-600 ring-offset-2 ring-offset-[#090d16] bg-white text-zinc-950 flex items-center justify-center font-bold text-sm shadow-sm hover:scale-105 transition-transform overflow-hidden select-none outline-none cursor-pointer"
+                  className="relative h-10 w-10 sm:h-11 sm:w-11 rounded-full ring-2 ring-blue-600 ring-offset-2 ring-offset-[#090d16] bg-white text-zinc-950 flex items-center justify-center font-bold text-sm shadow-sm hover:scale-105 transition-transform overflow-hidden select-none outline-none cursor-pointer shrink-0"
                 >
                   <Avatar className="h-full w-full">
                     <AvatarImage src={userProfile?.photoURL || undefined} alt={userProfile?.displayName || 'Usuario'} />
@@ -449,9 +452,9 @@ export function Navbar() {
               </DropdownMenuContent>
             </DropdownMenu>
           ) : (
-            <Link href="/login">
-              <Button size="sm" className="bg-primary hover:bg-primary/90 text-primary-foreground font-bold rounded-xl text-xs px-3.5 h-10 cursor-pointer">
-                <User className="h-4 w-4 sm:mr-1.5" /> 
+            <Link href="/login" aria-label="Iniciar sesión">
+              <Button size="sm" className="bg-primary hover:bg-primary/90 text-primary-foreground font-bold rounded-xl text-xs px-3 sm:px-3.5 h-10 cursor-pointer">
+                <User className="h-4 w-4 sm:mr-1.5" />
                 <span className="hidden sm:inline">Iniciar Sesión</span>
               </Button>
             </Link>
@@ -464,34 +467,37 @@ export function Navbar() {
 
       {/* 2. SUB-BARRA DE NAVEGACIÓN CON ESPACIADO CÓMODO Y SEPARACIÓN */}
       {!isCheckoutPhase && (
-        <div className="border-t border-white/10 bg-[#060910] text-xs font-semibold text-zinc-300 py-2 relative z-40">
-          <div className="max-w-[1520px] mx-auto px-4 sm:px-6 lg:px-8 h-14 flex items-center justify-between gap-4 sm:gap-6">
-            
+        <div className="border-t border-white/10 bg-[#060910] text-xs font-semibold text-zinc-300 py-1.5 sm:py-2 relative z-40">
+          {/* En pantallas muy angostas la fila se puede deslizar en lugar de romperse */}
+          <div className="max-w-[1520px] mx-auto px-3 sm:px-6 lg:px-8 h-12 sm:h-14 flex items-center justify-between gap-2 sm:gap-6 overflow-x-auto no-scrollbar sm:overflow-x-visible">
+
             {/* Lado Izquierdo: Catálogo de Productos y Servicios */}
-            <div className="flex items-center gap-4 sm:gap-6">
+            <div className="flex items-center gap-2 sm:gap-6">
               {/* Botón Mega Menú ☰ Productos */}
               <MegaMenu />
 
               {/* Botón Servicios */}
-              <Link 
-                href="/services" 
-                className="h-11.5 px-6 rounded-2xl text-[13px] sm:text-sm font-bold uppercase tracking-wider text-zinc-200 hover:text-white bg-white/10 hover:bg-white/15 border border-white/15 hover:border-cyan-400/50 flex items-center gap-2.5 transition-all shadow-xs hover:scale-[1.02] active:scale-95 shrink-0 group select-none"
+              <Link
+                href="/services"
+                className="h-10 sm:h-11 px-3.5 sm:px-6 rounded-xl sm:rounded-2xl text-[12px] sm:text-sm font-bold uppercase tracking-wider text-zinc-200 hover:text-white bg-white/10 hover:bg-white/15 border border-white/15 hover:border-cyan-400/50 flex items-center gap-2 sm:gap-2.5 transition-all shadow-xs hover:scale-[1.02] active:scale-95 shrink-0 group select-none"
               >
-                <Layers className="w-4.5 h-4.5 text-cyan-400 group-hover:rotate-6 transition-transform" />
+                <Layers className="w-4 h-4 sm:w-5 sm:h-5 text-cyan-400 group-hover:rotate-6 transition-transform shrink-0" />
                 <span>Servicios</span>
               </Link>
             </div>
 
             {/* Lado Derecho: Asesor WhatsApp */}
             <div className="flex items-center shrink-0">
-              <a 
-                href="https://wa.me/5219999040931" 
-                target="_blank" 
-                rel="noopener noreferrer" 
-                className="h-11.5 px-6 rounded-2xl text-[13px] sm:text-sm font-bold uppercase tracking-wider text-emerald-300 hover:text-emerald-200 bg-emerald-500/15 hover:bg-emerald-500/25 border border-emerald-500/40 hover:border-emerald-400/60 flex items-center gap-2.5 transition-all shadow-xs hover:scale-[1.02] active:scale-95 select-none"
+              <a
+                href="https://wa.me/5219999040931"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="h-10 sm:h-11 px-3.5 sm:px-6 rounded-xl sm:rounded-2xl text-[12px] sm:text-sm font-bold uppercase tracking-wider text-emerald-300 hover:text-emerald-200 bg-emerald-500/15 hover:bg-emerald-500/25 border border-emerald-500/40 hover:border-emerald-400/60 flex items-center gap-2 sm:gap-2.5 transition-all shadow-xs hover:scale-[1.02] active:scale-95 select-none shrink-0"
               >
-                <MessageCircle className="h-4.5 w-4.5 text-green-400 fill-green-400/20 group-hover:scale-110 transition-transform" />
-                <span>Asesor WhatsApp</span>
+                <MessageCircle className="h-4 w-4 sm:h-5 sm:w-5 text-green-400 fill-green-400/20 shrink-0" />
+                {/* Etiqueta corta en móvil para que quepa junto al resto */}
+                <span className="sm:hidden">WhatsApp</span>
+                <span className="hidden sm:inline">Asesor WhatsApp</span>
               </a>
             </div>
 

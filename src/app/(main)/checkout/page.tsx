@@ -313,11 +313,11 @@ export default function CheckoutPage() {
               <div className={`w-24 h-24 rounded-full flex items-center justify-center mx-auto shadow-inner ${paymentMethod === 'paypal' ? 'bg-green-100 text-green-500' : 'bg-primary/20 text-primary'}`}>
                  {paymentMethod === 'paypal' ? <CheckCircle2 className="h-14 w-14" /> : <Clock className="h-14 w-14" />}
               </div>
-              <h1 className="text-4xl font-black tracking-tight text-foreground">{paymentMethod === 'paypal' ? '¡Pago Completado!' : '¡Pedido Generado!'}</h1>
-              <p className="text-lg text-muted-foreground">{paymentMethod === 'paypal' ? 'Tu orden ha sido procesada de manera segura por la pasarela bancaria.' : 'Tu pedido ha sido creado y está en espera de pago. Sigue las instrucciones en tu historial para depositar y activarlo.'}</p>
-              <div className="bg-gradient-to-br from-primary/5 to-primary/10 rounded-xl p-8 my-6 border border-primary/20 shadow-sm backdrop-blur-sm">
-                  <p className="text-sm font-semibold text-muted-foreground uppercase tracking-widest mb-2">Código de Autorización</p>
-                  <p className="font-mono text-3xl text-primary font-bold">{orderReference}</p>
+              <h1 className="text-2xl sm:text-4xl font-black tracking-tight text-foreground">{paymentMethod === 'paypal' ? '¡Pago Completado!' : '¡Pedido Generado!'}</h1>
+              <p className="text-base sm:text-lg text-muted-foreground">{paymentMethod === 'paypal' ? 'Tu orden ha sido procesada de manera segura por la pasarela bancaria.' : 'Tu pedido ha sido creado y está en espera de pago. Sigue las instrucciones en tu historial para depositar y activarlo.'}</p>
+              <div className="bg-gradient-to-br from-primary/5 to-primary/10 rounded-xl p-5 sm:p-8 my-6 border border-primary/20 shadow-sm backdrop-blur-sm">
+                  <p className="text-xs sm:text-sm font-semibold text-muted-foreground uppercase tracking-widest mb-2">Código de Autorización</p>
+                  <p className="font-mono text-xl sm:text-3xl text-primary font-bold break-all">{orderReference}</p>
               </div>
               <p className="text-muted-foreground">Te hemos enviado un recibo a <span className="font-medium text-foreground">{contactEmail}</span>.</p>
               <div className="pt-6">
@@ -336,10 +336,10 @@ export default function CheckoutPage() {
   if (!currentUser) return null;
 
   return (
-    <div className="max-w-7xl mx-auto p-4 sm:p-6 lg:p-8 mb-12">
-      
+    <div className="max-w-7xl mx-auto py-4 px-0 sm:p-6 lg:p-8 mb-12">
+
       {/* BREADCRUMB / STEPPER VISUAL */}
-      <div className="mb-10 px-4">
+      <div className="mb-8 sm:mb-10 px-1 sm:px-4">
           <div className="flex items-center justify-center max-w-2xl mx-auto">
               <div className={`flex flex-col items-center gap-2 ${currentStep >= 1 ? 'text-primary' : 'text-muted-foreground opacity-50'}`}>
                   <div className={`w-10 h-10 rounded-full flex items-center justify-center text-base font-bold shadow-sm transition-colors ${currentStep >= 1 ? 'bg-primary text-white shadow-primary/30' : 'bg-muted border-2 border-muted-foreground/20'}`}>1</div>
@@ -380,21 +380,21 @@ export default function CheckoutPage() {
           </CardContent>
         </Card>
       ) : (
-        <div className="grid lg:grid-cols-12 gap-10">
+        <div className="grid lg:grid-cols-12 gap-6 lg:gap-10">
           {/* LADO IZQUIERDO: Pasos dinámicos */}
           <div className="lg:col-span-7 space-y-8 relative z-10 transition-all duration-300">
             
             {/* PASO 1: DATOS DE ENVÍO (SOLO VISIBLE EN PASO 1) */}
             {currentStep === 1 && (
             <Card className="shadow-[0_8px_30px_rgb(0,0,0,0.04)] border-0 overflow-hidden ring-1 ring-primary/50 shadow-primary/10 transition-all duration-300 animate-in fade-in slide-in-from-right-4">
-              <div className="px-6 py-4 border-b border-border/50 flex items-center justify-between">
+              <div className="px-4 sm:px-6 py-4 border-b border-border/50 flex items-center justify-between">
                   <CardTitle className="text-xl flex items-center gap-3">
                       <span className="bg-primary text-white w-7 h-7 rounded-full flex items-center justify-center text-sm font-bold">1</span> 
                       Datos de Envío
                   </CardTitle>
               </div>
               
-              <CardContent className="p-6">
+              <CardContent className="p-4 sm:p-6">
                 
                 {/* SELECTOR DE LISTA DE DIRECCIONES */}
                 {savedAddresses.length > 0 && !isAddingNewAddress && (
@@ -613,7 +613,7 @@ export default function CheckoutPage() {
                 </div>
 
                 <Card className="shadow-[0_8px_30px_rgb(0,0,0,0.04)] border-0 overflow-hidden ring-1 ring-blue-500/50 shadow-blue-500/10">
-                <div className="px-6 py-4 border-b border-border/50 flex items-center justify-between bg-blue-50/50 dark:bg-blue-900/30">
+                <div className="px-4 sm:px-6 py-4 border-b border-border/50 flex items-center justify-between bg-blue-50/50 dark:bg-blue-900/30">
                     <CardTitle className="text-xl flex items-center gap-3">
                         <span className="bg-blue-600 text-white w-7 h-7 rounded-full flex items-center justify-center text-sm font-bold">2</span> 
                         Pago Seguro
@@ -622,7 +622,7 @@ export default function CheckoutPage() {
                         <CreditCard className="w-5 h-5"/>
                     </div>
                 </div>
-                <CardContent className="p-6 bg-card rounded-b-xl border-t border-blue-100 dark:border-blue-900/50">
+                <CardContent className="p-4 sm:p-6 bg-card rounded-b-xl border-t border-blue-100 dark:border-blue-900/50">
                   <div className="mb-6 text-center">
                      <p className="text-xs font-bold text-slate-400 uppercase tracking-[0.2em] flex justify-center items-center gap-1.5"><Lock className="w-3.5 h-3.5"/> Selector de Método de Pago</p>
                   </div>
@@ -767,15 +767,15 @@ export default function CheckoutPage() {
 
           {/* LADO DERECHO: Resumen Glassmórfico Flotante con Botón de Acción Principal en el Paso 1 */}
           <div className="lg:col-span-5 relative z-0">
-            <div className="sticky top-28 xl:top-32 h-fit">
+            <div className="lg:sticky lg:top-28 xl:top-32 h-fit">
               <Card className="shadow-2xl border border-border bg-card/80 backdrop-blur-2xl">
-                <CardHeader className="border-b border-border/50 bg-muted/40 backdrop-blur-md rounded-t-xl px-6 py-5">
-                  <CardTitle className="text-2xl font-bold flex items-center justify-between">
+                <CardHeader className="border-b border-border/50 bg-muted/40 backdrop-blur-md rounded-t-xl px-4 sm:px-6 py-4 sm:py-5">
+                  <CardTitle className="text-xl sm:text-2xl font-bold flex items-center justify-between">
                     Resumen
                     <ShieldCheck className="w-6 h-6 text-green-500" />
                   </CardTitle>
                 </CardHeader>
-                <CardContent className="p-6 space-y-5">
+                <CardContent className="p-4 sm:p-6 space-y-5">
                   <div className="max-h-[350px] overflow-y-auto space-y-3 pr-2 scrollbar-thin scrollbar-thumb-muted">
                       {cartItems.map(item => (
                       <div key={item.id} className="flex justify-between items-center text-sm p-3 rounded-lg bg-background/50 shadow-sm border border-border/40 hover:border-primary/30 transition-colors">

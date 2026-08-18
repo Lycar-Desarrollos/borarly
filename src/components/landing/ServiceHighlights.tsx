@@ -83,7 +83,7 @@ export function ServiceHighlights() {
             <Sparkles className="w-3.5 h-3.5" />
             <span>Ecosistema de Soluciones</span>
           </div>
-          <h2 className="text-3xl sm:text-4xl font-black tracking-tight text-foreground">
+          <h2 className="text-2xl sm:text-4xl font-black tracking-tight text-foreground">
             Servicios Integrales Borarly
           </h2>
           <p className="text-sm sm:text-base text-muted-foreground mt-1 max-w-2xl">
@@ -101,7 +101,7 @@ export function ServiceHighlights() {
       </div>
 
       {/* Grid de Tarjetas de Servicios Grandes y Espaciosas */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
         {BORARLY_SERVICES.map((service) => (
           <Link 
             key={service.id} 
@@ -109,7 +109,7 @@ export function ServiceHighlights() {
             className="group block h-full focus:outline-none"
           >
             <div className={cn(
-              "h-full p-6 sm:p-7 rounded-3xl bg-gradient-to-b border border-border/80 transition-all duration-300 shadow-sm hover:shadow-xl hover:-translate-y-1.5 flex flex-col justify-between relative overflow-hidden",
+              "h-full p-5 sm:p-7 rounded-3xl bg-gradient-to-b border border-border/80 transition-all duration-300 shadow-sm hover:shadow-xl hover:-translate-y-1.5 flex flex-col justify-between relative overflow-hidden",
               service.gradient
             )}>
               

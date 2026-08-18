@@ -180,7 +180,7 @@ export function SyscomFilterSidebar({
   );
 
   return (
-    <div className="w-full bg-card dark:bg-[#0a0f1d] rounded-sm text-card-foreground dark:text-white p-5 border border-border dark:border-[#1c2331] shadow-xl">
+    <div className="w-full bg-card dark:bg-[#0a0f1d] rounded-2xl md:rounded-sm text-card-foreground dark:text-white p-4 sm:p-5 border border-border dark:border-[#1c2331] shadow-lg md:shadow-xl">
       
       {/* Header with active filter count + clear button */}
       <div className="flex items-center justify-between mb-4">

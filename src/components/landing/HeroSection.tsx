@@ -39,8 +39,8 @@ export function HeroSection() {
 
   if (isLoading) {
     return (
-      <section className="container mx-auto px-4 md:px-6">
-        <div className="relative w-full aspect-[2/1] rounded-2xl overflow-hidden">
+      <section className="container mx-auto px-0 sm:px-4 md:px-6">
+        <div className="relative w-full aspect-[16/9] sm:aspect-[2/1] rounded-2xl overflow-hidden">
           <Skeleton className="w-full h-full" />
         </div>
       </section>
@@ -49,8 +49,8 @@ export function HeroSection() {
 
   if (slides.length === 0) {
     return (
-      <section className="container mx-auto px-4 md:px-6">
-        <div className="relative w-full aspect-[2/1] group bg-muted rounded-2xl overflow-hidden border border-border/40 shadow-sm">
+      <section className="container mx-auto px-0 sm:px-4 md:px-6">
+        <div className="relative w-full aspect-[16/9] sm:aspect-[2/1] group bg-muted rounded-2xl overflow-hidden border border-border/40 shadow-sm">
           <Image
             src="https://placehold.co/1200x600.png"
             alt="Banner promocional Borarly"
@@ -61,16 +61,16 @@ export function HeroSection() {
             priority
             data-ai-hint="store promotion sales"
           />
-          <div className="absolute inset-0 bg-black/30 flex flex-col items-start justify-end p-6 md:p-12">
-            <div className="bg-white/90 dark:bg-zinc-900/90 backdrop-blur-md p-4 md:p-6 rounded-xl max-w-md shadow-xl border border-white/20">
-              <h1 className="text-xl md:text-3xl font-extrabold text-gray-900 dark:text-white tracking-tight">
+          <div className="absolute inset-0 bg-black/30 flex flex-col items-start justify-end p-3 sm:p-6 md:p-12">
+            <div className="bg-white/90 dark:bg-zinc-900/90 backdrop-blur-md p-3 sm:p-4 md:p-6 rounded-xl max-w-[92%] sm:max-w-md shadow-xl border border-white/20">
+              <h1 className="text-base sm:text-xl md:text-3xl font-extrabold text-gray-900 dark:text-white tracking-tight">
                 Bienvenido a <span className="text-primary">BORARLY</span>
               </h1>
-              <p className="mt-2 text-xs md:text-sm text-gray-700 dark:text-gray-300">
+              <p className="mt-1.5 sm:mt-2 text-[11px] sm:text-xs md:text-sm text-gray-700 dark:text-gray-300 line-clamp-2 sm:line-clamp-none">
                 Distribuidor mayorista en seguridad electrónica, videovigilancia y redes.
               </p>
               <Link href="/?category=all">
-                <Button size="default" className="mt-4 bg-primary hover:bg-primary/90 text-primary-foreground font-semibold shadow-md">
+                <Button size="sm" className="mt-2.5 sm:mt-4 sm:h-10 sm:px-4 bg-primary hover:bg-primary/90 text-primary-foreground font-semibold shadow-md">
                   Explorar Catálogo <span className="ml-2 text-base">›</span>
                 </Button>
               </Link>
@@ -82,7 +82,7 @@ export function HeroSection() {
   }
 
   return (
-    <section className="container mx-auto px-4 md:px-6">
+    <section className="container mx-auto px-0 sm:px-4 md:px-6">
       <div className="relative w-full group">
         <Carousel
           opts={{
@@ -103,7 +103,7 @@ export function HeroSection() {
               const hasLink = !!slide.buttonLink;
 
               const slideContent = (
-                <div className="relative w-full aspect-[2/1] overflow-hidden rounded-2xl bg-muted border border-border/40 shadow-sm">
+                <div className="relative w-full aspect-[16/9] sm:aspect-[2/1] overflow-hidden rounded-2xl bg-muted border border-border/40 shadow-sm">
                   <Image
                     src={slide.imageUrl || "https://placehold.co/1200x600.png"}
                     alt={slide.altText || slide.title || "Banner promocional"}
@@ -115,20 +115,20 @@ export function HeroSection() {
                     data-ai-hint={slide.altText?.split(' ').slice(0, 2).join(' ') || "hero banner"}
                   />
                   {hasOverlay && (
-                    <div className="absolute inset-0 bg-black/30 flex flex-col items-start justify-end p-6 md:p-12">
-                      <div className="bg-white/90 dark:bg-zinc-900/90 backdrop-blur-md p-4 md:p-6 rounded-xl max-w-md shadow-xl border border-white/20">
+                    <div className="absolute inset-0 bg-black/30 flex flex-col items-start justify-end p-3 sm:p-6 md:p-12">
+                      <div className="bg-white/90 dark:bg-zinc-900/90 backdrop-blur-md p-3 sm:p-4 md:p-6 rounded-xl max-w-[92%] sm:max-w-md shadow-xl border border-white/20">
                         {slide.title && (
-                          <h1 className="text-xl md:text-3xl font-extrabold text-gray-900 dark:text-white tracking-tight">
+                          <h1 className="text-base sm:text-xl md:text-3xl font-extrabold text-gray-900 dark:text-white tracking-tight line-clamp-2">
                             {slide.title}
                           </h1>
                         )}
                         {slide.description && (
-                          <p className="mt-2 text-xs md:text-sm text-gray-700 dark:text-gray-300">
+                          <p className="mt-1.5 sm:mt-2 text-[11px] sm:text-xs md:text-sm text-gray-700 dark:text-gray-300 line-clamp-2 sm:line-clamp-none">
                             {slide.description}
                           </p>
                         )}
                         {slide.buttonText && (
-                          <Button size="default" className="mt-4 bg-primary hover:bg-primary/90 text-primary-foreground font-semibold shadow-md">
+                          <Button size="sm" className="mt-2.5 sm:mt-4 sm:h-10 sm:px-4 bg-primary hover:bg-primary/90 text-primary-foreground font-semibold shadow-md">
                             {slide.buttonText} <span className="ml-2 text-base">›</span>
                           </Button>
                         )}
@@ -151,8 +151,9 @@ export function HeroSection() {
               );
             })}
           </CarouselContent>
-          <CarouselPrevious className="absolute left-3 top-1/2 -translate-y-1/2 z-10 h-10 w-10 rounded-full bg-background/80 hover:bg-background text-foreground shadow-lg backdrop-blur-md border border-border/50 opacity-0 group-hover:opacity-100 transition-all hover:scale-105" />
-          <CarouselNext className="absolute right-3 top-1/2 -translate-y-1/2 z-10 h-10 w-10 rounded-full bg-background/80 hover:bg-background text-foreground shadow-lg backdrop-blur-md border border-border/50 opacity-0 group-hover:opacity-100 transition-all hover:scale-105" />
+          {/* En táctil no existe el hover: las flechas se quedan visibles en móvil */}
+          <CarouselPrevious className="absolute left-2 sm:left-3 top-1/2 -translate-y-1/2 z-10 h-9 w-9 sm:h-10 sm:w-10 rounded-full bg-background/80 hover:bg-background text-foreground shadow-lg backdrop-blur-md border border-border/50 opacity-90 sm:opacity-0 sm:group-hover:opacity-100 transition-all hover:scale-105" />
+          <CarouselNext className="absolute right-2 sm:right-3 top-1/2 -translate-y-1/2 z-10 h-9 w-9 sm:h-10 sm:w-10 rounded-full bg-background/80 hover:bg-background text-foreground shadow-lg backdrop-blur-md border border-border/50 opacity-90 sm:opacity-0 sm:group-hover:opacity-100 transition-all hover:scale-105" />
         </Carousel>
       </div>
     </section>

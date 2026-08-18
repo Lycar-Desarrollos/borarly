@@ -1,11 +1,25 @@
 
-import type { Metadata } from 'next';
+import type { Metadata, Viewport } from 'next';
 import { GeistSans } from 'geist/font/sans';
 import './globals.css';
 import { Providers } from './providers';
 import { Toaster } from '@/components/ui/toaster';
 import { Organization, WebSite, WithContext } from 'schema-dts';
 import { JsonLd } from 'react-schemaorg';
+
+export const viewport: Viewport = {
+  width: 'device-width',
+  initialScale: 1,
+  // Permitimos zoom manual (accesibilidad) pero evitamos el zoom automático de iOS
+  maximumScale: 5,
+  userScalable: true,
+  // Pinta detrás del notch/isla dinámica para un look edge-to-edge
+  viewportFit: 'cover',
+  themeColor: [
+    { media: '(prefers-color-scheme: light)', color: '#ffffff' },
+    { media: '(prefers-color-scheme: dark)', color: '#0B1120' },
+  ],
+};
 
 export const metadata: Metadata = {
   metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL || 'https://borarly.com'),
