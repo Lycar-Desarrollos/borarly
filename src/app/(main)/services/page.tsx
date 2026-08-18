@@ -3,15 +3,15 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 import Image from 'next/image';
 import { 
-  Globe, GraduationCap, Cpu, Headphones, ArrowRight, CheckCircle2, 
+  Globe, Bot, Cpu, Headphones, ArrowRight, CheckCircle2, 
   Sparkles, ShieldCheck, MapPin, Truck, Award, Zap, PhoneCall, 
   MessageCircle, Mail, ChevronRight, Layers, FileCheck, Users, Radio
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
 export const metadata: Metadata = {
-  title: 'Servicios & Alcance Tecnológico | Borarly Mayorista',
-  description: 'Conoce los servicios integrales de Borarly: Desarrollo Web & E-Commerce, Certificaciones Oficiales, Proyectos de Valor e Ingeniería, y Soporte Técnico 24/7 en México.',
+  title: 'Servicios & Soluciones Tecnológicas | Borarly Mayorista',
+  description: 'Conoce los servicios integrales de Borarly: Desarrollo Web & E-Commerce, Chatbots y Agentes de IA 24/7, Proyectos de Valor e Ingeniería, y Soporte Técnico 24/7 en México.',
 };
 
 const SERVICES_DETAILED = [
@@ -33,21 +33,21 @@ const SERVICES_DETAILED = [
     gradient: 'from-sky-950/30 via-background to-card'
   },
   {
-    id: 'certifications',
-    title: 'Capacitaciones & Certificaciones Oficiales',
-    badge: 'Academia Técnica',
-    badgeColor: 'bg-amber-500/10 text-amber-400 border-amber-500/30',
-    description: 'Impulsa las capacidades técnicas de tu equipo con cursos presenciales y online impartidos por ingenieros certificados de las marcas más importantes del sector de seguridad y redes.',
-    icon: <GraduationCap className="w-8 h-8 text-amber-400" />,
+    id: 'chatbots',
+    title: 'Chatbots & Agentes de IA 24/7 para Empresas',
+    badge: 'Automatización & IA',
+    badgeColor: 'bg-purple-500/10 text-purple-400 border-purple-500/30',
+    description: 'Tu propio agente de inteligencia artificial privado, siempre activo las 24 horas del día. Atiende consultas, cotiza productos en tiempo real con tu catálogo y automatiza tus ventas, incluso mientras duermes.',
+    icon: <Bot className="w-8 h-8 text-purple-400" />,
     features: [
-      'Certificaciones oficiales Hikvision (HCSA, HCSE) con validez internacional.',
-      'Cursos especializados en redes Ubiquiti (UEWA) y switches Ruijie Reyee.',
-      'Constancias de competencias laborales con valor curricular (DC-3 STPS).',
-      'Laboratorios prácticos con equipo físico en operación real.'
+      'Configuración instantánea: Puesto en marcha en minutos, sin jerga técnica ni complejidad.',
+      'Mantenimiento cero: Nos encargamos de la seguridad, servidores, actualizaciones y respaldos.',
+      'Atención multicanal: Integración nativa con WhatsApp Business, Telegram y Web Chat.',
+      'Catálogo y cotizador en vivo: Respuestas con precios, existencias y fichas técnicas en segundos.'
     ],
-    ctaText: 'Explorar certificaciones y cursos',
-    href: '/services/certifications',
-    gradient: 'from-amber-950/30 via-background to-card'
+    ctaText: 'Ver detalles de agentes de IA y chatbots',
+    href: '/services/chatbots',
+    gradient: 'from-purple-950/30 via-background to-card'
   },
   {
     id: 'value-projects',
