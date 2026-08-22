@@ -14,29 +14,31 @@ import { FeaturedBrands } from '@/components/landing/FeaturedBrands';
 import { UpcomingEventsSection } from '@/components/landing/UpcomingEventsSection';
 import { CategoryShowcaseCarousel, ShowcaseTab } from '@/components/home/CategoryShowcaseCarousel';
 
-// Configuración de Pestañas para 'En Tendencia'
+// Configuración de Pestañas para 'En Tendencia' (Switches & Routing como primera pestaña)
 const TRENDING_TABS: ShowcaseTab[] = [
-  { id: 'solar', label: 'Energía Solar', searchQuery: 'solar fotovoltaico' },
-  { id: 'storage', label: 'Servidores / Almacenamiento', searchQuery: 'disco duro almacenamiento ssd' },
-  { id: 'accessories', label: 'Accesorios', searchQuery: 'conector balun montaje' },
-  { id: 'wireless-links', label: 'Enlaces PtP y PtMP', searchQuery: 'antena enlace ubiquiti mimosa' },
-  { id: 'conduit', label: 'Canalización Tubería', searchQuery: 'conduit tuberia canalizacion' },
-  { id: 'access-control', label: 'Lectoras y Tarjetas', searchQuery: 'biometrico tarjeta cerradura' },
-  { id: 'batteries', label: 'Baterías y Cargadores', searchQuery: 'bateria respaldo ups' },
-  { id: 'intercoms', label: 'Videoporteros e Interfonos', searchQuery: 'videoportero interfono' },
+  { id: 'switches', label: 'Switches & Routing', searchQuery: 'switch administrable switch poe router gigabit' },
+  { id: 'cabling', label: 'Cableado Estructurado', searchQuery: 'cable utp cat6 bobina bobinas patch cord' },
+  { id: 'networking', label: 'Redes y Wi-Fi', searchQuery: 'switch poe router access point mesh wifi' },
+  { id: 'fiber', label: 'Fibra Óptica & SFP', searchQuery: 'fibra optica transceptor sfp convertidor medios' },
+  { id: 'racks', label: 'Racks y Gabinetes', searchQuery: 'rack gabinete pared organizador horizontal charola' },
+  { id: 'cctv', label: 'Videovigilancia IP', searchQuery: 'camara ip nvr hikvision dvr cctv colorvu' },
+  { id: 'access-control', label: 'Control de Acceso', searchQuery: 'biometrico facial huella cerradura electroiman torniquete' },
+  { id: 'storage', label: 'Servidores & Almacenamiento', searchQuery: 'disco duro purz ssd servidor nas synology' },
+  { id: 'audio-video', label: 'Audio & Video Profesional', searchQuery: 'bocina ip amplificador microfono matriz hdmi' },
+  { id: 'solar', label: 'Energía & Respaldo UPS', searchQuery: 'ups no break regulador bateria solar' },
 ];
 
-// Configuración de Pestañas para 'Para Ti'
+// Configuración de Pestañas para 'Para Ti' (Redes Inalámbricas & IT como primera pestaña)
 const FOR_YOU_TABS: ShowcaseTab[] = [
-  { id: 'energy', label: 'Energía', searchQuery: 'inversor panel regulador bateria' },
-  { id: 'cabling', label: 'Cableado', searchQuery: 'bobina utp cat6 patch cord' },
-  { id: 'wireless', label: 'Redes Inalámbricas', searchQuery: 'access point router mesh wifi' },
-  { id: 'epcom-power', label: 'EPCOM POWERLINE', marca: 'EPCOM POWERLINE' },
-  { id: 'linkedpro', label: 'LINKEDPRO BY EPCOM', marca: 'LINKEDPRO BY EPCOM' },
-  { id: 'cambium', label: 'CAMBIUM NETWORKS', marca: 'CAMBIUM NETWORKS' },
+  { id: 'wireless', label: 'Redes Inalámbricas & IT', searchQuery: 'access point router mesh wifi ruijie ubiquiti' },
+  { id: 'cabling-tech', label: 'Cableado y Conectividad', searchQuery: 'bobina utp cat6 patch cord jack rj45 linkedpro' },
+  { id: 'cctv-smart', label: 'Cámaras & Seguridad', searchQuery: 'camara ip bala domo nvr 4k hikvision' },
+  { id: 'ubiquiti', label: 'UBIQUITI', marca: 'UBIQUITI' },
+  { id: 'ruijie', label: 'RUIJIE REYEE', marca: 'RUIJIE' },
   { id: 'hikvision', label: 'HIKVISION', marca: 'HIKVISION' },
-  { id: 'ruijie', label: 'RUIJIE', marca: 'RUIJIE' },
-  { id: 'cctv-acc', label: 'Accesorios Videovigilancia', searchQuery: 'transceptor balun conector camara' },
+  { id: 'linkedpro', label: 'LINKEDPRO', marca: 'LINKEDPRO BY EPCOM' },
+  { id: 'cambium', label: 'CAMBIUM NETWORKS', marca: 'CAMBIUM NETWORKS' },
+  { id: 'epcom-power', label: 'EPCOM POWERLINE', marca: 'EPCOM POWERLINE' },
 ];
 
 interface HomePageProps {
@@ -131,18 +133,18 @@ export default async function HomePage(props: HomePageProps) {
           <HeroSection />
           
           <div className="max-w-[1520px] mx-auto px-4 sm:px-6 lg:px-8 space-y-12">
-            {/* 1. CATEGORÍAS DESTACADAS */}
-            <FeaturedCategoriesSection categories={featuredCategoriesForSection} /> 
-
-            {/* 2. SERVICIOS INTEGRALES BORARLY */}
+            {/* 1. SERVICIOS INTEGRALES BORARLY (PRIMERA SECCIÓN) */}
             <ServiceHighlights />
+
+            {/* 2. CATEGORÍAS DESTACADAS */}
+            <FeaturedCategoriesSection categories={featuredCategoriesForSection} />
 
             {/* 3. SECCIÓN EN TENDENCIA (SYSCOM STYLE) */}
             <CategoryShowcaseCarousel
               title="En Tendencia"
               icon="trend"
               tabs={TRENDING_TABS}
-              defaultTabId="solar"
+              defaultTabId="switches"
             />
 
             {/* 3. SECCIÓN PARA TI (SYSCOM STYLE) */}
@@ -150,7 +152,7 @@ export default async function HomePage(props: HomePageProps) {
               title="Para Ti"
               icon="sparkle"
               tabs={FOR_YOU_TABS}
-              defaultTabId="energy"
+              defaultTabId="wireless"
             />
 
             {/* 4. MARCAS DESTACADAS Y EVENTOS */}

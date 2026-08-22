@@ -27,7 +27,7 @@ import { getCategories } from '@/services/productService';
 import type { Product, Category } from '@/lib/types';
 import Image from 'next/image';
 import { cn } from '@/lib/utils';
-import { MegaMenu } from './MegaMenu';
+import { MegaMenu, MEGA_MENU_DATA } from './MegaMenu';
 import { CartDropdown } from './CartDropdown';
 import { BorarlyAIChatModal } from '@/components/ai/BorarlyAIChatModal';
 
@@ -387,9 +387,21 @@ export function Navbar() {
           </div>
         )}
 
-        {/* ACCIONES LATERALES: AVATAR / PERFIL Y CARRITO */}
-        <div className="flex items-center gap-3 sm:gap-3.5 shrink-0 ml-2">
+        {/* ACCIONES LATERALES: WHATSAPP, AVATAR / PERFIL Y CARRITO */}
+        <div className="flex items-center gap-2 sm:gap-3 shrink-0 ml-2">
           
+          {/* Botón Asesor WhatsApp Compacto */}
+          <a 
+            href="https://wa.me/5219999040931" 
+            target="_blank" 
+            rel="noopener noreferrer" 
+            className="h-10 px-3 sm:px-3.5 rounded-xl text-xs font-bold tracking-wide text-emerald-300 hover:text-emerald-200 bg-emerald-500/15 hover:bg-emerald-500/25 border border-emerald-500/30 hover:border-emerald-400/50 flex items-center gap-1.5 sm:gap-2 transition-all shadow-xs shrink-0 select-none hover:scale-105 active:scale-95"
+            title="Asesor WhatsApp"
+          >
+            <MessageCircle className="h-4 w-4 text-emerald-400 fill-emerald-400/20 shrink-0" />
+            <span className="hidden sm:inline font-bold">Asesor WhatsApp</span>
+          </a>
+
           {/* Avatar de Usuario Circular / Botón Iniciar Sesión */}
           {currentUser ? (
             <DropdownMenu>
@@ -462,37 +474,45 @@ export function Navbar() {
         </div>
       </div>
 
-      {/* 2. SUB-BARRA DE NAVEGACIÓN CON ESPACIADO CÓMODO Y SEPARACIÓN */}
+      {/* 2. SUB-BARRA DE NAVEGACIÓN CON MENÚ AMPLIADO EN MODO PC */}
       {!isCheckoutPhase && (
-        <div className="border-t border-white/10 bg-[#060910] text-xs font-semibold text-zinc-300 py-2 relative z-40">
-          <div className="max-w-[1520px] mx-auto px-4 sm:px-6 lg:px-8 h-14 flex items-center justify-between gap-4 sm:gap-6">
+        <div className="border-t border-white/10 bg-[#060910] text-xs font-semibold text-zinc-300 py-1.5 relative z-40">
+          <div className="max-w-[1520px] mx-auto px-4 sm:px-6 lg:px-8 h-13 flex items-center justify-between gap-3 sm:gap-6">
             
-            {/* Lado Izquierdo: Catálogo de Productos y Servicios */}
-            <div className="flex items-center gap-4 sm:gap-6">
+            {/* Lado Izquierdo: Catálogo de Productos (MegaMenu), Servicios y Categorías Rápidas en PC */}
+            <div className="flex items-center gap-3 sm:gap-4 flex-1 min-w-0">
               {/* Botón Mega Menú ☰ Productos */}
               <MegaMenu />
 
               {/* Botón Servicios */}
               <Link 
                 href="/services" 
-                className="h-11.5 px-6 rounded-2xl text-[13px] sm:text-sm font-bold uppercase tracking-wider text-zinc-200 hover:text-white bg-white/10 hover:bg-white/15 border border-white/15 hover:border-cyan-400/50 flex items-center gap-2.5 transition-all shadow-xs hover:scale-[1.02] active:scale-95 shrink-0 group select-none"
+                className="h-10.5 px-4 sm:px-5 rounded-2xl text-[12px] sm:text-xs font-bold uppercase tracking-wider text-zinc-200 hover:text-white bg-white/10 hover:bg-white/15 border border-white/15 hover:border-cyan-400/50 flex items-center gap-2 transition-all shadow-xs hover:scale-[1.02] active:scale-95 shrink-0 group select-none"
               >
-                <Layers className="w-4.5 h-4.5 text-cyan-400 group-hover:rotate-6 transition-transform" />
+                <Layers className="w-4 h-4 text-cyan-400 group-hover:rotate-6 transition-transform" />
                 <span>Servicios</span>
               </Link>
-            </div>
 
-            {/* Lado Derecho: Asesor WhatsApp */}
-            <div className="flex items-center shrink-0">
-              <a 
-                href="https://wa.me/5219999040931" 
-                target="_blank" 
-                rel="noopener noreferrer" 
-                className="h-11.5 px-6 rounded-2xl text-[13px] sm:text-sm font-bold uppercase tracking-wider text-emerald-300 hover:text-emerald-200 bg-emerald-500/15 hover:bg-emerald-500/25 border border-emerald-500/40 hover:border-emerald-400/60 flex items-center gap-2.5 transition-all shadow-xs hover:scale-[1.02] active:scale-95 select-none"
-              >
-                <MessageCircle className="h-4.5 w-4.5 text-green-400 fill-green-400/20 group-hover:scale-110 transition-transform" />
-                <span>Asesor WhatsApp</span>
-              </a>
+              {/* BARRA HORIZONTAL DE CATEGORÍAS PRINCIPALES (SOLO EN MODO PC / ESCRITORIO) */}
+              <nav className="hidden lg:flex items-center gap-1 xl:gap-2 flex-1 min-w-0 overflow-x-auto no-scrollbar pl-2 border-l border-white/10">
+                {MEGA_MENU_DATA.slice(0, 7).map((cat) => {
+                  const href = cat.categoryId 
+                    ? `/?category=${cat.categoryId}` 
+                    : `/?search=${encodeURIComponent(cat.name)}`;
+                  return (
+                    <Link
+                      key={cat.id}
+                      href={href}
+                      className="px-2.5 xl:px-3 py-1.5 rounded-xl text-[11px] xl:text-xs font-bold text-zinc-300 hover:text-white hover:bg-white/10 border border-transparent hover:border-white/10 transition-all whitespace-nowrap flex items-center gap-1.5 group select-none shrink-0"
+                    >
+                      <span className="text-zinc-400 group-hover:text-blue-400 transition-colors shrink-0">
+                        {cat.icon}
+                      </span>
+                      <span>{cat.name}</span>
+                    </Link>
+                  );
+                })}
+              </nav>
             </div>
 
           </div>

@@ -40,7 +40,7 @@ export function HeroSection() {
   if (isLoading) {
     return (
       <section className="container mx-auto px-4 md:px-6">
-        <div className="relative w-full aspect-[2/1] rounded-2xl overflow-hidden">
+        <div className="relative w-full h-[180px] sm:h-[260px] md:h-[320px] lg:h-[360px] xl:h-[380px] rounded-2xl md:rounded-3xl overflow-hidden">
           <Skeleton className="w-full h-full" />
         </div>
       </section>
@@ -50,7 +50,7 @@ export function HeroSection() {
   if (slides.length === 0) {
     return (
       <section className="container mx-auto px-4 md:px-6">
-        <div className="relative w-full aspect-[2/1] group bg-muted rounded-2xl overflow-hidden border border-border/40 shadow-sm">
+        <div className="relative w-full h-[180px] sm:h-[260px] md:h-[320px] lg:h-[360px] xl:h-[380px] group bg-muted rounded-2xl md:rounded-3xl overflow-hidden border border-border/40 shadow-sm">
           <Image
             src="https://placehold.co/1200x600.png"
             alt="Banner promocional Borarly"
@@ -61,17 +61,17 @@ export function HeroSection() {
             priority
             data-ai-hint="store promotion sales"
           />
-          <div className="absolute inset-0 bg-black/30 flex flex-col items-start justify-end p-6 md:p-12">
-            <div className="bg-white/90 dark:bg-zinc-900/90 backdrop-blur-md p-4 md:p-6 rounded-xl max-w-md shadow-xl border border-white/20">
-              <h1 className="text-xl md:text-3xl font-extrabold text-gray-900 dark:text-white tracking-tight">
+          <div className="absolute inset-0 bg-black/30 flex flex-col items-start justify-end p-6 md:p-10">
+            <div className="bg-white/90 dark:bg-zinc-900/90 backdrop-blur-md p-4 md:p-5 rounded-xl max-w-md shadow-xl border border-white/20">
+              <h1 className="text-xl md:text-2xl font-extrabold text-gray-900 dark:text-white tracking-tight">
                 Bienvenido a <span className="text-primary">BORARLY</span>
               </h1>
-              <p className="mt-2 text-xs md:text-sm text-gray-700 dark:text-gray-300">
+              <p className="mt-1 text-xs md:text-sm text-gray-700 dark:text-gray-300">
                 Distribuidor mayorista en seguridad electrónica, videovigilancia y redes.
               </p>
               <Link href="/?category=all">
-                <Button size="default" className="mt-4 bg-primary hover:bg-primary/90 text-primary-foreground font-semibold shadow-md">
-                  Explorar Catálogo <span className="ml-2 text-base">›</span>
+                <Button size="sm" className="mt-3 bg-primary hover:bg-primary/90 text-primary-foreground font-semibold shadow-md">
+                  Explorar Catálogo <span className="ml-1 text-base">›</span>
                 </Button>
               </Link>
             </div>
@@ -103,7 +103,7 @@ export function HeroSection() {
               const hasLink = !!slide.buttonLink;
 
               const slideContent = (
-                <div className="relative w-full aspect-[2/1] overflow-hidden rounded-2xl bg-muted border border-border/40 shadow-sm">
+                <div className="relative w-full h-[180px] sm:h-[260px] md:h-[320px] lg:h-[360px] xl:h-[380px] overflow-hidden rounded-2xl md:rounded-3xl bg-muted border border-border/40 shadow-sm">
                   <Image
                     src={slide.imageUrl || "https://placehold.co/1200x600.png"}
                     alt={slide.altText || slide.title || "Banner promocional"}
@@ -115,21 +115,21 @@ export function HeroSection() {
                     data-ai-hint={slide.altText?.split(' ').slice(0, 2).join(' ') || "hero banner"}
                   />
                   {hasOverlay && (
-                    <div className="absolute inset-0 bg-black/30 flex flex-col items-start justify-end p-6 md:p-12">
-                      <div className="bg-white/90 dark:bg-zinc-900/90 backdrop-blur-md p-4 md:p-6 rounded-xl max-w-md shadow-xl border border-white/20">
+                    <div className="absolute inset-0 bg-black/30 flex flex-col items-start justify-end p-6 md:p-10">
+                      <div className="bg-white/90 dark:bg-zinc-900/90 backdrop-blur-md p-4 md:p-5 rounded-xl max-w-md shadow-xl border border-white/20">
                         {slide.title && (
-                          <h1 className="text-xl md:text-3xl font-extrabold text-gray-900 dark:text-white tracking-tight">
+                          <h1 className="text-xl md:text-2xl font-extrabold text-gray-900 dark:text-white tracking-tight">
                             {slide.title}
                           </h1>
                         )}
                         {slide.description && (
-                          <p className="mt-2 text-xs md:text-sm text-gray-700 dark:text-gray-300">
+                          <p className="mt-1 text-xs md:text-sm text-gray-700 dark:text-gray-300">
                             {slide.description}
                           </p>
                         )}
                         {slide.buttonText && (
-                          <Button size="default" className="mt-4 bg-primary hover:bg-primary/90 text-primary-foreground font-semibold shadow-md">
-                            {slide.buttonText} <span className="ml-2 text-base">›</span>
+                          <Button size="sm" className="mt-3 bg-primary hover:bg-primary/90 text-primary-foreground font-semibold shadow-md">
+                            {slide.buttonText} <span className="ml-1 text-base">›</span>
                           </Button>
                         )}
                       </div>

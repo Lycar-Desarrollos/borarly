@@ -20,7 +20,7 @@ interface SubCategoryGroup {
   items: SubCategoryItem[];
 }
 
-interface MainCategory {
+export interface MainCategory {
   id: string;
   name: string;
   icon: React.ReactNode;
@@ -28,7 +28,7 @@ interface MainCategory {
   groups: SubCategoryGroup[];
 }
 
-const MEGA_MENU_DATA: MainCategory[] = [
+export const MEGA_MENU_DATA: MainCategory[] = [
   {
     id: 'audio-video',
     name: 'Audio y Video Profesional',

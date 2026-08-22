@@ -233,21 +233,21 @@ export default function AdminHeroSlidesPage() {
       </div>
 
       {/* Guía visual de medidas estándar */}
-      <div className="bg-primary/5 border border-primary/20 rounded-xl p-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-        <div className="space-y-1">
+      <div className="bg-primary/5 border border-primary/20 rounded-2xl p-5 space-y-3">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
           <div className="flex items-center gap-2">
-            <span className="bg-primary text-primary-foreground text-xs font-bold px-2 py-0.5 rounded-full uppercase tracking-wider">
-              Medida Estándar Recomendada
+            <span className="bg-primary text-primary-foreground text-xs font-black px-2.5 py-1 rounded-full uppercase tracking-wider">
+              Medida Ideal Recomendada
             </span>
-            <span className="font-bold text-foreground text-sm">1200 × 600 px (Proporción 2:1)</span>
+            <span className="font-extrabold text-foreground text-base">1920 × 600 px (o 1600 × 500 px)</span>
           </div>
-          <p className="text-xs text-muted-foreground">
-            También compatible con formato panorámico <strong>1200 × 500 px (2.4:1)</strong> o Full HD <strong>1920 × 960 px</strong>. Formatos admitidos: JPG, PNG, WebP (menos de 1MB recomendado).
-          </p>
+          <div className="text-xs text-muted-foreground bg-background px-3 py-1.5 rounded-lg border shrink-0">
+            ✨ Proporción panorámica compacta (~3.2:1)
+          </div>
         </div>
-        <div className="text-xs text-muted-foreground bg-background px-3 py-1.5 rounded-lg border shrink-0">
-          ✨ Todos los textos son 100% opcionales
-        </div>
+        <p className="text-xs text-muted-foreground leading-relaxed">
+          <strong>Recomendación de Diseño:</strong> Coloca tus productos, textos y logotipos principales en el <strong>área central (1200px)</strong> para que en teléfonos móviles no se corten los laterales. Guarda en formato <strong>WebP o JPG</strong> con un peso menor a 600 KB para una carga ultra rápida.
+        </p>
       </div>
 
       {showForm && (
@@ -264,13 +264,13 @@ export default function AdminHeroSlidesPage() {
               <div>
                 <Label htmlFor="imageUrl" className="font-semibold">Imagen del Banner / Slide (Requerido)</Label>
                 <div className="mt-2 flex flex-col sm:flex-row items-start sm:items-center gap-4">
-                    <div className="w-full sm:w-56 aspect-[2/1] relative border rounded-lg bg-muted flex items-center justify-center overflow-hidden shadow-inner shrink-0">
+                    <div className="w-full sm:w-64 h-24 relative border rounded-xl bg-muted flex items-center justify-center overflow-hidden shadow-inner shrink-0">
                         {imagePreview ? (
                             <NextImage src={imagePreview} alt="Vista previa" layout="fill" objectFit="cover" />
                         ) : (
                             <div className="text-center p-2">
-                              <ImageIcon className="h-8 w-8 text-muted-foreground mx-auto mb-1"/>
-                              <span className="text-[10px] text-muted-foreground">1200x600 (2:1)</span>
+                              <ImageIcon className="h-7 w-7 text-muted-foreground mx-auto mb-1"/>
+                              <span className="text-[10px] text-muted-foreground font-semibold">1920×600 px (3.2:1)</span>
                             </div>
                         )}
                     </div>
