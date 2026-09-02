@@ -9,6 +9,7 @@ import { useEffect, useState } from 'react';
 import type { UpcomingEvent } from '@/lib/types';
 import { getUpcomingEvents } from '@/services/upcomingEventService';
 import { Skeleton } from '@/components/ui/skeleton';
+import { safeImageSrc } from '@/lib/imageUrl';
 
 
 export function UpcomingEventsSection() {
@@ -68,7 +69,7 @@ export function UpcomingEventsSection() {
               {event.brandLogoUrl && (
                 <div className="mb-2 h-10 flex items-center">
                   <div className="relative w-[100px] h-[40px]">
-                    <Image src={event.brandLogoUrl} alt={`${event.title} brand`} layout="fill" objectFit="contain" data-ai-hint={`${event.title} brand logo`} />
+                    <Image src={safeImageSrc(event.brandLogoUrl)} alt={`${event.title} brand`} layout="fill" objectFit="contain" data-ai-hint={`${event.title} brand logo`} />
                   </div>
                 </div>
               )}
@@ -77,7 +78,7 @@ export function UpcomingEventsSection() {
             </CardHeader>
             <div className="relative aspect-video w-full group bg-white">
                  <Image 
-                    src={event.imageUrl || 'https://placehold.co/400x200.png'} 
+                    src={safeImageSrc(event.imageUrl, 'https://placehold.co/400x200.png')} 
                     alt={event.title} 
                     layout="fill" 
                     objectFit="contain" 

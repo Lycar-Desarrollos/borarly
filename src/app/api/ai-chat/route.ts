@@ -83,18 +83,20 @@ export async function POST(request: NextRequest) {
     ];
 
     // 4. Formatear datos de tabla comparativa
+    // `product.price` ya viene en MXN con margen e IVA incluidos (ver mapearProductoSyscom),
+    // por eso se formatea directo y no se vuelve a aplicar el IVA.
+    const priceFormatter = new Intl.NumberFormat('es-MX', { style: 'currency', currency: 'MXN' });
     const tableData = products.slice(0, 5).map(p => {
-      const priceVal = p.price?.finalPrice || p.price?.price || 0;
-      const formattedPrice = new Intl.NumberFormat('es-MX', { style: 'currency', currency: 'MXN' }).format(priceVal * 1.16);
+      const priceVal = Number(p.price) || 0;
       return {
         id: p.id,
-        name: p.name || p.title || 'Producto',
-        model: p.line || p.model || '',
+        name: p.name || 'Producto',
+        model: p.line || '',
         brand: p.brand || 'Syscom',
-        spec: p.category || p.description?.substring(0, 45) + '...' || 'Equipo Profesional',
-        price: formattedPrice,
-        stock: (p.stockTotal && p.stockTotal > 0) ? `${p.stockTotal} disponibles` : 'Disponible',
-        image: p.image || p.images?.[0] || ''
+        spec: p.category || (p.description ? `${p.description.substring(0, 45)}...` : 'Equipo Profesional'),
+        price: priceVal > 0 ? priceFormatter.format(priceVal) : 'Cotizar',
+        stock: p.stock && p.stock > 0 ? `${p.stock} disponibles` : 'Sobre pedido',
+        image: p.imageUrls?.[0] || ''
       };
     });
 

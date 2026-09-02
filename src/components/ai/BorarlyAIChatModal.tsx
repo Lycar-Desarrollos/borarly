@@ -194,11 +194,21 @@ export function BorarlyAIChatModal({ isOpen, onClose }: BorarlyAIChatModalProps)
     }
   };
 
+  // El texto viene del catalogo, asi que se escapa antes de convertir **negritas** a HTML.
+  const renderBoldMarkup = (text: string) => {
+    const escaped = text
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;');
+    return escaped.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+  };
+
   const handleAddToCartDirect = (product: Product) => {
     addToCart(product, 1);
     toast({
       title: "Agregado al carrito",
-      description: `${product.name || product.title} fue añadido a tu pedido.`
+      description: `${product.name} fue añadido a tu pedido.`
     });
   };
 
@@ -434,7 +444,7 @@ export function BorarlyAIChatModal({ isOpen, onClose }: BorarlyAIChatModalProps)
                       {msg.bullets.map((b, bIdx) => (
                         <div key={bIdx} className="flex items-start gap-2 text-xs text-zinc-700 dark:text-zinc-300">
                           <CornerDownRight className="w-3.5 h-3.5 text-blue-500 shrink-0 mt-0.5" />
-                          <div dangerouslySetString={{ __html: b.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>') }} />
+                          <div dangerouslySetInnerHTML={{ __html: renderBoldMarkup(b) }} />
                         </div>
                       ))}
                     </div>

@@ -17,6 +17,7 @@ import {
   where,
   orderBy,
   Timestamp,
+  type QueryConstraint,
 } from 'firebase/firestore';
 
 const EVENTS_COLLECTION = 'upcomingEvents';
@@ -42,7 +43,7 @@ function docToUpcomingEvent(docSnapshot: any): UpcomingEvent {
 export async function getUpcomingEvents(activeOnly = true): Promise<UpcomingEvent[]> {
   try {
     const eventsRef = collection(db, EVENTS_COLLECTION);
-    const queryConstraints = [orderBy('order', 'asc')];
+    const queryConstraints: QueryConstraint[] = [orderBy('order', 'asc')];
     if (activeOnly) {
       queryConstraints.unshift(where('isActive', '==', true));
     }

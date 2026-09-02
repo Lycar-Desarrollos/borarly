@@ -9,6 +9,7 @@ import type { Category } from '@/lib/types';
 import { Skeleton } from '@/components/ui/skeleton';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { useRef, useState, useEffect } from 'react';
+import { safeImageSrc } from '@/lib/imageUrl';
 
 interface FeaturedCategoriesSectionProps {
   categories: Category[];
@@ -110,7 +111,7 @@ export function FeaturedCategoriesSection({ categories }: FeaturedCategoriesSect
                     <Card className="overflow-hidden shadow-md hover:shadow-lg transition-transform duration-300 hover:-translate-y-1 rounded-lg h-full flex flex-col border border-border/50">
                       <div className="relative w-full aspect-[3/2] bg-white">
                         <Image
-                          src={imageUrl}
+                          src={safeImageSrc(imageUrl)}
                           alt={category.alias || category.name}
                           fill
                           sizes="(max-width: 768px) 192px, 224px"

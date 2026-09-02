@@ -17,6 +17,7 @@ import {
   where,
   orderBy,
   Timestamp,
+  type QueryConstraint,
 } from 'firebase/firestore';
 
 const HERO_SLIDES_COLLECTION = 'heroSlides';
@@ -42,7 +43,7 @@ function docToHeroSlide(docSnapshot: any): HeroSlide {
 export async function getHeroSlides(activeOnly = true): Promise<HeroSlide[]> {
   try {
     const slidesRef = collection(db, HERO_SLIDES_COLLECTION);
-    const queryConstraints = [orderBy('order', 'asc')];
+    const queryConstraints: QueryConstraint[] = [orderBy('order', 'asc')];
     if (activeOnly) {
       queryConstraints.unshift(where('isActive', '==', true));
     }

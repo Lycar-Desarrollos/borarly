@@ -24,6 +24,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { PlusCircle, Edit, Trash2, Loader2, Image as ImageIcon } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import NextImage from 'next/image';
+import { safeImageSrc } from '@/lib/imageUrl';
 import { Progress } from '@/components/ui/progress';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import {
@@ -420,7 +421,7 @@ export default function AdminHeroSlidesPage() {
                   <TableRow key={slide.id}>
                     <TableCell>
                       <div className="w-20 h-10 relative border rounded overflow-hidden">
-                        <NextImage src={slide.imageUrl} alt={slide.altText} layout="fill" objectFit="cover" data-ai-hint="slide admin table"/>
+                        <NextImage src={safeImageSrc(slide.imageUrl)} alt={slide.altText} layout="fill" objectFit="cover" data-ai-hint="slide admin table"/>
                       </div>
                     </TableCell>
                     <TableCell className="font-medium">

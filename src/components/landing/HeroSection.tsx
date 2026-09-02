@@ -16,6 +16,7 @@ import {
 } from "@/components/ui/carousel";
 import Autoplay from "embla-carousel-autoplay";
 import { Skeleton } from '@/components/ui/skeleton';
+import { safeImageSrc } from '@/lib/imageUrl';
 
 export function HeroSection() {
   const [slides, setSlides] = useState<HeroSlide[]>([]);
@@ -105,7 +106,7 @@ export function HeroSection() {
               const slideContent = (
                 <div className="relative w-full h-[180px] sm:h-[260px] md:h-[320px] lg:h-[360px] xl:h-[380px] overflow-hidden rounded-2xl md:rounded-3xl bg-muted border border-border/40 shadow-sm">
                   <Image
-                    src={slide.imageUrl || "https://placehold.co/1200x600.png"}
+                    src={safeImageSrc(slide.imageUrl, "https://placehold.co/1200x600.png")}
                     alt={slide.altText || slide.title || "Banner promocional"}
                     layout="fill"
                     objectFit="cover"

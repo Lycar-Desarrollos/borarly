@@ -95,12 +95,17 @@ export default function OrderDetailPage() {
     setSavingBilling(true);
     try {
       const ref = doc(db, 'orders', order.id);
+      // El correo es necesario para poder enviar el CFDI al cliente.
+      const billingPayload = {
+        ...billingForm,
+        email: order.shippingAddress?.contactEmail || currentUser?.email || '',
+      };
       await updateDoc(ref, {
         requiresBilling: true,
-        billingDetails: { ...billingForm },
+        billingDetails: billingPayload,
         updatedAt: new Date().toISOString(),
       });
-      setOrder(prev => prev ? { ...prev, requiresBilling: true, billingDetails: { ...billingForm } } : prev);
+      setOrder(prev => prev ? { ...prev, requiresBilling: true, billingDetails: billingPayload } : prev);
       setEditingBilling(false);
       toast({ description: '✅ Datos de facturación actualizados correctamente.' });
     } catch {

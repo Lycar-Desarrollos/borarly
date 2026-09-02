@@ -9,6 +9,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter }
 import { useToast } from '@/hooks/use-toast';
 import { UploadCloud, FileText, Loader2, Download, AlertTriangle, CheckCircle2, Edit } from 'lucide-react';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import { auth } from '@/lib/firebase';
 
 interface FailedRowDetail {
   csvRowNumber: number;
@@ -80,8 +81,21 @@ export default function BulkUploadProductsPage() {
     formData.append('file', selectedFile);
 
     try {
+      // El endpoint valida la sesion de administrador con este token.
+      const idToken = await auth.currentUser?.getIdToken();
+      if (!idToken) {
+        toast({
+          variant: "destructive",
+          title: "Sesion expirada",
+          description: "Vuelve a iniciar sesion como administrador para cargar el catalogo.",
+        });
+        setIsProcessing(false);
+        return;
+      }
+
       const response = await fetch('/api/admin/bulk-upload-products', {
         method: 'POST',
+        headers: { Authorization: `Bearer ${idToken}` },
         body: formData,
       });
 

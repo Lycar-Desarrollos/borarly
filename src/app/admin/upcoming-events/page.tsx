@@ -19,6 +19,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { PlusCircle, Edit, Trash2, Loader2, Image as ImageIcon } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import NextImage from 'next/image';
+import { safeImageSrc } from '@/lib/imageUrl';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -163,12 +164,12 @@ export default function AdminUpcomingEventsPage() {
               <div>
                 <Label htmlFor="imageUrl">URL de la Imagen Principal</Label>
                 <Input id="imageUrl" name="imageUrl" value={currentEvent.imageUrl || ''} onChange={handleInputChange} required placeholder="https://example.com/event-banner.png" />
-                {currentEvent.imageUrl && <NextImage src={currentEvent.imageUrl} alt="Vista previa" width={200} height={100} className="mt-2 rounded-md border" objectFit="cover" />}
+                {currentEvent.imageUrl && <NextImage src={safeImageSrc(currentEvent.imageUrl)} alt="Vista previa" width={200} height={100} className="mt-2 rounded-md border" objectFit="cover" />}
               </div>
               <div>
                 <Label htmlFor="brandLogoUrl">URL del Logo de la Marca (Opcional)</Label>
                 <Input id="brandLogoUrl" name="brandLogoUrl" value={currentEvent.brandLogoUrl || ''} onChange={handleInputChange} placeholder="https://example.com/brand-logo.png" />
-                {currentEvent.brandLogoUrl && <NextImage src={currentEvent.brandLogoUrl} alt="Vista previa de logo" width={100} height={50} className="mt-2 rounded-md border bg-muted" objectFit="contain" />}
+                {currentEvent.brandLogoUrl && <NextImage src={safeImageSrc(currentEvent.brandLogoUrl)} alt="Vista previa de logo" width={100} height={50} className="mt-2 rounded-md border bg-muted" objectFit="contain" />}
               </div>
                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
@@ -227,7 +228,7 @@ export default function AdminUpcomingEventsPage() {
                   <TableRow key={event.id}>
                     <TableCell>
                       <div className="w-24 h-12 relative border rounded overflow-hidden bg-muted">
-                        <NextImage src={event.imageUrl} alt={event.title} layout="fill" objectFit="cover"/>
+                        <NextImage src={safeImageSrc(event.imageUrl)} alt={event.title} layout="fill" objectFit="cover"/>
                       </div>
                     </TableCell>
                     <TableCell className="font-medium">{event.title}</TableCell>

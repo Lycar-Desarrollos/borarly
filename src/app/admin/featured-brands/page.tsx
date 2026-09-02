@@ -17,6 +17,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { PlusCircle, Edit, Trash2, Loader2, Image as ImageIcon } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import NextImage from 'next/image';
+import { safeImageSrc } from '@/lib/imageUrl';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -142,7 +143,7 @@ export default function AdminFeaturedBrandsPage() {
                 <Input id="logoUrl" name="logoUrl" value={currentBrand.logoUrl || ''} onChange={handleInputChange} required placeholder="https://example.com/logo.png" />
                 {currentBrand.logoUrl && (
                   <div className="mt-2 w-32 h-16 relative border rounded overflow-hidden bg-muted">
-                    <NextImage src={currentBrand.logoUrl} alt="Vista previa del logo" layout="fill" objectFit="contain" data-ai-hint="logo preview"/>
+                    <NextImage src={safeImageSrc(currentBrand.logoUrl)} alt="Vista previa del logo" layout="fill" objectFit="contain" data-ai-hint="logo preview"/>
                   </div>
                 )}
               </div>
@@ -187,7 +188,7 @@ export default function AdminFeaturedBrandsPage() {
                   <TableRow key={brand.id}>
                     <TableCell>
                       <div className="w-24 h-12 relative border rounded overflow-hidden bg-muted">
-                        <NextImage src={brand.logoUrl} alt={brand.name} layout="fill" objectFit="contain" data-ai-hint={`${brand.name} logo`}/>
+                        <NextImage src={safeImageSrc(brand.logoUrl)} alt={brand.name} layout="fill" objectFit="contain" data-ai-hint={`${brand.name} logo`}/>
                       </div>
                     </TableCell>
                     <TableCell className="font-medium">{brand.name}</TableCell>

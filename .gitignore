@@ -56,3 +56,6 @@ fetch_*.mjs
 test_*.mjs
 scratch/
 
+
+# Local Netlify folder
+.netlify

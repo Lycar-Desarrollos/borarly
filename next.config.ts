@@ -4,7 +4,9 @@ import type {NextConfig} from 'next';
 const nextConfig: NextConfig = {
   /* config options here */
   typescript: {
-    ignoreBuildErrors: true,
+    // El proyecto compila sin errores de tipos (`npm run typecheck`), asi que ya no
+    // se silencian: un error de tipos debe detener el deploy en lugar de llegar a produccion.
+    ignoreBuildErrors: false,
   },
   eslint: {
     ignoreDuringBuilds: true,
@@ -41,13 +43,24 @@ const nextConfig: NextConfig = {
         port: '',
         pathname: '/**',
       },
-      // ADVERTENCIA: El siguiente patrón permite cualquier hostname bajo HTTPS.
-      // Esto puede tener implicaciones de seguridad y rendimiento.
-      // Asegúrate de comprender los riesgos antes de usarlo en producción.
-      // Se recomienda enfáticamente usar hostnames específicos y de confianza siempre que sea posible.
+      // Dominios de imagenes del catalogo Syscom (portadas, fichas y logos de marca).
       {
         protocol: 'https',
-        hostname: '**', // Permite cualquier hostname
+        hostname: '**.syscom.mx',
+        port: '',
+        pathname: '/**',
+      },
+      {
+        protocol: 'https',
+        hostname: 'ftp3.syscom.mx',
+        port: '',
+        pathname: '/**',
+      },
+      // NOTA: se evita `hostname: '**'` a proposito. Cualquier imagen de un origen no
+      // listado debe pasar por /api/image-proxy, que valida el destino antes de descargarlo.
+      {
+        protocol: 'https',
+        hostname: 'lh3.googleusercontent.com',
         port: '',
         pathname: '/**',
       },
