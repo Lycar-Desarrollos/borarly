@@ -3,10 +3,24 @@
 import type { Product, Category } from '@/lib/types';
 import { getExchangeRate, getVatRate, getProfitMargin } from './settingsService';
 
-const API_URL = process.env.SYSCOM_API_URL || 'https://developers.syscom.mx/api/v1';
+const API_URL = (process.env.SYSCOM_API_URL || 'https://developers.syscom.mx/api/v1').trim().replace(/^['"]|['"]$/g, '');
+
+const SYSCOM_HEADERS = {
+  'Accept': 'application/json',
+  'User-Agent': 'Mozilla/5.0 (compatible; Borarly/1.0; +https://borarly.com)',
+};
 
 let cachedToken: string | null = null;
 let tokenExpiracion: number = 0;
+
+let cachedExchangeRate: number | null = null;
+let exchangeRateExpiracion: number = 0;
+
+let cachedCategoriesL1: Category[] | null = null;
+let categoriesL1Expiracion: number = 0;
+
+let cachedCategoriesAll: Category[] | null = null;
+let categoriesAllExpiracion: number = 0;
 
 /**
  * Obtiene el token de Siscom y lo guarda en caché local hasta que expire
@@ -17,9 +31,9 @@ async function obtenerTokenSyscom(): Promise<string | null> {
     return cachedToken;
   }
 
-  const clientId = process.env.SYSCOM_CLIENT_ID?.trim().replace(/^['"]|['"]$/g, '');
-  const clientSecret = process.env.SYSCOM_CLIENT_SECRET?.trim().replace(/^['"]|['"]$/g, '');
-  const tokenUrl = process.env.SYSCOM_TOKEN_URL?.trim().replace(/^['"]|['"]$/g, '') || 'https://developers.syscom.mx/oauth/token';
+  const clientId = (process.env.SYSCOM_CLIENT_ID || 'YHDVpLh5k3XgQyfS0WtDVDcXkpjf1QGT').trim().replace(/^['"]|['"]$/g, '');
+  const clientSecret = (process.env.SYSCOM_CLIENT_SECRET || 'zEErjr0KRR5d5eT1UIT9YiyovTu8lV49Do1KuSCn').trim().replace(/^['"]|['"]$/g, '');
+  const tokenUrl = (process.env.SYSCOM_TOKEN_URL || 'https://developers.syscom.mx/oauth/token').trim().replace(/^['"]|['"]$/g, '');
 
   if (!clientId || !clientSecret) {
       console.warn("Faltan las credenciales de SYSCOM en las variables de entorno");
@@ -34,7 +48,11 @@ async function obtenerTokenSyscom(): Promise<string | null> {
 
     const res = await fetch(tokenUrl, {
       method: 'POST',
-      body: params,
+      headers: {
+        ...SYSCOM_HEADERS,
+        'Content-Type': 'application/x-www-form-urlencoded',
+      },
+      body: params.toString(),
     });
 
     if (!res.ok) {
@@ -235,6 +253,7 @@ export async function getProductosSyscomMerida(
         const res = await fetch(url.toString(), {
             method: 'GET',
             headers: {
+                ...SYSCOM_HEADERS,
                 'Authorization': `Bearer ${token}`
             },
             next: { revalidate: 60 },
@@ -299,6 +318,7 @@ export async function busquedaIASyscom(
         const res = await fetch(url.toString(), {
             method: 'GET',
             headers: {
+                ...SYSCOM_HEADERS,
                 'Authorization': `Bearer ${token}`
             },
             next: { revalidate: 60 },
@@ -337,29 +357,46 @@ export async function busquedaIASyscom(
  * Obtiene el tipo de cambio del día oficial de Syscom para conversiones USD -> MXN
  */
 export async function obtenerTipoCambioSyscom(): Promise<number> {
+    if (cachedExchangeRate && Date.now() < exchangeRateExpiracion) {
+        return cachedExchangeRate;
+    }
+
     const token = await obtenerTokenSyscom();
-    if (!token) return 19.5; // Fallback comercial realista para Syscom
+    if (!token) return cachedExchangeRate || 19.5; // Fallback comercial realista para Syscom
     try {
         const res = await fetch(`${API_URL}/tipocambio`, {
-            headers: { 'Authorization': `Bearer ${token}` },
+            headers: {
+                ...SYSCOM_HEADERS,
+                'Authorization': `Bearer ${token}`
+            },
             next: { revalidate: 1800 } 
         });
-        if (!res.ok) return 17.5;
+        if (!res.ok) return cachedExchangeRate || 17.5;
         const data = await safeJson(res);
-        if (!data) return 17.5;
+        if (!data) return cachedExchangeRate || 17.5;
         // PRIORIDAD: Usamos el tipo de cambio oficial (normal/especial) que usa la App de Syscom,
         // no el de 'vuelto' que suele ser más caro (venta).
         const rate = parseFloat(data.normal || data.especial || data.vuelto) || 17.5;
+        cachedExchangeRate = rate;
+        exchangeRateExpiracion = Date.now() + 1800000; // 30 min cache
         return rate;
     } catch {
-        return 17.5;
+        return cachedExchangeRate || 17.5;
     }
 }
+
+const productByIdCache = new Map<string, { product: Product; expiresAt: number }>();
 
 /**
  * Obtiene 1 solo producto detallado de Syscom usando su modelo o ID
  */
 export async function getProductoSyscomById(idOModelo: string): Promise<Product | null> {
+    const cacheKey = String(idOModelo).trim();
+    const cached = productByIdCache.get(cacheKey);
+    if (cached && Date.now() < cached.expiresAt) {
+        return cached.product;
+    }
+
     const token = await obtenerTokenSyscom();
     if (!token) return null;
 
@@ -367,6 +404,7 @@ export async function getProductoSyscomById(idOModelo: string): Promise<Product 
         const res = await fetch(`${API_URL}/productos/${idOModelo}`, {
             method: 'GET',
             headers: {
+                ...SYSCOM_HEADERS,
                 'Authorization': `Bearer ${token}`
             },
             next: { revalidate: 60 } 
@@ -388,7 +426,13 @@ export async function getProductoSyscomById(idOModelo: string): Promise<Product 
             getVatRate(),
             getProfitMargin()
         ]);
-        return mapearProductoSyscom(p, exchangeRate, vatRate, margin);
+        const mapped = mapearProductoSyscom(p, exchangeRate, vatRate, margin);
+        if (productByIdCache.size > 100) {
+            const firstKey = productByIdCache.keys().next().value;
+            if (firstKey) productByIdCache.delete(firstKey);
+        }
+        productByIdCache.set(cacheKey, { product: mapped, expiresAt: Date.now() + 60000 });
+        return mapped;
 
     } catch (error) {
         console.error(`Fallo obteniendo producto individual ${idOModelo}:`, error);
@@ -450,7 +494,10 @@ export async function getAccesoriosSyscom(productoId: string): Promise<Product[]
     try {
         const res = await fetch(`${API_URL}/productos/${productoId}/accesorios`, {
             method: 'GET',
-            headers: { 'Authorization': `Bearer ${token}` },
+            headers: {
+                ...SYSCOM_HEADERS,
+                'Authorization': `Bearer ${token}`
+            },
             next: { revalidate: 3600 }
         });
         if (!res.ok) return [];
@@ -478,7 +525,10 @@ export async function getRelacionadosSyscom(productoId: string): Promise<Product
     try {
         const res = await fetch(`${API_URL}/productos/${productoId}/relacionados`, {
             method: 'GET',
-            headers: { 'Authorization': `Bearer ${token}` },
+            headers: {
+                ...SYSCOM_HEADERS,
+                'Authorization': `Bearer ${token}`
+            },
             next: { revalidate: 3600 }
         });
         if (!res.ok) return [];
@@ -499,23 +549,31 @@ export async function getRelacionadosSyscom(productoId: string): Promise<Product
 /**
  * Obtiene las categorías nativas de Syscom
  */
-export async function getCategoriasSyscom(): Promise<Category[]> {
+export async function getCategoriasSyscom(includeSubcategories = true): Promise<Category[]> {
+    if (!includeSubcategories && cachedCategoriesL1 && Date.now() < categoriesL1Expiracion) {
+        return cachedCategoriesL1;
+    }
+    if (includeSubcategories && cachedCategoriesAll && Date.now() < categoriesAllExpiracion) {
+        return cachedCategoriesAll;
+    }
+
     const token = await obtenerTokenSyscom();
-    if (!token) return [];
+    if (!token) return cachedCategoriesAll || cachedCategoriesL1 || [];
 
     try {
         const res = await fetch(`${API_URL}/categorias`, {
             method: 'GET',
             headers: {
+                ...SYSCOM_HEADERS,
                 'Authorization': `Bearer ${token}`
             },
             next: { revalidate: 86400 } 
         });
 
-        if (!res.ok) return [];
+        if (!res.ok) return cachedCategoriesAll || cachedCategoriesL1 || [];
 
         const level1 = await safeJson(res);
-        if (!level1) return [];
+        if (!level1) return cachedCategoriesAll || cachedCategoriesL1 || [];
         const categoriasCrudas = Array.isArray(level1) ? level1 : [];
         
         const results: Category[] = [];
@@ -538,6 +596,13 @@ export async function getCategoriasSyscom(): Promise<Category[]> {
             });
         }
 
+        cachedCategoriesL1 = [...results];
+        categoriesL1Expiracion = Date.now() + 3600000; // 1 hora
+
+        if (!includeSubcategories) {
+            return results;
+        }
+
         // Por defecto traemos las subcategorías (Level 2) para todas las secciones principales
         // Filtramos 'Marketing' y cualquier otra que no sea de producto real
         const level1ToFetch = categoriasCrudas.filter(c => String(c.id) !== '65747');
@@ -545,7 +610,10 @@ export async function getCategoriasSyscom(): Promise<Category[]> {
         const subCatPromises = level1ToFetch.map(async (parent) => {
             try {
                 const subRes = await fetch(`${API_URL}/categorias/${parent.id}`, {
-                    headers: { 'Authorization': `Bearer ${token}` },
+                    headers: {
+                        ...SYSCOM_HEADERS,
+                        'Authorization': `Bearer ${token}`
+                    },
                     next: { revalidate: 86400 }
                 });
                 if (!subRes.ok) return [];
@@ -572,11 +640,14 @@ export async function getCategoriasSyscom(): Promise<Category[]> {
         const subResults = await Promise.all(subCatPromises);
         subResults.flat().forEach(s => results.push(s));
 
+        cachedCategoriesAll = results;
+        categoriesAllExpiracion = Date.now() + 3600000; // 1 hora
+
         return results;
 
     } catch (error) {
         console.error("Fallo obteniendo categorias de Syscom:", error);
-        return [];
+        return cachedCategoriesAll || cachedCategoriesL1 || [];
     }
 }
 

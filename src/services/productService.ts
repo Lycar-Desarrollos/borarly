@@ -3,7 +3,7 @@
  * @fileOverview Service functions for managing products and categories using Firestore.
  */
 
-import { db } from '@/lib/firebase';
+import { db, fetchFirestoreCollectionRest } from '@/lib/firebase';
 import type { Product, Category, CategoryLevel } from '@/lib/types';
 import {
   collection,
@@ -241,18 +241,25 @@ export async function getRelatedProductsForProduct(product: Product): Promise<Pr
 }
 
 
-export async function getCategories(): Promise<Category[]> {
+export async function getCategories(includeSubcategories = true): Promise<Category[]> {
   try {
-     const syscomCategories = await getCategoriasSyscom();
+     const syscomCategories = await getCategoriasSyscom(includeSubcategories);
      
      // Obtener overrides locales de Firebase (imágenes, isFeatured, isVisible, alias)
-     const categoriesRef = collection(db, CATEGORIES_COLLECTION);
-     const snapshot = await getDocs(categoriesRef);
-     const localOverrides: Record<string, Partial<Category>> = {};
-     
-     snapshot.forEach(doc => {
-       localOverrides[doc.id] = doc.data() as Partial<Category>;
-     });
+     let localOverrides: Record<string, Partial<Category>> = {};
+     try {
+       if (typeof window === 'undefined') {
+         localOverrides = await fetchFirestoreCollectionRest(CATEGORIES_COLLECTION);
+       } else {
+         const categoriesRef = collection(db, CATEGORIES_COLLECTION);
+         const snapshot = await getDocs(categoriesRef);
+         snapshot.forEach(docSnap => {
+           localOverrides[docSnap.id] = docSnap.data() as Partial<Category>;
+         });
+       }
+     } catch (e) {
+       console.warn("Could not load category overrides from Firestore, using Syscom defaults:", e);
+     }
  
      // Mezclar Syscom con configuraciones locales
      return syscomCategories.map(cat => {

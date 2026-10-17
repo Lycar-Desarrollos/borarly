@@ -82,46 +82,44 @@ export default async function HomePage(props: HomePageProps) {
 
   let categories: Category[] = [];
   let sucursales: {id: string, nombre: string}[] = [];
-  try {
-    const [cats, sucs] = await Promise.all([
-      getCategories(),
-      import('@/services/productService').then(m => m.getSucursales())
-    ]);
-    categories = cats;
-    sucursales = sucs;
-  } catch (error) {
-    console.error("Error fetching categories on HomePage", error);
-  }
-
   let productsToDisplay: Product[] = [];
-  let featuredProductsForSection: Product[] = []; 
   let featuredCategoriesForSection: Category[] = [];
 
   if (isLandingView) {
-    // Fetch data for landing page sections in parallel
-    [featuredProductsForSection, featuredCategoriesForSection] = await Promise.all([
-      getProducts(undefined, undefined, 4),
-      getCategories().then(cats => {
-        const featured = cats.filter(c => c.isFeatured === true);
-        return featured.length > 0 
-          ? featured 
-          : cats.filter(c => c.level === 1 && c.isVisible !== false).slice(0, 6);
-      })
-    ]);
+    try {
+      categories = await getCategories(false);
+      const featured = categories.filter(c => c.isFeatured === true && c.isVisible !== false);
+      featuredCategoriesForSection = featured.length > 0
+        ? featured
+        : categories.filter(c => c.level === 1 && c.isVisible !== false).slice(0, 6);
+    } catch (error) {
+      console.error("Error fetching landing categories on HomePage", error);
+    }
   } else {
-    productsToDisplay = await getProducts(
-      categoryForFilter, 
-      searchTerm, 
-      undefined, 
-      marca, 
-      orden, 
-      sucursal, 
-      nuevo, 
-      cajaAbierta, 
-      enExistencia,
-      oferta,
-      outlet
-    );
+    try {
+      const [cats, sucs, prods] = await Promise.all([
+        getCategories(true),
+        import('@/services/productService').then(m => m.getSucursales()),
+        getProducts(
+          categoryForFilter, 
+          searchTerm, 
+          undefined, 
+          marca, 
+          orden, 
+          sucursal, 
+          nuevo, 
+          cajaAbierta, 
+          enExistencia,
+          oferta,
+          outlet
+        )
+      ]);
+      categories = cats;
+      sucursales = sucs;
+      productsToDisplay = prods;
+    } catch (error) {
+      console.error("Error fetching catalog data on HomePage", error);
+    }
   }
 
   return (

@@ -120,7 +120,7 @@ export default async function ProductDetailPage(props: ProductDetailPageProps) {
   }
 
   const [allCategories, relatedProducts] = await Promise.all([
-    getCategories(),
+    getCategories(false),
     getRelatedProductsForProduct(product),
   ]);
 

@@ -3,7 +3,7 @@
  * @fileOverview Service functions for managing app-wide settings in Firestore.
  */
 
-import { db, storage } from '@/lib/firebase';
+import { db, storage, fetchFirestoreCollectionRest } from '@/lib/firebase';
 import type { AppSettings } from '@/lib/types';
 import { doc, getDoc, setDoc } from 'firebase/firestore';
 import { ref as storageRef, uploadBytes, getDownloadURL } from 'firebase/storage';
@@ -22,6 +22,17 @@ const PROFIT_DOC_ID = 'profit_margin';
  */
 export async function getShippingSettings(): Promise<{ cost: number; freeShippingThreshold: number | null }> {
   try {
+    if (typeof window === 'undefined') {
+      const docs = await fetchFirestoreCollectionRest(SETTINGS_COLLECTION);
+      const data = docs[SHIPPING_DOC_ID] as AppSettings | undefined;
+      if (data) {
+        return {
+          cost: data.shippingCost || 0,
+          freeShippingThreshold: typeof data.freeShippingThreshold === 'number' ? data.freeShippingThreshold : null,
+        };
+      }
+      return { cost: 0, freeShippingThreshold: null };
+    }
     const shippingDocRef = doc(db, SETTINGS_COLLECTION, SHIPPING_DOC_ID);
     const docSnap = await getDoc(shippingDocRef);
     if (docSnap.exists()) {
@@ -62,6 +73,16 @@ export async function updateShippingSettings(cost: number, freeShippingThreshold
  */
 export async function getQuoteLogoUrl(): Promise<string> {
   try {
+    if (typeof window === 'undefined') {
+      const docs = await fetchFirestoreCollectionRest(SETTINGS_COLLECTION);
+      const data = docs[BRANDING_DOC_ID] as AppSettings | undefined;
+      const savedUrl = data?.quoteLogoUrl || '';
+      const isOfficialOrNewBorarlyLogo =
+        savedUrl === '/logo.png' ||
+        savedUrl.includes('settings%2FborarlyLogo') ||
+        savedUrl.includes('settings/borarlyLogo');
+      return isOfficialOrNewBorarlyLogo ? savedUrl : '/logo.png';
+    }
     const brandingDocRef = doc(db, SETTINGS_COLLECTION, BRANDING_DOC_ID);
     const docSnap = await getDoc(brandingDocRef);
     if (docSnap.exists()) {
@@ -117,6 +138,11 @@ export async function updateQuoteLogo(logoFile: File): Promise<string> {
  */
 export async function getExchangeRate(): Promise<number> {
   try {
+    if (typeof window === 'undefined') {
+      const docs = await fetchFirestoreCollectionRest(SETTINGS_COLLECTION);
+      const data = docs[CURRENCY_DOC_ID] as AppSettings | undefined;
+      return typeof data?.usdToMxnRate === 'number' && data.usdToMxnRate > 0 ? data.usdToMxnRate : 1;
+    }
     const currencyDocRef = doc(db, SETTINGS_COLLECTION, CURRENCY_DOC_ID);
     const docSnap = await getDoc(currencyDocRef);
     if (docSnap.exists()) {
@@ -151,6 +177,11 @@ export async function updateExchangeRate(rate: number): Promise<void> {
  */
 export async function getVatRate(): Promise<number> {
   try {
+    if (typeof window === 'undefined') {
+      const docs = await fetchFirestoreCollectionRest(SETTINGS_COLLECTION);
+      const data = docs[TAX_DOC_ID] as AppSettings | undefined;
+      return typeof data?.vatRate === 'number' && data.vatRate >= 0 ? data.vatRate : 0.16;
+    }
     const taxDocRef = doc(db, SETTINGS_COLLECTION, TAX_DOC_ID);
     const docSnap = await getDoc(taxDocRef);
     if (docSnap.exists()) {
@@ -185,6 +216,11 @@ export async function updateVatRate(rate: number): Promise<void> {
  */
 export async function getProfitMargin(): Promise<number> {
   try {
+    if (typeof window === 'undefined') {
+      const docs = await fetchFirestoreCollectionRest(SETTINGS_COLLECTION);
+      const data = docs[PROFIT_DOC_ID] as any;
+      return typeof data?.profitMargin === 'number' && data.profitMargin >= 0 ? data.profitMargin : 0.0;
+    }
     const profitDocRef = doc(db, SETTINGS_COLLECTION, PROFIT_DOC_ID);
     const docSnap = await getDoc(profitDocRef);
     if (docSnap.exists()) {

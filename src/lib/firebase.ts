@@ -27,4 +27,73 @@ const auth: Auth = getAuth(app);
 const db: Firestore = getFirestore(app);
 const storage: FirebaseStorage = getStorage(app);
 
+function parseFirestoreValue(val: any): any {
+  if (!val || typeof val !== 'object') return val;
+  if ('stringValue' in val) return val.stringValue;
+  if ('doubleValue' in val) return Number(val.doubleValue);
+  if ('integerValue' in val) return Number(val.integerValue);
+  if ('booleanValue' in val) return Boolean(val.booleanValue);
+  if ('nullValue' in val) return null;
+  if ('timestampValue' in val) return val.timestampValue;
+  if ('arrayValue' in val) {
+    return Array.isArray(val.arrayValue?.values)
+      ? val.arrayValue.values.map(parseFirestoreValue)
+      : [];
+  }
+  if ('mapValue' in val) {
+    return parseFirestoreFields(val.mapValue?.fields || {});
+  }
+  return val;
+}
+
+export function parseFirestoreFields(fields: Record<string, any> = {}): Record<string, any> {
+  const result: Record<string, any> = {};
+  for (const [k, v] of Object.entries(fields)) {
+    result[k] = parseFirestoreValue(v);
+  }
+  return result;
+}
+
+const restCache: Record<string, { data: Record<string, Record<string, any>>; expiresAt: number }> = {};
+
+/**
+ * Fetches an entire Firestore collection via the lightweight REST API (server-safe for Cloudflare Workers,
+ * avoiding @grpc/grpc-js / node:http2 crashes in workerd). Cached in memory for 5 minutes.
+ */
+export async function fetchFirestoreCollectionRest(
+  collectionName: string,
+  ttlMs = 300000
+): Promise<Record<string, Record<string, any>>> {
+  const cached = restCache[collectionName];
+  if (cached && Date.now() < cached.expiresAt) {
+    return cached.data;
+  }
+
+  try {
+    const projectId = firebaseConfig.projectId || 'ecommercepesca-305ce';
+    const url = `https://firestore.googleapis.com/v1/projects/${projectId}/databases/(default)/documents/${collectionName}?pageSize=300`;
+    const res = await fetch(url, {
+      headers: { Accept: 'application/json' },
+    });
+    if (!res.ok) return cached?.data || {};
+    const json = await res.json();
+    const docs: Record<string, Record<string, any>> = {};
+    if (Array.isArray(json.documents)) {
+      for (const docItem of json.documents) {
+        const nameParts = String(docItem.name || '').split('/');
+        const id = nameParts[nameParts.length - 1];
+        if (id) {
+          docs[id] = parseFirestoreFields(docItem.fields || {});
+        }
+      }
+    }
+    restCache[collectionName] = { data: docs, expiresAt: Date.now() + ttlMs };
+    return docs;
+  } catch (error) {
+    console.warn(`Firestore REST fallback error for ${collectionName}:`, error);
+    return cached?.data || {};
+  }
+}
+
 export { app, auth, db, storage };
+
