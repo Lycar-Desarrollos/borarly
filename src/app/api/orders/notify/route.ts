@@ -5,11 +5,11 @@ import { buildOrderEmailHtml, buildOrderEmailSubject, type OrderEmailData } from
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
 
-const SALES_EMAIL = process.env.SALES_NOTIFICATION_EMAIL || 'ventas@borarly.com';
+const unquote = (val?: string) => (val ? val.trim().replace(/^['"]|['"]$/g, '') : '');
 
 // Verifica el ID token de Firebase con la API REST (no requiere firebase-admin).
 async function verifyFirebaseUser(idToken: string): Promise<{ uid: string; email?: string } | null> {
-  const apiKey = process.env.NEXT_PUBLIC_FIREBASE_API_KEY;
+  const apiKey = unquote(process.env.NEXT_PUBLIC_FIREBASE_API_KEY) || 'AIzaSyAilCeIBVIg-v1pZvaxA7i4RS-skrQFpl8';
   if (!apiKey || !idToken) return null;
   try {
     const res = await fetch(`https://identitytoolkit.googleapis.com/v1/accounts:lookup?key=${apiKey}`, {
@@ -45,7 +45,13 @@ export async function POST(req: Request) {
     return NextResponse.json({ ok: false, error: 'Datos de pedido incompletos' }, { status: 400 });
   }
 
-  const { SMTP_HOST, SMTP_PORT, SMTP_USER, SMTP_PASS, SMTP_FROM } = process.env;
+  const SMTP_HOST = unquote(process.env.SMTP_HOST);
+  const SMTP_PORT = unquote(process.env.SMTP_PORT);
+  const SMTP_USER = unquote(process.env.SMTP_USER);
+  const SMTP_PASS = unquote(process.env.SMTP_PASS);
+  const SMTP_FROM = unquote(process.env.SMTP_FROM);
+  const SALES_EMAIL = unquote(process.env.SALES_NOTIFICATION_EMAIL) || 'ventas@borarly.com';
+
   if (!SMTP_HOST || !SMTP_USER || !SMTP_PASS) {
     console.error('[order-email] Falta configurar SMTP_HOST / SMTP_USER / SMTP_PASS');
     return NextResponse.json({ ok: false, error: 'Correo no configurado' }, { status: 500 });

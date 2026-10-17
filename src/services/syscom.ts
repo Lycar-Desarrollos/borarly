@@ -3,10 +3,7 @@
 import type { Product, Category } from '@/lib/types';
 import { getExchangeRate, getVatRate, getProfitMargin } from './settingsService';
 
-const CLIENT_ID = process.env.SYSCOM_CLIENT_ID;
-const CLIENT_SECRET = process.env.SYSCOM_CLIENT_SECRET;
 const API_URL = process.env.SYSCOM_API_URL || 'https://developers.syscom.mx/api/v1';
-const TOKEN_URL = process.env.SYSCOM_TOKEN_URL || 'https://developers.syscom.mx/oauth/token';
 
 let cachedToken: string | null = null;
 let tokenExpiracion: number = 0;
@@ -20,18 +17,22 @@ async function obtenerTokenSyscom(): Promise<string | null> {
     return cachedToken;
   }
 
-  if (!CLIENT_ID || !CLIENT_SECRET) {
-      console.warn("Faltan las credenciales de SYSCOM en el archivo .env.local");
+  const clientId = process.env.SYSCOM_CLIENT_ID?.trim().replace(/^['"]|['"]$/g, '');
+  const clientSecret = process.env.SYSCOM_CLIENT_SECRET?.trim().replace(/^['"]|['"]$/g, '');
+  const tokenUrl = process.env.SYSCOM_TOKEN_URL?.trim().replace(/^['"]|['"]$/g, '') || 'https://developers.syscom.mx/oauth/token';
+
+  if (!clientId || !clientSecret) {
+      console.warn("Faltan las credenciales de SYSCOM en las variables de entorno");
       return null;
   }
 
   try {
     const params = new URLSearchParams();
-    params.append('client_id', CLIENT_ID);
-    params.append('client_secret', CLIENT_SECRET);
+    params.append('client_id', clientId);
+    params.append('client_secret', clientSecret);
     params.append('grant_type', 'client_credentials');
 
-    const res = await fetch(TOKEN_URL, {
+    const res = await fetch(tokenUrl, {
       method: 'POST',
       body: params,
     });

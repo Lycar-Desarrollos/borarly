@@ -15,8 +15,10 @@ export function authErrorMessage(err: any): string {
     'auth/popup-blocked': 'Tu navegador bloqueó la ventana de Google. Permite ventanas emergentes.',
     'auth/user-disabled': 'Esta cuenta está deshabilitada. Contáctanos para ayudarte.',
     'auth/missing-email': 'Escribe tu correo electrónico.',
+    'auth/unauthorized-domain': 'Este dominio aún no está autorizado en Firebase Authentication (agrégalo en Firebase Console → Authentication → Settings → Dominios autorizados).',
+    'auth/invalid-api-key': 'Error de configuración de API Key de Firebase.',
   };
-  return map[code] || 'Ocurrió un error. Inténtalo de nuevo.';
+  return map[code] || `Ocurrió un error (${code || 'desconocido'}). Inténtalo de nuevo.`;
 }
 
 /** Solo permite redirecciones internas para evitar open-redirects. */
