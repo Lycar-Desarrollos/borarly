@@ -63,7 +63,12 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
             address: { street: '', city: '', zip: '', country: '', phone: '' },
             wishlist: [],
           };
-          await setDoc(userDocRef, newUserProfile);
+          // merge + sin campos vacíos: el formulario de registro puede estar guardando
+          // nombre/teléfono al mismo tiempo y no debemos sobrescribirlo.
+          const baseDoc: Record<string, unknown> = { uid: user.uid, email: user.email, role: 'customer' };
+          if (user.displayName) baseDoc.displayName = user.displayName;
+          if (user.photoURL) baseDoc.photoURL = user.photoURL;
+          await setDoc(userDocRef, baseDoc, { merge: true });
           setUserProfile(newUserProfile);
           setWishlist([]);
           setIsAdmin(false);

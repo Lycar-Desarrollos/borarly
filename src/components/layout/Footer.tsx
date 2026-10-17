@@ -87,11 +87,8 @@ export function Footer() {
           </div>
         </div>
 
-        {/* Datos Fiscales + Copyright */}
-        <div className="mt-12 pt-8 border-t border-border/50 text-center space-y-2">
-          <p className="text-xs text-muted-foreground">
-            Edgar Ydalimir Arevalo Escobedo &middot; RFC: AEEE991122MA7 &middot; Persona Física con Actividad Empresarial
-          </p>
+        {/* Copyright */}
+        <div className="mt-10 pt-6 border-t border-border/50 text-center">
           <p className="text-xs text-muted-foreground">
             &copy; {currentYear} BORARLY. Todos los derechos reservados.
           </p>

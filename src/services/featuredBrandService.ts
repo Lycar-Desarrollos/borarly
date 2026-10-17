@@ -36,14 +36,12 @@ function docToFeaturedBrand(docSnapshot: any): FeaturedBrand {
 export async function getFeaturedBrands(): Promise<FeaturedBrand[]> {
   try {
     const brandsRef = collection(db, FEATURED_BRANDS_COLLECTION);
-    const q = query(brandsRef, orderBy('order', 'asc'));
-    const querySnapshot = await getDocs(q);
-    return querySnapshot.docs.map(docToFeaturedBrand);
+    const querySnapshot = await getDocs(brandsRef);
+    const brands = querySnapshot.docs.map(docToFeaturedBrand);
+    brands.sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
+    return brands;
   } catch (error) {
     console.error("Error fetching featured brands:", error);
-    if (error instanceof Error && error.message.includes('firestore/failed-precondition') && error.message.includes('index')) {
-        console.error("Firestore Precondition Failed for Featured Brands: This query requires an index. Please create it in your Firestore console. Index needed: featuredBrands collection, 'order' (ASC).");
-    }
     return [];
   }
 }

@@ -15,6 +15,7 @@ import { Separator } from '@/components/ui/separator';
 import { ProductList } from '@/components/products/ProductList';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { cn } from "@/lib/utils";
+import { SecureCheckoutBox } from '@/components/trust/PaymentShippingLogos';
 
 import { useCart } from '@/contexts/CartContext';
 import { useAuth } from '@/contexts/AuthContext';
@@ -341,17 +342,30 @@ export function ProductDetailView({ product, relatedProducts, allCategories }: P
 
                 <Separator />
 
-                {/* 2. PRICING SECTION */}
-                <div className="space-y-1">
+                {/* 2. PRICING SECTION + SCARCITY TRIGGER */}
+                <div className="space-y-2">
                     <p className="text-[11px] text-muted-foreground font-bold uppercase tracking-widest">Precio Mayorista</p>
                     <div className="flex items-baseline gap-1.5">
                         <span className="text-3xl md:text-4xl font-black text-foreground tracking-tight">
                             MXN {new Intl.NumberFormat('es-MX', { style: 'currency', currency: 'MXN' }).format(product.price).replace('MXN', '').trim()}
                         </span>
                     </div>
-                    <p className="text-xs text-green-600 dark:text-green-400 font-bold flex items-center gap-1.5 pt-1">
-                        <CheckCircle2 className="w-4 h-4 shrink-0" /> IVA Incluido &middot; Facturación Disponible
+                    <p className="text-xs text-emerald-600 dark:text-emerald-400 font-bold flex items-center gap-1.5">
+                        <CheckCircle2 className="w-4 h-4 shrink-0" /> IVA Incluido &middot; Facturación CFDI 4.0 Inmediata
                     </p>
+
+                    {/* Psychological Stock & Dispatch Banner */}
+                    {product.stock > 0 && product.stock <= 10 ? (
+                      <div className="mt-2 rounded-xl bg-amber-500/10 border border-amber-500/30 px-3 py-2 text-xs font-semibold text-amber-700 dark:text-amber-300 flex items-center gap-2">
+                        <Zap className="w-4 h-4 text-amber-500 shrink-0 fill-current" />
+                        <span>¡Alta demanda! Solo quedan <strong>{product.stock} unidades</strong> para envío inmediato.</span>
+                      </div>
+                    ) : product.stock > 10 ? (
+                      <div className="mt-2 rounded-xl bg-emerald-500/10 border border-emerald-500/25 px-3 py-2 text-xs font-semibold text-emerald-700 dark:text-emerald-300 flex items-center gap-2">
+                        <Package className="w-4 h-4 text-emerald-500 shrink-0" />
+                        <span>Disponible en almacén (<strong>{product.stock >= 500 ? '500+' : product.stock} uds</strong>) · Despacho inmediato</span>
+                      </div>
+                    ) : null}
                 </div>
 
                 {/* 3. PRIMARY ACTIONS */}
@@ -381,6 +395,7 @@ export function ProductDetailView({ product, relatedProducts, allCategories }: P
                         <Button 
                             onClick={handleAddToCart}
                             variant="outline"
+                            disabled={product.stock <= 0}
                             className="flex-1 h-12 font-bold rounded-xl gap-2 shadow-sm text-sm"
                         >
                             <ShoppingCart className="w-4 h-4" />
@@ -391,6 +406,7 @@ export function ProductDetailView({ product, relatedProducts, allCategories }: P
                     {/* Quick Buy Now */}
                     <Button 
                         onClick={handleBuyNow}
+                        disabled={product.stock <= 0}
                         className="w-full bg-primary hover:bg-primary/90 text-primary-foreground h-14 font-extrabold rounded-xl gap-2 text-sm md:text-base uppercase tracking-wider shadow-lg transition-all"
                     >
                         <Zap className="w-5 h-5 fill-current flex-shrink-0" />
@@ -413,6 +429,9 @@ export function ProductDetailView({ product, relatedProducts, allCategories }: P
                         Consultar con un Asesor por WhatsApp
                       </Button>
                     </a>
+
+                    {/* Confianza: pago seguro + paqueterías, justo bajo el botón de compra */}
+                    <SecureCheckoutBox />
                 </div>
 
                 {/* 4. TRUST BADGES GRID */}
@@ -459,8 +478,8 @@ export function ProductDetailView({ product, relatedProducts, allCategories }: P
 
       {/* SECCIÓN PRINCIPAL: ESPECIFICACIONES TÉCNICAS Y CONTENIDO HTML NATIVO (FULL WIDTH) */}
       <div suppressHydrationWarning className="w-full space-y-8 mt-10">
-        <div suppressHydrationWarning className="bg-card border border-border/80 rounded-3xl p-6 sm:p-10 shadow-sm space-y-6">
-          <h2 className="text-2xl sm:text-3xl font-bold tracking-tight text-foreground border-b border-border/50 pb-4">
+        <div suppressHydrationWarning className="bg-card border border-border/80 rounded-3xl p-5 sm:p-10 shadow-sm space-y-6">
+          <h2 className="text-xl sm:text-3xl font-bold tracking-tight text-foreground border-b border-border/50 pb-4">
             Especificaciones
           </h2>
 
@@ -498,7 +517,7 @@ export function ProductDetailView({ product, relatedProducts, allCategories }: P
 
         {/* Fichas Técnicas y Manuales Descargables */}
         {product.recursos && product.recursos.length > 0 && (
-          <div className="bg-card/50 border border-border/60 rounded-3xl p-6 sm:p-8 shadow-xs space-y-4">
+          <div className="bg-card/50 border border-border/60 rounded-3xl p-5 sm:p-8 shadow-xs space-y-4">
             <h3 className="text-lg font-bold text-foreground flex items-center gap-2">
               <FileText className="w-5 h-5 text-primary" /> Documentos y Manuales Oficiales
             </h3>
@@ -530,7 +549,7 @@ export function ProductDetailView({ product, relatedProducts, allCategories }: P
 
       {/* SECCIÓN DE ACCESORIOS Y PRODUCTOS RELACIONADOS (ESTILO SYSCOM) */}
       {relatedProducts.length > 0 && (
-        <div className="mt-16 pt-8 border-t border-border/80 space-y-6">
+        <div className="mt-16 pt-8 border-t border-border/80 space-y-6 pb-20 lg:pb-0">
           <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-2">
             <div>
               <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-blue-500/10 text-blue-500 border border-blue-500/20 text-[11px] font-black uppercase tracking-wider mb-2">
@@ -552,6 +571,41 @@ export function ProductDetailView({ product, relatedProducts, allCategories }: P
           <ProductList products={relatedProducts} />
         </div>
       )}
+
+      {/* STICKY MOBILE BUY BAR (Solo en móvil / tablet < lg) */}
+      <div className="lg:hidden fixed bottom-0 inset-x-0 z-40 bg-card/95 backdrop-blur-lg border-t border-border px-4 py-3 shadow-[0_-8px_25px_rgba(0,0,0,0.18)]">
+        <div className="max-w-xl mx-auto flex items-center justify-between gap-3">
+          <div className="min-w-0">
+            <p className="text-[10px] text-emerald-600 dark:text-emerald-400 font-bold uppercase tracking-wider truncate">
+              IVA Incluido · CFDI 4.0
+            </p>
+            <p className="text-lg font-black text-foreground leading-none">
+              {new Intl.NumberFormat('es-MX', { style: 'currency', currency: 'MXN' }).format(product.price)}
+            </p>
+          </div>
+          <div className="flex items-center gap-2 shrink-0">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleAddToCart}
+              disabled={product.stock <= 0}
+              className="h-10 px-3 font-bold rounded-xl gap-1.5 text-xs"
+            >
+              <ShoppingCart className="w-4 h-4" />
+              Agregar
+            </Button>
+            <Button
+              size="sm"
+              onClick={handleBuyNow}
+              disabled={product.stock <= 0}
+              className="h-10 px-4 bg-primary hover:bg-primary/90 text-primary-foreground font-extrabold rounded-xl gap-1.5 text-xs uppercase tracking-wider shadow-md"
+            >
+              <Zap className="w-3.5 h-3.5 fill-current" />
+              Comprar
+            </Button>
+          </div>
+        </div>
+      </div>
 
       <Dialog open={isZoomModalOpen} onOpenChange={setIsZoomModalOpen}>
         <DialogContent className="bg-transparent border-none shadow-none w-auto h-auto max-w-[90vw] max-h-[90vh] p-6 flex flex-col items-center justify-center">

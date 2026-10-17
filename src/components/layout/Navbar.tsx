@@ -313,47 +313,137 @@ export function Navbar() {
 
   return (
     <header className="sticky top-0 z-50 w-full border-b border-white/10 bg-[#090d16] text-white shadow-md">
-      
-      {/* 1. BARRA PRINCIPAL SUPERIOR (LOGO, BUSCADOR CENTRADO Y FLUIDO, CARRITO, AVATAR) */}
-      <div className="max-w-[1520px] mx-auto px-4 sm:px-6 lg:px-8 h-20 sm:h-22 flex items-center justify-between gap-4 sm:gap-6 md:gap-8">
+      {/* 0. TOP PSYCHOLOGICAL TRUST MICRO-BAR */}
+      {!isCheckoutPhase && (
+        <div className="bg-[#05080f] border-b border-white/5 text-[11px] text-zinc-300 py-1.5 px-4">
+          <div className="max-w-[1520px] mx-auto flex items-center justify-center sm:justify-between gap-4 overflow-x-auto no-scrollbar whitespace-nowrap">
+            <div className="flex items-center gap-4 sm:gap-6 mx-auto sm:mx-0">
+              <span className="inline-flex items-center gap-1.5 font-medium text-emerald-400">
+                <Check className="w-3.5 h-3.5 shrink-0" />
+                <span>Precios con IVA incluido · Facturación CFDI 4.0</span>
+              </span>
+              <span className="hidden md:inline-flex items-center gap-1.5 text-zinc-300">
+                <Shield className="w-3.5 h-3.5 text-blue-400 shrink-0" />
+                <span>Equipos 100% Nuevos con Garantía Oficial de Fábrica</span>
+              </span>
+            </div>
+            <div className="hidden sm:flex items-center gap-4 text-zinc-400 text-[11px]">
+              <span>Distribuidor Autorizado · <strong className="text-zinc-200">Venta a Empresas y Público en General</strong></span>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* 1. BARRA PRINCIPAL SUPERIOR */}
+      <div className="max-w-[1520px] mx-auto px-3 sm:px-6 lg:px-8 py-2.5 md:py-0 md:h-20 flex flex-col md:flex-row md:items-center md:justify-between gap-2.5 md:gap-6">
         
-        {/* LOGO NATIVO ORIGINAL BORARLY */}
-        <div className="flex items-center shrink-0">
-          <Link href="/" className="flex items-center select-none group py-1">
-            <Image
-              src="/logo-white.png"
-              alt="BORARLY"
-              width={195}
-              height={52}
-              priority
-              className="h-9 sm:h-11 w-auto object-contain transition-transform group-hover:scale-105"
-            />
-          </Link>
+        {/* FILA SUPERIOR EN MÓVIL: LOGO + ACCIONES DERECHA */}
+        <div className="flex items-center justify-between gap-2 w-full md:w-auto">
+          {/* LOGO NATIVO ORIGINAL BORARLY */}
+          <div className="flex items-center shrink-0">
+            <Link href="/" className="flex items-center select-none group py-0.5">
+              <Image
+                src="/logo-white.png"
+                alt="BORARLY"
+                width={195}
+                height={52}
+                priority
+                className="h-8 sm:h-10 md:h-11 w-auto object-contain transition-transform group-hover:scale-105"
+              />
+            </Link>
+          </div>
+
+          {/* ACCIONES EN MÓVIL (< md) */}
+          <div className="flex md:hidden items-center gap-1.5 shrink-0">
+            <a 
+              href="https://wa.me/5219999040931" 
+              target="_blank" 
+              rel="noopener noreferrer" 
+              className="h-9 px-2.5 rounded-xl text-xs font-bold text-emerald-300 bg-emerald-500/15 border border-emerald-500/30 flex items-center gap-1.5 transition-all shrink-0"
+              title="Asesor WhatsApp"
+            >
+              <MessageCircle className="h-4 w-4 text-emerald-400 shrink-0" />
+              <span className="text-[11px] font-bold">Ayuda</span>
+            </a>
+
+            {currentUser ? (
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <button 
+                    type="button" 
+                    aria-label="Menú de Usuario" 
+                    className="relative h-9 w-9 rounded-full ring-2 ring-blue-600 bg-white text-zinc-950 flex items-center justify-center font-bold text-xs shadow-sm overflow-hidden select-none outline-none"
+                  >
+                    <Avatar className="h-full w-full">
+                      <AvatarImage src={userProfile?.photoURL || undefined} alt={userProfile?.displayName || 'Usuario'} />
+                      <AvatarFallback className="bg-white text-zinc-950 font-black text-xs">
+                        {userProfile?.displayName?.charAt(0)?.toUpperCase() || currentUser?.email?.charAt(0)?.toUpperCase() || 'U'}
+                      </AvatarFallback>
+                    </Avatar>
+                  </button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent className="w-56" align="end" forceMount>
+                  <DropdownMenuLabel className="font-normal">
+                    <div className="flex flex-col space-y-1">
+                      <p className="text-sm font-medium leading-none">{userProfile?.displayName || 'Usuario'}</p>
+                      <p className="text-xs leading-none text-muted-foreground">{userProfile?.email}</p>
+                    </div>
+                  </DropdownMenuLabel>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem asChild>
+                    <Link href="/profile"><User className="mr-2 h-4 w-4" /><span>Mi Perfil</span></Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem asChild>
+                    <Link href="/profile/orders"><ShoppingCart className="mr-2 h-4 w-4" /><span>Mis Pedidos</span></Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem asChild>
+                    <Link href="/profile/wishlist"><Heart className="mr-2 h-4 w-4" /><span>Mi Lista de Deseos</span></Link>
+                  </DropdownMenuItem>
+                  {isAdmin && (
+                    <DropdownMenuItem asChild>
+                      <Link href="/admin"><LayoutDashboard className="mr-2 h-4 w-4" /><span>Panel Admin</span></Link>
+                    </DropdownMenuItem>
+                  )}
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem onClick={() => signOut()}>
+                    <LogOut className="mr-2 h-4 w-4" /><span>Cerrar Sesión</span>
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            ) : (
+              <Link href="/login">
+                <Button size="sm" className="bg-primary hover:bg-primary/90 text-primary-foreground font-bold rounded-xl text-xs px-2.5 h-9">
+                  <User className="h-4 w-4 mr-1" />
+                  <span>Entrar</span>
+                </Button>
+              </Link>
+            )}
+
+            <CartDropdown />
+          </div>
         </div>
         
-        {/* BUSCADOR UNIVERSAL */}
+        {/* BUSCADOR UNIVERSAL (FULL WIDTH EN MÓVIL, CENTRADO EN PC) */}
         {!isCheckoutPhase && (
           <div 
             ref={searchContainerRef} 
-            className="flex-1 max-w-3xl relative mx-2 sm:mx-4"
+            className="w-full md:flex-1 md:max-w-3xl relative md:mx-4"
             onFocus={handleFocus}
             onBlur={handleBlur}
           >
             <form onSubmit={handleSearchSubmit} className="w-full flex items-center">
               <div className={cn(
-                "relative flex items-center w-full h-12 rounded-full bg-white text-zinc-900 border transition-all duration-200 shadow-sm overflow-hidden px-4",
+                "relative flex items-center w-full h-10 sm:h-11 md:h-12 rounded-full bg-white text-zinc-900 border transition-all duration-200 shadow-sm overflow-hidden px-3.5 sm:px-4",
                 isSearchVisible ? "ring-2 ring-blue-500 border-transparent shadow-md" : "border-zinc-300 hover:border-zinc-400"
               )}>
-                {/* Icono de búsqueda */}
-                <div className="pr-3 pointer-events-none text-zinc-400">
-                  <Search className="h-5 w-5" />
+                <div className="pr-2.5 sm:pr-3 pointer-events-none text-zinc-400">
+                  <Search className="h-4 w-4 sm:h-5 sm:w-5" />
                 </div>
 
-                {/* Input de texto */}
                 <input
                   type="text"
-                  placeholder="Buscar productos por nombre, modelo, marca o clave SAT..."
-                  className="w-full py-2.5 text-sm bg-transparent outline-none text-zinc-900 placeholder:text-zinc-400 pr-2 font-medium"
+                  placeholder="Buscar por producto, modelo, marca o categoría..."
+                  className="w-full py-2 text-xs sm:text-sm bg-transparent outline-none text-zinc-900 placeholder:text-zinc-400 pr-2 font-medium"
                   value={searchTerm}
                   onChange={(e) => {
                     setSearchTerm(e.target.value);
@@ -365,7 +455,6 @@ export function Navbar() {
                   }}
                 />
 
-                {/* Botón Borrar único si hay texto */}
                 {searchTerm && (
                   <button
                     type="button"
@@ -387,29 +476,26 @@ export function Navbar() {
           </div>
         )}
 
-        {/* ACCIONES LATERALES: WHATSAPP, AVATAR / PERFIL Y CARRITO */}
-        <div className="flex items-center gap-2 sm:gap-3 shrink-0 ml-2">
-          
-          {/* Botón Asesor WhatsApp Compacto */}
+        {/* ACCIONES LATERALES EN ESCRITORIO (md:flex) */}
+        <div className="hidden md:flex items-center gap-3 shrink-0 ml-2">
           <a 
             href="https://wa.me/5219999040931" 
             target="_blank" 
             rel="noopener noreferrer" 
-            className="h-10 px-3 sm:px-3.5 rounded-xl text-xs font-bold tracking-wide text-emerald-300 hover:text-emerald-200 bg-emerald-500/15 hover:bg-emerald-500/25 border border-emerald-500/30 hover:border-emerald-400/50 flex items-center gap-1.5 sm:gap-2 transition-all shadow-xs shrink-0 select-none hover:scale-105 active:scale-95"
+            className="h-10 px-3.5 rounded-xl text-xs font-bold tracking-wide text-emerald-300 hover:text-emerald-200 bg-emerald-500/15 hover:bg-emerald-500/25 border border-emerald-500/30 hover:border-emerald-400/50 flex items-center gap-2 transition-all shadow-xs shrink-0 select-none hover:scale-105 active:scale-95"
             title="Asesor WhatsApp"
           >
             <MessageCircle className="h-4 w-4 text-emerald-400 fill-emerald-400/20 shrink-0" />
-            <span className="hidden sm:inline font-bold">Asesor WhatsApp</span>
+            <span className="font-bold">Asesor WhatsApp</span>
           </a>
 
-          {/* Avatar de Usuario Circular / Botón Iniciar Sesión */}
           {currentUser ? (
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <button 
                   type="button" 
                   aria-label="Menú de Usuario" 
-                  className="relative h-10 w-10 sm:h-10.5 sm:w-10.5 rounded-full ring-2 ring-blue-600 ring-offset-2 ring-offset-[#090d16] bg-white text-zinc-950 flex items-center justify-center font-bold text-sm shadow-sm hover:scale-105 transition-transform overflow-hidden select-none outline-none cursor-pointer"
+                  className="relative h-10 w-10 rounded-full ring-2 ring-blue-600 ring-offset-2 ring-offset-[#090d16] bg-white text-zinc-950 flex items-center justify-center font-bold text-sm shadow-sm hover:scale-105 transition-transform overflow-hidden select-none outline-none cursor-pointer"
                 >
                   <Avatar className="h-full w-full">
                     <AvatarImage src={userProfile?.photoURL || undefined} alt={userProfile?.displayName || 'Usuario'} />
@@ -463,38 +549,35 @@ export function Navbar() {
           ) : (
             <Link href="/login">
               <Button size="sm" className="bg-primary hover:bg-primary/90 text-primary-foreground font-bold rounded-xl text-xs px-3.5 h-10 cursor-pointer">
-                <User className="h-4 w-4 sm:mr-1.5" /> 
-                <span className="hidden sm:inline">Iniciar Sesión</span>
+                <User className="h-4 w-4 mr-1.5" /> 
+                <span>Iniciar Sesión</span>
               </Button>
             </Link>
           )}
 
-          {/* Botón Directo al Carrito */}
           <CartDropdown />
         </div>
       </div>
 
-      {/* 2. SUB-BARRA DE NAVEGACIÓN CON MENÚ AMPLIADO EN MODO PC */}
+      {/* 2. SUB-BARRA DE NAVEGACIÓN (DESLIZABLE EN MÓVIL Y COMPLETA EN PC) */}
       {!isCheckoutPhase && (
         <div className="border-t border-white/10 bg-[#060910] text-xs font-semibold text-zinc-300 py-1.5 relative z-40">
-          <div className="max-w-[1520px] mx-auto px-4 sm:px-6 lg:px-8 h-13 flex items-center justify-between gap-3 sm:gap-6">
-            
-            {/* Lado Izquierdo: Catálogo de Productos (MegaMenu), Servicios y Categorías Rápidas en PC */}
-            <div className="flex items-center gap-3 sm:gap-4 flex-1 min-w-0">
+          <div className="max-w-[1520px] mx-auto px-3 sm:px-6 lg:px-8 h-11 sm:h-12 flex items-center justify-between gap-2 sm:gap-4">
+            <div className="flex items-center gap-2 sm:gap-3 flex-1 min-w-0">
               {/* Botón Mega Menú ☰ Productos */}
               <MegaMenu />
 
               {/* Botón Servicios */}
               <Link 
                 href="/services" 
-                className="h-10.5 px-4 sm:px-5 rounded-2xl text-[12px] sm:text-xs font-bold uppercase tracking-wider text-zinc-200 hover:text-white bg-white/10 hover:bg-white/15 border border-white/15 hover:border-cyan-400/50 flex items-center gap-2 transition-all shadow-xs hover:scale-[1.02] active:scale-95 shrink-0 group select-none"
+                className="h-9 sm:h-10 px-3 sm:px-4 rounded-xl sm:rounded-2xl text-[11px] sm:text-xs font-bold uppercase tracking-wider text-zinc-200 hover:text-white bg-white/10 hover:bg-white/15 border border-white/15 hover:border-cyan-400/50 flex items-center gap-1.5 sm:gap-2 transition-all shadow-xs shrink-0 group select-none"
               >
-                <Layers className="w-4 h-4 text-cyan-400 group-hover:rotate-6 transition-transform" />
+                <Layers className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-cyan-400 group-hover:rotate-6 transition-transform" />
                 <span>Servicios</span>
               </Link>
 
-              {/* BARRA HORIZONTAL DE CATEGORÍAS PRINCIPALES (SOLO EN MODO PC / ESCRITORIO) */}
-              <nav className="hidden lg:flex items-center gap-1 xl:gap-2 flex-1 min-w-0 overflow-x-auto no-scrollbar pl-2 border-l border-white/10">
+              {/* BARRA HORIZONTAL DE CATEGORÍAS PRINCIPALES (DESLIZABLE EN MÓVIL Y ESCRITORIO) */}
+              <nav className="flex items-center gap-1 sm:gap-1.5 xl:gap-2 flex-1 min-w-0 overflow-x-auto no-scrollbar pl-2 border-l border-white/10">
                 {MEGA_MENU_DATA.slice(0, 7).map((cat) => {
                   const href = cat.categoryId 
                     ? `/?category=${cat.categoryId}` 
@@ -514,11 +597,9 @@ export function Navbar() {
                 })}
               </nav>
             </div>
-
           </div>
         </div>
       )}
-
     </header>
   );
 }

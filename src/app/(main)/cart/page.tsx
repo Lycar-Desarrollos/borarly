@@ -2,13 +2,15 @@
 "use client";
 
 import { useCart } from '@/contexts/CartContext';
+import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import Image from 'next/image';
 import Link from 'next/link';
-import { Trash2, Minus, Plus, ShoppingCart, MessageCircle, Truck } from 'lucide-react';
+import { Trash2, Minus, Plus, ShoppingCart, MessageCircle, Truck, UserPlus, LogIn, ShieldAlert, UserCheck } from 'lucide-react';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
+import { SecureCheckoutBox } from '@/components/trust/PaymentShippingLogos';
 import { useEffect, useState, useMemo } from 'react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useToast } from "@/hooks/use-toast";
@@ -24,6 +26,7 @@ export default function CartPage() {
     // cartVat is no longer needed as it's included in prices
     loading: cartLoading
   } = useCart();
+  const { currentUser, loading: authLoading } = useAuth();
   const { toast } = useToast();
   
   const [shippingSettings, setShippingSettings] = useState<{ cost: number; freeShippingThreshold: number | null }>({ cost: 0, freeShippingThreshold: null });
@@ -79,73 +82,100 @@ export default function CartPage() {
         <ShoppingCart className="mx-auto h-24 w-24 text-muted-foreground mb-6" />
         <h1 className="text-3xl font-semibold mb-4">Tu Carrito está Vacío</h1>
         <p className="text-muted-foreground mb-8">Parece que aún no has añadido nada a tu carrito.</p>
-        <Link href="/" legacyBehavior passHref>
-          <Button size="lg">Empezar a Comprar</Button>
-        </Link>
+        <Button asChild size="lg">
+          <Link href="/">Empezar a Comprar</Link>
+        </Button>
       </div>
     );
   }
 
   return (
-    <div className="grid lg:grid-cols-3 gap-8">
-      <div className="lg:col-span-2 space-y-6">
-        <Card className="shadow-lg">
-          <CardHeader>
-            <div className="flex justify-between items-center">
-              <CardTitle className="text-2xl">Tu Carrito ({cartItems.reduce((acc, item) => acc + item.quantity, 0)})</CardTitle>
-              <Button variant="outline" onClick={clearCart} className="text-destructive border-destructive hover:bg-destructive/10 text-xs sm:text-sm h-8 sm:h-auto">
-                <Trash2 className="mr-1 h-4 w-4" /> Vaciar Carrito
-              </Button>
+    <div className="space-y-6">
+      {!currentUser && !authLoading && (
+        <div className="rounded-xl border border-primary/30 bg-primary/5 p-4 sm:p-5 shadow-sm">
+          <div className="flex items-start gap-3">
+            <div className="p-2 rounded-lg bg-primary/10 text-primary shrink-0">
+              <UserCheck className="w-5 h-5" />
             </div>
-          </CardHeader>
-          <CardContent className="divide-y">
+            <div className="min-w-0">
+              <div className="flex items-center gap-2 flex-wrap">
+                <h4 className="text-sm sm:text-base font-bold text-foreground">
+                  Cuenta requerida para realizar tu compra
+                </h4>
+                <span className="text-[10px] font-bold uppercase tracking-wider bg-primary text-primary-foreground px-2 py-0.5 rounded-full">
+                  Requisito
+                </span>
+              </div>
+              <p className="text-xs sm:text-sm text-muted-foreground mt-1 leading-relaxed">
+                Para procesar tu pedido, calcular el envío y emitir tu factura, es necesario iniciar sesión o crear una cuenta antes de proceder al pago.
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
+
+      <div className="grid lg:grid-cols-3 gap-6 lg:gap-8">
+        <div className="lg:col-span-2 space-y-6">
+          <Card className="shadow-lg">
+            <CardHeader className="px-4 sm:px-6">
+              <div className="flex flex-wrap justify-between items-center gap-2">
+                <CardTitle className="text-xl sm:text-2xl">Tu Carrito ({cartItems.reduce((acc, item) => acc + item.quantity, 0)})</CardTitle>
+                <Button variant="outline" onClick={clearCart} className="text-destructive border-destructive hover:bg-destructive/10 text-xs sm:text-sm h-8 sm:h-9">
+                  <Trash2 className="mr-1 h-4 w-4" /> Vaciar Carrito
+                </Button>
+              </div>
+            </CardHeader>
+            <CardContent className="divide-y px-4 sm:px-6">
             {cartItems.map((item) => {
-              const imageSrc = item.imageUrls && item.imageUrls.length > 0 
+              const rawImageSrc = item.imageUrls && item.imageUrls.length > 0 
                 ? item.imageUrls[0] 
                 : "https://placehold.co/100x100.png";
-              const aiHint = (!item.imageUrls || item.imageUrls.length === 0 || item.imageUrls[0].includes('placehold.co')) 
-                ? "cart item" 
-                : undefined;
+              const imageSrc = rawImageSrc.includes('syscom.mx')
+                ? `/api/image-proxy?url=${encodeURIComponent(rawImageSrc)}`
+                : rawImageSrc;
               return (
-                <div key={item.id} className="py-6 grid grid-cols-12 gap-4 items-center">
-                  <div className="col-span-3 sm:col-span-2 relative h-20 w-20 sm:h-24 sm:w-24 rounded-md overflow-hidden border bg-white">
-                    <Image
-                      src={imageSrc}
-                      alt={item.name}
-                      layout="fill"
-                      objectFit="contain"
-                      {...(aiHint && { "data-ai-hint": aiHint })}
-                      className="p-1"
-                    />
-                  </div>
-                  <div className="col-span-9 sm:col-span-10 grid grid-cols-1 md:grid-cols-12 gap-4 items-center">
-                    <div className="md:col-span-5">
-                      <Link href={`/products/${item.id}`} className="hover:text-primary">
-                        <h3 className="font-semibold text-base sm:text-lg line-clamp-2">{item.name}</h3>
-                      </Link>
-                      <p className="text-sm text-muted-foreground">{formatCurrency(item.price)}</p>
+                <div key={item.id} className="py-5 flex flex-col sm:flex-row sm:items-center gap-4">
+                  <div className="flex items-start sm:items-center gap-3.5 flex-1 min-w-0">
+                    <div className="relative h-20 w-20 sm:h-24 sm:w-24 rounded-xl overflow-hidden border bg-white shrink-0">
+                      <Image
+                        src={imageSrc}
+                        alt={item.name}
+                        fill
+                        unoptimized
+                        className="object-contain p-1.5"
+                      />
                     </div>
-                    <div className="md:col-span-4 flex items-center border rounded-md justify-between">
-                      <Button variant="ghost" size="icon" className="h-10 w-10 rounded-r-none" onClick={() => updateQuantity(item.id, item.quantity - 1)} disabled={item.quantity <= 1}>
-                        <Minus className="h-4 w-4" />
+                    <div className="min-w-0 flex-1">
+                      <Link href={`/products/${item.id}`} className="hover:text-primary">
+                        <h3 className="font-semibold text-sm sm:text-base line-clamp-2 leading-snug">{item.name}</h3>
+                      </Link>
+                      {item.line && (
+                        <p className="text-[11px] font-mono text-muted-foreground mt-0.5">Modelo: {item.line}</p>
+                      )}
+                      <p className="text-xs sm:text-sm font-semibold text-primary mt-1">{formatCurrency(item.price)} c/u <span className="text-[10px] font-normal text-muted-foreground">(IVA incl.)</span></p>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center justify-between sm:justify-end gap-3 sm:gap-4 pt-2 sm:pt-0 border-t sm:border-t-0 border-border/50">
+                    <div className="flex items-center border rounded-lg overflow-hidden h-9">
+                      <Button variant="ghost" size="icon" className="h-9 w-9 rounded-none" onClick={() => updateQuantity(item.id, item.quantity - 1)} disabled={item.quantity <= 1}>
+                        <Minus className="h-3.5 w-3.5" />
                       </Button>
                       <Input
                         type="number"
                         value={item.quantity}
                         onChange={(e) => updateQuantity(item.id, parseInt(e.target.value) || 1)}
-                        className="w-12 h-10 text-center border-none focus-visible:ring-0 focus-visible:ring-offset-0 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                        className="w-11 h-9 text-center text-sm font-bold border-none focus-visible:ring-0 focus-visible:ring-offset-0 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                         min="1"
                       />
-                      <Button variant="ghost" size="icon" className="h-10 w-10 rounded-l-none" onClick={() => updateQuantity(item.id, item.quantity + 1)}>
-                        <Plus className="h-4 w-4" />
+                      <Button variant="ghost" size="icon" className="h-9 w-9 rounded-none" onClick={() => updateQuantity(item.id, item.quantity + 1)}>
+                        <Plus className="h-3.5 w-3.5" />
                       </Button>
                     </div>
-                    <p className="font-semibold md:col-span-2 md:text-right">{formatCurrency(item.price * item.quantity)}</p>
-                    <div className="md:col-span-1 flex justify-end">
-                      <Button variant="ghost" size="icon" onClick={() => removeFromCart(item.id)} className="text-destructive hover:text-destructive-foreground hover:bg-destructive">
-                        <Trash2 className="h-5 w-5" />
-                      </Button>
-                    </div>
+                    <p className="font-bold text-sm sm:text-base min-w-[95px] text-right">{formatCurrency(item.price * item.quantity)}</p>
+                    <Button variant="ghost" size="icon" onClick={() => removeFromCart(item.id)} className="h-9 w-9 text-destructive hover:text-destructive-foreground hover:bg-destructive shrink-0">
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
                   </div>
                 </div>
               );
@@ -155,51 +185,77 @@ export default function CartPage() {
       </div>
 
       <div className="lg:col-span-1 space-y-6">
-        <Card className="shadow-lg sticky top-24">
+        <Card className="shadow-lg sticky top-28">
           <CardHeader>
-            <CardTitle className="text-2xl">Resumen del Pedido</CardTitle>
+            <CardTitle className="text-xl sm:text-2xl">Resumen del Pedido</CardTitle>
           </CardHeader>
-          <CardContent className="space-y-3">
+          <CardContent className="space-y-3 text-sm">
             <div className="flex justify-between">
-              <p>Subtotal (Sin IVA)</p>
-              <p>{formatCurrency(netSubtotal)}</p>
+              <p className="text-muted-foreground">Subtotal (Sin IVA)</p>
+              <p className="font-medium">{formatCurrency(netSubtotal)}</p>
             </div>
             <div className="flex justify-between">
-              <p>IVA (16%)</p>
-              <p>{formatCurrency(vatAmount)}</p>
+              <p className="text-muted-foreground">IVA Desglosado (16%)</p>
+              <p className="font-medium">{formatCurrency(vatAmount)}</p>
             </div>
-             <div className="flex justify-between">
-              <p>Envío</p>
+            <div className="flex justify-between">
+              <p className="text-muted-foreground">Envío Asegurado</p>
               {shippingCost === 0 && cartSubtotal > 0 ? (
-                <span className="font-semibold text-green-600">Gratis</span>
+                <span className="font-bold text-emerald-600 dark:text-emerald-400">¡Gratis!</span>
               ) : (
-                <p>{formatCurrency(shippingCost)}</p>
+                <p className="font-medium">{formatCurrency(shippingCost)}</p>
               )}
             </div>
-            {/* IVA line removed as it is now included in the subtotal */}
             <Separator />
-            <div className="flex justify-between font-bold text-lg">
-              <p>Total</p>
-              <p>{formatCurrency(finalTotal)}</p>
+            <div className="flex justify-between font-black text-lg sm:text-xl">
+              <p>Total (MXN)</p>
+              <p className="text-primary">{formatCurrency(finalTotal)}</p>
             </div>
-             {shippingSettings.freeShippingThreshold !== null && shippingSettings.freeShippingThreshold > 0 && cartSubtotal < shippingSettings.freeShippingThreshold && (
-                <div className="text-center text-xs text-muted-foreground pt-2 border-t mt-3">
-                    <Truck className="inline-block mr-1 h-4 w-4"/>
-                    Añade {formatCurrency(shippingSettings.freeShippingThreshold - cartSubtotal)} más para <span className="font-semibold text-foreground">envío gratis</span>.
+            {shippingSettings.freeShippingThreshold !== null && shippingSettings.freeShippingThreshold > 0 && cartSubtotal < shippingSettings.freeShippingThreshold && (
+              <div className="rounded-xl bg-emerald-500/10 border border-emerald-500/20 p-3 text-xs text-emerald-700 dark:text-emerald-300 mt-3 space-y-1.5">
+                <div className="flex items-center gap-1.5 font-semibold">
+                  <Truck className="h-4 w-4 shrink-0" />
+                  <span>¡Te faltan {formatCurrency(shippingSettings.freeShippingThreshold - cartSubtotal)} para Envío Gratis!</span>
                 </div>
+                <div className="w-full h-1.5 bg-emerald-500/20 rounded-full overflow-hidden">
+                  <div
+                    className="h-full bg-emerald-500 rounded-full transition-all"
+                    style={{ width: `${Math.min(100, (cartSubtotal / shippingSettings.freeShippingThreshold) * 100)}%` }}
+                  />
+                </div>
+              </div>
             )}
           </CardContent>
           <CardFooter className="flex-col gap-3">
-            <Link href="/checkout" className="w-full" legacyBehavior passHref>
-              <Button size="lg" className="w-full bg-primary hover:bg-primary/90 text-white">Proceder al Pago</Button>
-            </Link>
-            <Link href="/" className="w-full" legacyBehavior passHref>
-              <Button variant="outline" className="w-full">Continuar Comprando</Button>
-            </Link>
+            {currentUser ? (
+              <Button asChild size="lg" className="w-full bg-primary hover:bg-primary/90 text-white font-bold h-12 rounded-xl text-base shadow-md">
+                <Link href="/checkout">Proceder al Pago Seguro</Link>
+              </Button>
+            ) : (
+              <div className="w-full space-y-2.5">
+                <Button asChild size="lg" className="w-full bg-primary hover:bg-primary/90 text-primary-foreground font-semibold h-12 text-sm">
+                  <Link href="/signup?redirect=/checkout">
+                    <UserPlus className="w-4 h-4 mr-2" />
+                    Crear Cuenta para Comprar
+                  </Link>
+                </Button>
+                <p className="text-center text-sm text-muted-foreground">
+                  ¿Ya tienes cuenta?{' '}
+                  <Link href="/login?redirect=/checkout" className="font-semibold text-primary hover:underline">
+                    Inicia sesión
+                  </Link>
+                </p>
+              </div>
+            )}
+            <SecureCheckoutBox className="w-full" />
+            <Button asChild variant="ghost" className="w-full text-xs text-muted-foreground hover:text-foreground">
+              <Link href="/">Continuar Comprando</Link>
+            </Button>
           </CardFooter>
         </Card>
       </div>
     </div>
+  </div>
   );
 }
 

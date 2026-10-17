@@ -1,6 +1,3 @@
-
-
-'use server';
 /**
  * @fileOverview Service functions for managing quotes in Firestore.
  */
@@ -35,6 +32,7 @@ function docToQuote(docSnapshot: any): Quote {
     quoteNumber: data.quoteNumber || `QUOTE-${docSnapshot.id.substring(0,5)}`,
     customerName: data.customerName || '',
     customerEmail: data.customerEmail || '',
+    companyPhone: data.companyPhone || undefined,
     items: data.items || [],
     subtotal: data.subtotal || 0,
     discountType: data.discountType,
@@ -44,9 +42,9 @@ function docToQuote(docSnapshot: any): Quote {
     totalAmount: data.totalAmount || 0,
     status: data.status || 'draft',
     notes: data.notes || '',
-    createdAt: data.createdAt instanceof Timestamp ? data.createdAt.toDate().toISOString() : new Date(0).toISOString(),
-    expiresAt: data.expiresAt instanceof Timestamp ? data.expiresAt.toDate().toISOString() : new Date(0).toISOString(),
-    updatedAt: data.updatedAt instanceof Timestamp ? data.updatedAt.toDate().toISOString() : new Date(0).toISOString(),
+    createdAt: data.createdAt instanceof Timestamp ? data.createdAt.toDate().toISOString() : (data.createdAt || new Date(0).toISOString()),
+    expiresAt: data.expiresAt instanceof Timestamp ? data.expiresAt.toDate().toISOString() : (data.expiresAt || new Date(0).toISOString()),
+    updatedAt: data.updatedAt instanceof Timestamp ? data.updatedAt.toDate().toISOString() : (data.updatedAt || new Date(0).toISOString()),
     showBankDetails: typeof data.showBankDetails === 'boolean' ? data.showBankDetails : true, // Default to true
   };
 }
@@ -126,8 +124,16 @@ export async function getQuotes(): Promise<Quote[]> {
     const querySnapshot = await getDocs(q);
     return querySnapshot.docs.map(docToQuote);
   } catch (error) {
-    console.error("Error fetching quotes:", error);
-    return [];
+    try {
+      const quotesRef = collection(db, QUOTES_COLLECTION);
+      const querySnapshot = await getDocs(quotesRef);
+      const list = querySnapshot.docs.map(docToQuote);
+      list.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+      return list;
+    } catch (fallbackError) {
+      console.error("Error fetching quotes:", fallbackError);
+      return [];
+    }
   }
 }
 

@@ -42,18 +42,15 @@ function docToUpcomingEvent(docSnapshot: any): UpcomingEvent {
 export async function getUpcomingEvents(activeOnly = true): Promise<UpcomingEvent[]> {
   try {
     const eventsRef = collection(db, EVENTS_COLLECTION);
-    const queryConstraints = [orderBy('order', 'asc')];
+    const querySnapshot = await getDocs(eventsRef);
+    let events = querySnapshot.docs.map(docToUpcomingEvent);
     if (activeOnly) {
-      queryConstraints.unshift(where('isActive', '==', true));
+      events = events.filter(event => event.isActive);
     }
-    const q = query(eventsRef, ...queryConstraints);
-    const querySnapshot = await getDocs(q);
-    return querySnapshot.docs.map(docToUpcomingEvent);
+    events.sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
+    return events;
   } catch (error) {
     console.error("Error fetching upcoming events:", error);
-    if (error instanceof Error && error.message.includes('firestore/failed-precondition') && error.message.includes('index')) {
-        console.error("Firestore Precondition Failed for Upcoming Events: This query may require a custom index. For active events, check for: upcomingEvents collection, 'isActive' (ASC), 'order' (ASC).");
-    }
     return [];
   }
 }

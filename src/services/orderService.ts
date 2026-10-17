@@ -76,12 +76,13 @@ export async function fetchUserOrders(userId: string): Promise<Order[]> {
     const ordersRef = collection(db, ORDERS_COLLECTION);
     const q = query(
       ordersRef,
-      where('userId', '==', userId),
-      orderBy('createdAt', 'desc')
+      where('userId', '==', userId)
     );
 
     const querySnapshot = await getDocs(q);
-    return querySnapshot.docs.map(docToOrder);
+    const orders = querySnapshot.docs.map(docToOrder);
+    orders.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+    return orders;
 
   } catch (error) {
     console.error(`[OrderService] Error fetching user orders for userId: ${userId}`, error);
@@ -100,8 +101,16 @@ export async function fetchAllOrders(): Promise<Order[]> {
     const querySnapshot = await getDocs(q);
     return querySnapshot.docs.map(docToOrder);
   } catch (error) {
-    console.error(`[OrderService] Error fetching all orders:`, error);
-    return [];
+    try {
+      const ordersRef = collection(db, ORDERS_COLLECTION);
+      const querySnapshot = await getDocs(ordersRef);
+      const orders = querySnapshot.docs.map(docToOrder);
+      orders.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+      return orders;
+    } catch (fallbackErr) {
+      console.error(`[OrderService] Error fetching all orders:`, fallbackErr);
+      return [];
+    }
   }
 }
 
@@ -116,8 +125,6 @@ export async function createOrderFromQuote(quote: Quote): Promise<Order> {
     throw new Error('No se proporcionó una cotización para crear el pedido.');
   }
 
-  // The quote's customer email can serve as a placeholder for a user ID if users are not required for quotes.
-  // For a real system, you might want to create a guest user or look up a user by email.
   const userId = quote.customerEmail; 
 
   const orderItems: OrderItem[] = quote.items.map(item => ({
@@ -125,10 +132,11 @@ export async function createOrderFromQuote(quote: Quote): Promise<Order> {
     name: item.name,
     quantity: item.quantity,
     price: item.price,
-    imageUrl: '', // You might want to fetch the primary image URL here
+    imageUrl: '',
   }));
 
   const paymentReference = Date.now().toString().slice(-8);
+  const nowIso = new Date().toISOString();
 
   const newOrderData: Omit<Order, 'id'> = {
     userId: userId,
@@ -137,20 +145,20 @@ export async function createOrderFromQuote(quote: Quote): Promise<Order> {
     shippingCost: quote.shippingCost || 0,
     vatAmount: quote.vatAmount,
     totalAmount: quote.totalAmount,
-    status: 'pending', // Orders created from quotes start as pending payment
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString(),
+    status: 'pending',
+    createdAt: nowIso,
+    updatedAt: nowIso,
     shippingAddress: {
-      street: 'Pendiente', 
-      city: 'Pendiente',
-      zip: 'Pendiente',
-      country: 'Pendiente',
+      street: 'Cotización Directa (' + (quote.customerName || 'Cliente') + ')', 
+      city: 'Por definir',
+      zip: '00000',
+      country: 'México',
       phone: 'Pendiente',
       contactEmail: quote.customerEmail,
     },
     paymentDetails: {
       method: 'Transferencia Bancaria',
-      instructions: "Pago manual pendiente. Ver detalles en el perfil del usuario o cotización.",
+      instructions: `Pedido generado desde Cotización ${quote.quoteNumber}.`,
     },
     paymentReference: paymentReference,
   };
@@ -159,8 +167,8 @@ export async function createOrderFromQuote(quote: Quote): Promise<Order> {
     const ordersCollectionRef = collection(db, 'orders');
     const firestoreOrderData = {
       ...newOrderData,
-      createdAt: Timestamp.fromDate(new Date(newOrderData.createdAt)),
-      updatedAt: Timestamp.fromDate(new Date(newOrderData.updatedAt)),
+      createdAt: Timestamp.fromDate(new Date(nowIso)),
+      updatedAt: Timestamp.fromDate(new Date(nowIso)),
     };
     const docRef = await addDoc(ordersCollectionRef, firestoreOrderData);
 

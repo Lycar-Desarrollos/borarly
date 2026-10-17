@@ -98,6 +98,12 @@ export interface UserProfile {
   savedBilling?: BillingData[];   // Libreta de datos de facturación
   role?: 'customer' | 'admin';
   wishlist?: string[]; // Array of product SKUs (product.id)
+  firstName?: string;
+  lastName?: string;
+  phone?: string;
+  companyName?: string;
+  marketingOptIn?: boolean;
+  createdAt?: string;
 }
 
 export interface OrderItem {
@@ -207,6 +213,7 @@ export interface Quote {
   quoteNumber: string; // Human-readable, sequential number
   customerName: string;
   customerEmail: string;
+  companyPhone?: string; // Custom seller/company phone number for this quote
   items: QuoteItem[];
   subtotal: number;
   discountType?: DiscountType; // 'percentage' or 'fixed'

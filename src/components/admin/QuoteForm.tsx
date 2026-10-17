@@ -69,12 +69,12 @@ export function QuoteForm({ quote: initialQuote }: { quote?: Quote }) {
   const { toast } = useToast();
 
   // ── Logo ──────────────────────────────────────
-  const [logoUrl, setLogoUrl] = useState<string | null>(null);
+  const [logoUrl, setLogoUrl] = useState<string | null>('/logo.png');
   const [bankDetails, setBankDetails] = useState<BankDetails>({
-    companyName: 'Borarly',
-    email: 'contacto@borarly.com',
-    phone: '+52 999 310 1452',
-    beneficiary: 'Borarly',
+    companyName: 'BORARLY',
+    email: 'ventas@borarly.com',
+    phone: '+52 1 999 904 0931',
+    beneficiary: 'BORARLY',
     clabe: '012 180 01576278534 6',
     bank: 'BBVA',
   });
@@ -82,6 +82,7 @@ export function QuoteForm({ quote: initialQuote }: { quote?: Quote }) {
   // ── Client Info ──────────────────────────────
   const [customerName, setCustomerName] = useState('');
   const [customerEmail, setCustomerEmail] = useState('');
+  const [companyPhone, setCompanyPhone] = useState('+52 1 999 904 0931');
   const [status, setStatus] = useState<QuoteStatus>('draft');
   const [notes, setNotes] = useState('');
   const [expiresAt, setExpiresAt] = useState<Date | undefined>(
@@ -116,14 +117,22 @@ export function QuoteForm({ quote: initialQuote }: { quote?: Quote }) {
   useEffect(() => {
     getVatRate().then(setVatRate);
     getQuoteLogoUrl().then(setLogoUrl);
-    getBankDetails().then(setBankDetails);
-  }, []);
+    getBankDetails().then((details) => {
+      setBankDetails(details);
+      if (!initialQuote?.companyPhone) {
+        setCompanyPhone(details.phone);
+      }
+    });
+  }, [initialQuote?.companyPhone]);
 
   // ── Populate form when editing ─────────────────
   useEffect(() => {
     if (initialQuote) {
       setCustomerName(initialQuote.customerName);
       setCustomerEmail(initialQuote.customerEmail);
+      if (initialQuote.companyPhone) {
+        setCompanyPhone(initialQuote.companyPhone);
+      }
       setStatus(initialQuote.status);
       setNotes(initialQuote.notes || '');
       setExpiresAt(new Date(initialQuote.expiresAt));
@@ -208,10 +217,10 @@ export function QuoteForm({ quote: initialQuote }: { quote?: Quote }) {
   };
 
   // ── Update item field ─────────────────────────
-  const updateItem = (productId: string, field: 'quantity' | 'price' | 'name', value: string | number) => {
+  const updateItem = (productId: string, field: 'quantity' | 'price' | 'name' | 'sku', value: string | number) => {
     setItems(prev => prev.map(item => {
       if (item.productId !== productId) return item;
-      if (field === 'name' && typeof value === 'string') return { ...item, name: value };
+      if ((field === 'name' || field === 'sku') && typeof value === 'string') return { ...item, [field]: value };
       if ((field === 'quantity' || field === 'price') && typeof value === 'number') return { ...item, [field]: value };
       return item;
     }));
@@ -244,7 +253,11 @@ export function QuoteForm({ quote: initialQuote }: { quote?: Quote }) {
     }
     setIsSubmitting(true);
     const quoteData = {
-      customerName, customerEmail, items, subtotal,
+      customerName,
+      customerEmail,
+      companyPhone: companyPhone.trim() || bankDetails.phone,
+      items,
+      subtotal,
       discountType, discountValue, shippingCost, vatAmount, totalAmount,
       status, notes, expiresAt: expiresAt.toISOString(), showBankDetails,
     };
@@ -290,9 +303,8 @@ export function QuoteForm({ quote: initialQuote }: { quote?: Quote }) {
     if (pdfLogoUrl) logoBase64 = await getImageBase64(pdfLogoUrl);
 
     if (logoBase64) {
-      try { doc.addImage(logoBase64, 'PNG', 14, 10, 45, 22); } catch { /* skip */ }
+      try { doc.addImage(logoBase64, 'PNG', 14, 12, 48, 12); } catch { /* skip */ }
     } else {
-      // Fallback: mostrar nombre empresa proporcional al tamaño del header
       doc.setFontSize(16); doc.setFont('helvetica', 'bold');
       doc.text(bankDetails.companyName, 14, 20);
     }
@@ -309,7 +321,7 @@ export function QuoteForm({ quote: initialQuote }: { quote?: Quote }) {
     doc.text('De parte de:', 14, 52); doc.setFont('helvetica', 'normal');
     doc.text(bankDetails.companyName, 14, 58);
     doc.text(bankDetails.email, 14, 64);
-    doc.text(bankDetails.phone, 14, 70);
+    doc.text(companyPhone.trim() || bankDetails.phone, 14, 70);
     doc.setFont('helvetica', 'bold');
     doc.text('Dirigido a:', 130, 52); doc.setFont('helvetica', 'normal');
     doc.text(customerName, 130, 58);
@@ -326,7 +338,7 @@ export function QuoteForm({ quote: initialQuote }: { quote?: Quote }) {
         formatCurrency(item.price * item.quantity),
       ]),
       theme: 'striped',
-      headStyles: { fillColor: [103, 58, 183] }, // Regreso al Morado Original
+      headStyles: { fillColor: [2, 86, 185] },
       styles: { halign: 'center' },
       columnStyles: { 1: { halign: 'left', cellWidth: 80 }, 3: { halign: 'right' }, 4: { halign: 'right' } },
     });
@@ -388,8 +400,8 @@ export function QuoteForm({ quote: initialQuote }: { quote?: Quote }) {
       <div className="relative overflow-hidden rounded-xl border border-border bg-card shadow-md dark:bg-gradient-to-r dark:from-slate-900 dark:via-blue-950 dark:to-slate-900 dark:border-blue-900/40 dark:shadow-xl">
         {/* Grid pattern - only visible in dark mode */}
         <div className="absolute inset-0 opacity-0 dark:opacity-10" style={{ backgroundImage: 'radial-gradient(circle at 1px 1px, rgba(255,255,255,0.3) 1px, transparent 0)', backgroundSize: '24px 24px' }} />
-        <div className="relative flex items-center justify-between px-8 py-5">
-          <div className="flex items-center gap-5">
+        <div className="relative flex flex-wrap items-center justify-between gap-4 px-5 sm:px-8 py-5">
+          <div className="flex items-center gap-4 sm:gap-5">
             {logoUrl ? (
               <div className="bg-white rounded-xl px-4 py-2.5 shadow border border-border dark:border-white/10 dark:shadow-lg">
                 <img
@@ -399,18 +411,18 @@ export function QuoteForm({ quote: initialQuote }: { quote?: Quote }) {
                 />
               </div>
             ) : (
-              <div className="h-14 w-14 rounded-xl bg-primary/10 border border-primary/20 flex items-center justify-center">
+              <div className="h-12 w-12 sm:h-14 sm:w-14 rounded-xl bg-primary/10 border border-primary/20 flex items-center justify-center">
                 <FileDown className="h-6 w-6 text-primary" />
               </div>
             )}
             <div>
               <p className="text-muted-foreground dark:text-white/50 text-xs uppercase tracking-widest font-semibold">Documento Oficial</p>
-              <p className="text-foreground dark:text-white text-xl font-bold tracking-tight">
+              <p className="text-foreground dark:text-white text-lg sm:text-xl font-bold tracking-tight">
                 {isEditing ? `Cotización #${initialQuote?.quoteNumber}` : 'Nueva Cotización'}
               </p>
             </div>
           </div>
-          <div className="text-right text-muted-foreground dark:text-white/60 text-xs space-y-1">
+          <div className="text-left sm:text-right text-muted-foreground dark:text-white/60 text-xs space-y-1">
             <p>Fecha: {format(new Date(), 'dd/MM/yyyy', { locale: es })}</p>
             {expiresAt && <p>Vence: {format(expiresAt, 'dd/MM/yyyy', { locale: es })}</p>}
           </div>
@@ -426,7 +438,7 @@ export function QuoteForm({ quote: initialQuote }: { quote?: Quote }) {
             <CardTitle>{isEditing ? `Cotización #${initialQuote?.quoteNumber}` : 'Datos del Cliente'}</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
                 <Label htmlFor="customerName">Nombre del Cliente</Label>
                 <Input id="customerName" value={customerName} onChange={e => setCustomerName(e.target.value)} required placeholder="Ej: Empresa ABC S.A." />
@@ -436,7 +448,17 @@ export function QuoteForm({ quote: initialQuote }: { quote?: Quote }) {
                 <Input id="customerEmail" type="email" value={customerEmail} onChange={e => setCustomerEmail(e.target.value)} required placeholder="correo@empresa.com" />
               </div>
             </div>
-            <div className="grid grid-cols-2 gap-4">
+            <div>
+              <Label htmlFor="companyPhone">Celular de Contacto (De parte de en PDF)</Label>
+              <Input
+                id="companyPhone"
+                type="tel"
+                value={companyPhone}
+                onChange={e => setCompanyPhone(e.target.value)}
+                placeholder="+52 1 999 904 0931"
+              />
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
                 <Label htmlFor="status">Estado</Label>
                 <Select value={status} onValueChange={(val: QuoteStatus) => setStatus(val)}>
@@ -481,10 +503,10 @@ export function QuoteForm({ quote: initialQuote }: { quote?: Quote }) {
           </CardHeader>
           <CardContent className="space-y-3">
             <p className="text-sm text-muted-foreground">
-              Busca en el catálogo de Syscom en tiempo real. Los precios son los mismos del catálogo público.
+              Busca en el catálogo en tiempo real o añade conceptos personalizados.
             </p>
             <div ref={searchRef} className="relative">
-              <Label htmlFor="product-search">Buscar por nombre o SKU</Label>
+              <Label htmlFor="product-search">Buscar por nombre, marca o modelo</Label>
               <div className="relative mt-1">
                 {isSearching
                   ? <Loader2 className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 animate-spin text-muted-foreground" />
@@ -508,7 +530,7 @@ export function QuoteForm({ quote: initialQuote }: { quote?: Quote }) {
                     {isSearching ? (
                       <div className="flex items-center justify-center py-6 gap-2 text-muted-foreground">
                         <Loader2 className="h-4 w-4 animate-spin" />
-                        <span className="text-sm">Buscando en Syscom...</span>
+                        <span className="text-sm">Buscando en catálogo...</span>
                       </div>
                     ) : searchResults.length === 0 ? (
                       <div className="flex flex-col items-center justify-center py-6 gap-1 text-muted-foreground">
@@ -543,7 +565,7 @@ export function QuoteForm({ quote: initialQuote }: { quote?: Quote }) {
 
             <Button type="button" variant="outline" onClick={addCustomItem} className="w-full mt-2">
               <PlusCircle className="mr-2 h-4 w-4" />
-              Añadir Artículo Manual
+              Añadir Concepto / Artículo Manual
             </Button>
           </CardContent>
         </Card>
@@ -554,15 +576,16 @@ export function QuoteForm({ quote: initialQuote }: { quote?: Quote }) {
         <CardHeader>
           <CardTitle>Artículos Cotizados <span className="text-sm font-normal text-muted-foreground ml-2">({items.length} artículo{items.length !== 1 ? 's' : ''})</span></CardTitle>
         </CardHeader>
-        <CardContent>
+        <CardContent className="overflow-x-auto">
           <Table>
             <TableHeader>
-              <TableRow className="bg-[#673ab7] hover:bg-[#5e35a6] border-none">
-                <TableHead className="text-white font-bold">Producto / Modelo</TableHead>
+              <TableRow className="bg-[#0256b9] hover:bg-[#02499e] border-none">
+                <TableHead className="text-white font-bold min-w-[240px]">Producto / Concepto</TableHead>
+                <TableHead className="w-[140px] text-white font-bold">Modelo / SKU</TableHead>
                 <TableHead className="w-[80px] text-white font-bold">Stock</TableHead>
                 <TableHead className="w-[100px] text-white font-bold">Cant.</TableHead>
-                <TableHead className="w-[160px] text-white font-bold text-right">Precio s/IVA</TableHead>
-                <TableHead className="w-[160px] text-white font-bold text-right">Total Línea</TableHead>
+                <TableHead className="w-[150px] text-white font-bold text-right">Precio s/IVA</TableHead>
+                <TableHead className="w-[150px] text-white font-bold text-right">Total Línea</TableHead>
                 <TableHead className="w-[48px]"></TableHead>
               </TableRow>
             </TableHeader>
@@ -573,12 +596,17 @@ export function QuoteForm({ quote: initialQuote }: { quote?: Quote }) {
                     <Input
                       value={item.name}
                       onChange={e => updateItem(item.productId, 'name', e.target.value)}
-                      className="font-medium mb-1 h-8"
-                      placeholder="Nombre del artículo"
+                      className="font-medium h-8"
+                      placeholder="Nombre o descripción del artículo"
                     />
-                    <p className="text-xs text-muted-foreground pl-1 font-medium bg-muted w-fit px-1.5 rounded mt-1">
-                      Modelo: {item.sku || (item.productId.startsWith('CUSTOM-') ? 'Personalizado' : 'N/D')}
-                    </p>
+                  </TableCell>
+                  <TableCell>
+                    <Input
+                      value={item.sku || ''}
+                      onChange={e => updateItem(item.productId, 'sku', e.target.value)}
+                      className="h-8 text-xs font-mono"
+                      placeholder="Modelo / SKU"
+                    />
                   </TableCell>
                   <TableCell className="text-sm text-muted-foreground">
                     {item.productId.startsWith('CUSTOM-') ? '—' : (item.stockAtTimeOfQuote ?? 'N/A')}
@@ -610,10 +638,10 @@ export function QuoteForm({ quote: initialQuote }: { quote?: Quote }) {
                 </TableRow>
               )) : (
                 <TableRow>
-                  <TableCell colSpan={6} className="text-center h-24 text-muted-foreground">
+                  <TableCell colSpan={7} className="text-center h-24 text-muted-foreground">
                     <div className="flex flex-col items-center gap-2">
                       <Package className="h-8 w-8 opacity-30" />
-                      Busca productos arriba para añadirlos a la cotización
+                      Busca productos arriba o añade un concepto manual para empezar
                     </div>
                   </TableCell>
                 </TableRow>

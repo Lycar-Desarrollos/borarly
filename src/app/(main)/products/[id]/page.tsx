@@ -9,6 +9,7 @@ import { Separator } from '@/components/ui/separator';
 import type { Metadata, ResolvingMetadata } from 'next';
 import { Product as ProductSchema } from 'schema-dts';
 import { JsonLd } from 'react-schemaorg';
+import { parse as parseHtml } from 'node-html-parser';
 
 /** Elimina etiquetas HTML y devuelve solo texto plano */
 function stripHtml(html: string): string {
@@ -17,6 +18,26 @@ function stripHtml(html: string): string {
     .replace(/&[a-zA-Z]+;/g, ' ') // Reemplaza entidades HTML
     .replace(/\s+/g, ' ')        // Colapsa espacios múltiples
     .trim();
+}
+
+/**
+ * Las descripciones de Syscom a veces traen HTML mal cerrado (</div> sobrantes,
+ * etiquetas sin cerrar). Al renderizarse en el servidor, el navegador "rompe" el
+ * contenedor y React lanza un error de hidratación. Aquí se reconstruye el árbol
+ * para que el HTML quede balanceado, y se quitan scripts/estilos/etiquetas de documento.
+ */
+function sanitizeDescriptionHtml(html: string): string {
+  if (!html || !html.includes('<')) return html;
+  try {
+    const root = parseHtml(html, { comment: false });
+    root.querySelectorAll('script, style, iframe, object, embed, link, meta, title, head').forEach((n) => n.remove());
+    let out = root.toString();
+    out = out.replace(/<\/?(html|body)[^>]*>/gi, '');
+    out = out.replace(/\son\w+\s*=\s*("[^"]*"|'[^']*'|[^\s>]+)/gi, '');
+    return out;
+  } catch {
+    return stripHtml(html);
+  }
 }
 
 
@@ -30,20 +51,6 @@ interface ProductDetailPageProps {
  * Los datos se refrescan en segundo plano una vez al día.
  */
 export const revalidate = 3600; // Refrescar stock/precios cada 1 hora para SEO dinámico
-
-// Pre-generar los productos más populares/recientes para carga instantánea
-export async function generateStaticParams() {
-  try {
-    // Obtenemos los primeros 144 productos para pre-construirlos (3 páginas de 48)
-    const products = await getProducts(undefined, undefined, 144);
-    return products.map((product) => ({
-      id: product.id,
-    }));
-  } catch (error) {
-    console.error("Error pre-generando parámetros estáticos:", error);
-    return [];
-  }
-}
 
 // SEO: Generate dynamic metadata for each product page
 export async function generateMetadata(
@@ -122,7 +129,7 @@ export default async function ProductDetailPage(props: ProductDetailPageProps) {
     '@context': 'https://schema.org',
     '@type': 'Product',
     name: product.name,
-    description: product.description,
+    description: stripHtml(product.description || ''),
     image: product.imageUrls,
     sku: product.id,
     mpn: product.id,
@@ -190,7 +197,7 @@ export default async function ProductDetailPage(props: ProductDetailPageProps) {
         dangerouslySetInnerHTML={{ __html: JSON.stringify(productSchema) }}
       />
       <ProductDetailView 
-          product={product} 
+          product={{ ...product, description: sanitizeDescriptionHtml(product.description) }} 
           relatedProducts={relatedProducts} 
           allCategories={allCategories} 
       />

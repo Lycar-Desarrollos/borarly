@@ -1,129 +1,212 @@
-
 "use client";
 
-import { useState, FormEvent } from 'react';
+import { useState, useEffect, FormEvent, Suspense } from 'react';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
-import { signInWithEmailAndPassword, GoogleAuthProvider, signInWithPopup } from 'firebase/auth';
+import Image from 'next/image';
+import { useRouter, useSearchParams } from 'next/navigation';
+import { signInWithEmailAndPassword, GoogleAuthProvider, signInWithPopup, sendPasswordResetEmail } from 'firebase/auth';
 import { auth } from '@/lib/firebase';
-import { Button } from '@/components/ui/button';
+import { useAuth } from '@/contexts/AuthContext';
+import { useToast } from '@/hooks/use-toast';
+import { authErrorMessage, safeRedirect } from '@/lib/authErrors';
+import { AuthBrandPanel } from '@/components/auth/AuthBrandPanel';
+import { GoogleButton, OrDivider } from '@/components/auth/GoogleButton';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
-import { useToast } from '@/hooks/use-toast';
-import { Loader2, Mail, KeyRound, ChromeIcon, Eye, EyeOff } from 'lucide-react'; // Added Eye and EyeOff
+import { Button } from '@/components/ui/button';
+import { Loader2, Mail, KeyRound, Eye, EyeOff, ShoppingBag, AlertCircle, ArrowLeft, CheckCircle2 } from 'lucide-react';
 
-export default function LoginPage() {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [showPassword, setShowPassword] = useState(false); // State for password visibility
+function LoginForm() {
+  const searchParams = useSearchParams();
+  const redirectUrl = safeRedirect(searchParams.get('redirect'));
+  const fromCheckout = redirectUrl.includes('checkout') || redirectUrl.includes('cart');
   const router = useRouter();
   const { toast } = useToast();
+  const { currentUser, loading: authLoading } = useAuth();
+
+  const [mode, setMode] = useState<'login' | 'reset'>('login');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
+  const [loading, setLoading] = useState<'email' | 'google' | null>(null);
+  const [error, setError] = useState<string | null>(null);
+  const [resetSent, setResetSent] = useState(false);
+
+  // Si ya tiene sesión, no tiene sentido mostrar el login
+  useEffect(() => {
+    if (!authLoading && currentUser) router.replace(redirectUrl);
+  }, [authLoading, currentUser, redirectUrl, router]);
+
+  const signupHref = `/signup${redirectUrl !== '/' ? `?redirect=${encodeURIComponent(redirectUrl)}` : ''}`;
 
   const handleLogin = async (e: FormEvent) => {
     e.preventDefault();
-    setLoading(true);
+    setLoading('email');
     setError(null);
     try {
-      await signInWithEmailAndPassword(auth, email, password);
-      toast({ title: "Inicio de Sesión Exitoso", description: "¡Bienvenido de vuelta!" });
-      router.push('/'); // Redirect to homepage or dashboard
-    } catch (err: any) {
-      setError(err.message || "No se pudo iniciar sesión. Por favor, revisa tus credenciales.");
-      toast({ variant: "destructive", title: "Fallo en el Inicio de Sesión", description: err.message || "Por favor, revisa tus credenciales." });
+      await signInWithEmailAndPassword(auth, email.trim(), password);
+      toast({ title: '¡Bienvenido de vuelta!' });
+      router.push(redirectUrl);
+    } catch (err) {
+      setError(authErrorMessage(err));
     } finally {
-      setLoading(false);
+      setLoading(null);
     }
   };
 
-  const handleGoogleSignIn = async () => {
-    setLoading(true);
+  const handleGoogle = async () => {
+    setLoading('google');
     setError(null);
-    const provider = new GoogleAuthProvider();
     try {
-      await signInWithPopup(auth, provider);
-      toast({ title: "Inicio de Sesión Exitoso", description: "¡Bienvenido!" });
-      router.push('/');
-    } catch (err: any) {
-      setError(err.message || "Fallo al iniciar sesión con Google.");
-      toast({ variant: "destructive", title: "Fallo con Google", description: err.message || "No se pudo iniciar sesión con Google." });
+      await signInWithPopup(auth, new GoogleAuthProvider());
+      toast({ title: '¡Bienvenido!' });
+      router.push(redirectUrl);
+    } catch (err) {
+      setError(authErrorMessage(err));
     } finally {
-      setLoading(false);
+      setLoading(null);
+    }
+  };
+
+  const handleReset = async (e: FormEvent) => {
+    e.preventDefault();
+    setLoading('email');
+    setError(null);
+    try {
+      await sendPasswordResetEmail(auth, email.trim());
+      setResetSent(true);
+    } catch (err: any) {
+      // Por seguridad no revelamos si el correo existe o no
+      if (err?.code === 'auth/user-not-found') setResetSent(true);
+      else setError(authErrorMessage(err));
+    } finally {
+      setLoading(null);
     }
   };
 
   return (
-    <Card className="w-full max-w-md shadow-xl">
-      <CardHeader className="text-center">
-        <CardTitle className="text-2xl font-bold">¡Bienvenido de vuelta!</CardTitle>
-        <CardDescription>Inicia sesión para continuar en BORARLY.</CardDescription>
-      </CardHeader>
-      <CardContent>
-        <form onSubmit={handleLogin} className="space-y-6">
-          <div className="space-y-2">
-            <Label htmlFor="email">Correo Electrónico</Label>
-            <div className="relative">
-              <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
-              <Input
-                id="email"
-                type="email"
-                placeholder="tu@ejemplo.com"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                required
-                className="pl-10"
-              />
+    <div className="mx-auto w-full max-w-md md:max-w-none grid md:grid-cols-2 overflow-hidden rounded-2xl bg-card shadow-xl ring-1 ring-black/5">
+      <AuthBrandPanel variant="login" />
+
+      <div className="p-6 sm:p-10 flex flex-col justify-center">
+        {/* Logo en móvil (el panel lateral se oculta) */}
+        <Image src="/logo.png" alt="BORARLY" width={150} height={38} className="md:hidden h-8 w-auto mb-6" />
+
+        {mode === 'login' ? (
+          <>
+            <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-foreground">Iniciar sesión</h1>
+            <p className="mt-1.5 text-sm text-muted-foreground">
+              {fromCheckout ? 'Inicia sesión para terminar tu compra.' : 'Ingresa a tu cuenta de Borarly.'}
+            </p>
+
+            {fromCheckout && (
+              <div className="mt-5 flex items-start gap-3 rounded-lg border border-primary/30 bg-primary/5 p-3 text-sm text-foreground">
+                <ShoppingBag className="h-4 w-4 mt-0.5 shrink-0 text-primary" />
+                Tu carrito está guardado. Al entrar continúas directo al pago.
+              </div>
+            )}
+
+            <div className="mt-6">
+              <GoogleButton onClick={handleGoogle} disabled={!!loading} loading={loading === 'google'} />
             </div>
-          </div>
-          <div className="space-y-2">
-            <Label htmlFor="password">Contraseña</Label>
-            <div className="relative">
-              <KeyRound className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
-              <Input
-                id="password"
-                type={showPassword ? "text" : "password"}
-                placeholder="••••••••"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                required
-                className="pl-10 pr-10"
-              />
-              <button
-                type="button"
-                onClick={() => setShowPassword(!showPassword)}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
-                aria-label={showPassword ? "Ocultar contraseña" : "Mostrar contraseña"}
-              >
-                {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
-              </button>
+
+            <OrDivider text="o con tu correo" />
+
+            <form onSubmit={handleLogin} className="space-y-4" noValidate>
+              <div className="space-y-1.5">
+                <Label htmlFor="email">Correo electrónico</Label>
+                <div className="relative">
+                  <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                  <Input id="email" type="email" autoComplete="email" inputMode="email" placeholder="tu@empresa.com"
+                    value={email} onChange={(e) => setEmail(e.target.value)} required className="h-11 pl-10" />
+                </div>
+              </div>
+
+              <div className="space-y-1.5">
+                <div className="flex items-center justify-between">
+                  <Label htmlFor="password">Contraseña</Label>
+                  <button type="button" onClick={() => { setMode('reset'); setError(null); setResetSent(false); }}
+                    className="text-xs font-semibold text-primary hover:underline">
+                    ¿Olvidaste tu contraseña?
+                  </button>
+                </div>
+                <div className="relative">
+                  <KeyRound className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                  <Input id="password" type={showPassword ? 'text' : 'password'} autoComplete="current-password" placeholder="••••••••"
+                    value={password} onChange={(e) => setPassword(e.target.value)} required className="h-11 pl-10 pr-11" />
+                  <button type="button" onClick={() => setShowPassword(!showPassword)}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                    aria-label={showPassword ? 'Ocultar contraseña' : 'Mostrar contraseña'}>
+                    {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                  </button>
+                </div>
+              </div>
+
+              {error && (
+                <div className="flex items-start gap-2 rounded-lg bg-destructive/10 p-3 text-sm text-destructive">
+                  <AlertCircle className="h-4 w-4 mt-0.5 shrink-0" /> {error}
+                </div>
+              )}
+
+              <Button type="submit" disabled={!!loading || !email || !password} className="w-full h-11 text-sm font-semibold">
+                {loading === 'email' && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                {fromCheckout ? 'Iniciar sesión y continuar' : 'Iniciar sesión'}
+              </Button>
+            </form>
+
+            <div className="mt-6 rounded-lg bg-muted/60 p-4 text-center text-sm">
+              <span className="text-muted-foreground">¿Aún no tienes cuenta? </span>
+              <Link href={signupHref} className="font-semibold text-primary hover:underline">Crear cuenta gratis</Link>
             </div>
-          </div>
-          {error && <p className="text-sm text-destructive">{error}</p>}
-          <Button type="submit" className="w-full" disabled={loading}>
-            {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-            Iniciar Sesión
-          </Button>
-        </form>
-        <div className="my-4 flex items-center">
-          <div className="flex-grow border-t border-muted"></div>
-          <span className="mx-4 flex-shrink text-xs uppercase text-muted-foreground">O continúa con</span>
-          <div className="flex-grow border-t border-muted"></div>
-        </div>
-        <Button variant="outline" className="w-full" onClick={handleGoogleSignIn} disabled={loading}>
-          {loading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <ChromeIcon className="mr-2 h-5 w-5" /> }
-          Iniciar sesión con Google
-        </Button>
-      </CardContent>
-      <CardFooter className="justify-center">
-        <p className="text-sm text-muted-foreground">
-          ¿No tienes una cuenta?{' '}
-          <Link href="/signup" className="font-medium text-primary hover:underline">
-            Regístrate
-          </Link>
-        </p>
-      </CardFooter>
-    </Card>
+          </>
+        ) : (
+          <>
+            <button type="button" onClick={() => { setMode('login'); setError(null); }}
+              className="mb-4 inline-flex items-center gap-1.5 text-sm font-medium text-muted-foreground hover:text-foreground self-start">
+              <ArrowLeft className="h-4 w-4" /> Volver
+            </button>
+            <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-foreground">Recuperar contraseña</h1>
+            <p className="mt-1.5 text-sm text-muted-foreground">Te enviaremos un enlace para crear una nueva contraseña.</p>
+
+            {resetSent ? (
+              <div className="mt-6 flex items-start gap-3 rounded-lg border border-green-600/30 bg-green-600/10 p-4 text-sm text-foreground">
+                <CheckCircle2 className="h-5 w-5 shrink-0 text-green-600" />
+                <div>
+                  Si existe una cuenta con <strong>{email}</strong>, recibirás un correo en unos minutos. Revisa también tu carpeta de spam.
+                </div>
+              </div>
+            ) : (
+              <form onSubmit={handleReset} className="mt-6 space-y-4" noValidate>
+                <div className="space-y-1.5">
+                  <Label htmlFor="reset-email">Correo electrónico</Label>
+                  <div className="relative">
+                    <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                    <Input id="reset-email" type="email" autoComplete="email" placeholder="tu@empresa.com"
+                      value={email} onChange={(e) => setEmail(e.target.value)} required className="h-11 pl-10" />
+                  </div>
+                </div>
+                {error && (
+                  <div className="flex items-start gap-2 rounded-lg bg-destructive/10 p-3 text-sm text-destructive">
+                    <AlertCircle className="h-4 w-4 mt-0.5 shrink-0" /> {error}
+                  </div>
+                )}
+                <Button type="submit" disabled={!!loading || !email} className="w-full h-11 text-sm font-semibold">
+                  {loading === 'email' && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                  Enviar enlace
+                </Button>
+              </form>
+            )}
+          </>
+        )}
+      </div>
+    </div>
+  );
+}
+
+export default function LoginPage() {
+  return (
+    <Suspense fallback={<div className="flex justify-center py-20"><Loader2 className="h-8 w-8 animate-spin text-primary" /></div>}>
+      <LoginForm />
+    </Suspense>
   );
 }

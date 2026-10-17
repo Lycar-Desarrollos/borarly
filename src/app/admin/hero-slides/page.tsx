@@ -219,10 +219,10 @@ export default function AdminHeroSlidesPage() {
   };
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
+    <div className="p-4 sm:p-6 lg:p-8 space-y-6">
+      <div className="flex flex-wrap items-center justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-bold">Gestionar Carrusel (Banners / Hero)</h1>
+          <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">Gestionar Carrusel (Banners / Hero)</h1>
           <p className="text-sm text-muted-foreground mt-1">
             Sube y administra los banners promocionales principales de la tienda.
           </p>

@@ -57,21 +57,32 @@ export async function updateShippingSettings(cost: number, freeShippingThreshold
 }
 
 /**
- * Gets the URL for the quote logo from Firestore.
- * @returns The URL of the logo, or null if not set.
+ * Gets the URL for the quote logo from Firestore, defaulting to Borarly's official /logo.png.
+ * Automatically ignores legacy Borartech logos stored under settings/quoteLogo/.
  */
-export async function getQuoteLogoUrl(): Promise<string | null> {
+export async function getQuoteLogoUrl(): Promise<string> {
   try {
     const brandingDocRef = doc(db, SETTINGS_COLLECTION, BRANDING_DOC_ID);
     const docSnap = await getDoc(brandingDocRef);
     if (docSnap.exists()) {
       const data = docSnap.data() as AppSettings;
-      return data.quoteLogoUrl || null;
+      const savedUrl = data.quoteLogoUrl || '';
+      const isOfficialOrNewBorarlyLogo =
+        savedUrl === '/logo.png' ||
+        savedUrl.includes('settings%2FborarlyLogo') ||
+        savedUrl.includes('settings/borarlyLogo');
+
+      if (!isOfficialOrNewBorarlyLogo) {
+        // Auto-heal Firestore document to official Borarly logo
+        setDoc(brandingDocRef, { quoteLogoUrl: '/logo.png' }, { merge: true }).catch(() => {});
+        return '/logo.png';
+      }
+      return savedUrl;
     }
-    return null;
+    return '/logo.png';
   } catch (error) {
     console.error("Error fetching quote logo URL:", error);
-    return null;
+    return '/logo.png';
   }
 }
 
@@ -82,8 +93,8 @@ export async function getQuoteLogoUrl(): Promise<string | null> {
  */
 export async function updateQuoteLogo(logoFile: File): Promise<string> {
   try {
-    // 1. Upload file to Firebase Storage
-    const logoStorageRef = storageRef(storage, `settings/quoteLogo/${logoFile.name}`);
+    // 1. Upload file to Firebase Storage under settings/borarlyLogo/
+    const logoStorageRef = storageRef(storage, `settings/borarlyLogo/${logoFile.name}`);
     const uploadResult = await uploadBytes(logoStorageRef, logoFile);
     
     // 2. Get the public URL of the uploaded file
@@ -211,10 +222,10 @@ export interface BankDetails {
 }
 
 const BANK_DETAILS_DEFAULTS: BankDetails = {
-  companyName: 'Borarly',
-  email: 'contacto@borarly.com',
-  phone: '+52 999 310 1452',
-  beneficiary: 'Borarly',
+  companyName: 'BORARLY',
+  email: 'ventas@borarly.com',
+  phone: '+52 1 999 904 0931',
+  beneficiary: 'BORARLY',
   clabe: '012 180 01576278534 6',
   bank: 'BBVA',
 };
@@ -228,14 +239,32 @@ export async function getBankDetails(): Promise<BankDetails> {
     const docSnap = await getDoc(brandingDocRef);
     if (docSnap.exists()) {
       const data = docSnap.data();
-      return {
-        companyName: data.companyName || BANK_DETAILS_DEFAULTS.companyName,
-        email: data.email || BANK_DETAILS_DEFAULTS.email,
+      const rawCompany = String(data.companyName || '');
+      const rawEmail = String(data.email || '');
+      const rawBeneficiary = String(data.beneficiary || '');
+
+      const isLegacyCompany = !rawCompany || !rawCompany.toLowerCase().includes('borarly');
+      const isLegacyEmail = !rawEmail || !rawEmail.toLowerCase().includes('borarly.com');
+      const isLegacyBeneficiary = !rawBeneficiary || /borar\s*tech/i.test(rawBeneficiary);
+
+      const companyName = isLegacyCompany ? BANK_DETAILS_DEFAULTS.companyName : rawCompany;
+      const email = isLegacyEmail ? BANK_DETAILS_DEFAULTS.email : rawEmail;
+      const beneficiary = isLegacyBeneficiary ? BANK_DETAILS_DEFAULTS.beneficiary : rawBeneficiary;
+
+      const resolved: BankDetails = {
+        companyName,
+        email,
         phone: data.phone || BANK_DETAILS_DEFAULTS.phone,
-        beneficiary: data.beneficiary || BANK_DETAILS_DEFAULTS.beneficiary,
+        beneficiary,
         clabe: data.clabe || BANK_DETAILS_DEFAULTS.clabe,
         bank: data.bank || BANK_DETAILS_DEFAULTS.bank,
       };
+
+      if (isLegacyCompany || isLegacyEmail || isLegacyBeneficiary) {
+        setDoc(brandingDocRef, resolved, { merge: true }).catch(() => {});
+      }
+
+      return resolved;
     }
     return BANK_DETAILS_DEFAULTS;
   } catch (error) {

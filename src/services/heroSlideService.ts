@@ -42,19 +42,15 @@ function docToHeroSlide(docSnapshot: any): HeroSlide {
 export async function getHeroSlides(activeOnly = true): Promise<HeroSlide[]> {
   try {
     const slidesRef = collection(db, HERO_SLIDES_COLLECTION);
-    const queryConstraints = [orderBy('order', 'asc')];
+    const querySnapshot = await getDocs(slidesRef);
+    let slides = querySnapshot.docs.map(docToHeroSlide);
     if (activeOnly) {
-      queryConstraints.unshift(where('isActive', '==', true));
+      slides = slides.filter(slide => slide.isActive);
     }
-    
-    const q = query(slidesRef, ...queryConstraints);
-    const querySnapshot = await getDocs(q);
-    return querySnapshot.docs.map(docToHeroSlide);
+    slides.sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
+    return slides;
   } catch (error) {
     console.error("Error fetching hero slides:", error);
-    if (error instanceof Error && error.message.includes('firestore/failed-precondition') && error.message.includes('index')) {
-        console.error("Firestore Precondition Failed for Hero Slides: This query may require a custom index. For active slides, check for: heroSlides collection, 'isActive' (ASC), 'order' (ASC).");
-    }
     return [];
   }
 }

@@ -169,10 +169,9 @@ export default function CheckoutPage() {
 
   useEffect(() => {
     if (!authLoading && !currentUser) {
-      toast({ title: "Autenticación Requerida", description: "Por favor, inicia sesión para proceder al pago.", variant: "destructive" });
       router.push('/login?redirect=/checkout');
     }
-  }, [currentUser, authLoading, router, toast]);
+  }, [currentUser, authLoading, router]);
 
   const handleInputChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -283,8 +282,41 @@ export default function CheckoutPage() {
         createdAt: Timestamp.fromDate(new Date(finalOrderData.createdAt)),
         updatedAt: Timestamp.fromDate(new Date(finalOrderData.updatedAt)),
       };
-      await addDoc(ordersCollectionRef, firestoreOrderData);
+      const orderDocRef = await addDoc(ordersCollectionRef, firestoreOrderData);
       await addDoc(collection(db, 'adminNotifications'), adminNotification);
+
+      // Notificar la venta a ventas@borarly.com (no bloquea la compra si falla)
+      currentUser.getIdToken().then((token) =>
+        fetch('/api/orders/notify', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+          body: JSON.stringify({
+            orderId: orderDocRef.id,
+            reference: transactionId,
+            createdAt: finalOrderData.createdAt,
+            status: finalOrderData.status,
+            paymentMethod: method,
+            customer: {
+              name: `${activeAddress.firstName} ${activeAddress.lastName}`.trim() || userProfile?.displayName || '',
+              email: contactEmail,
+              phone: activeAddress.phone,
+            },
+            shipping: {
+              street: activeAddress.street,
+              city: activeAddress.city,
+              state: activeAddress.state,
+              zip: activeAddress.zip,
+              country: activeAddress.country,
+            },
+            items: orderItems.map(({ name, sku, quantity, price, imageUrl }) => ({ name, sku, quantity, price, imageUrl })),
+            subtotal: cartSubtotal,
+            vatAmount: finalOrderData.vatAmount,
+            shippingCost,
+            total: finalTotal,
+            billing: requiresBilling && finalBilling ? finalBilling : null,
+          }),
+        })
+      ).catch((e) => console.error('No se pudo enviar el correo de venta', e));
       
       for (const item of orderItems) {
         await updateProductStock(item.productId, item.quantity).catch(e => console.error("No se pudo descontar stock local", e));

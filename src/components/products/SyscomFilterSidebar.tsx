@@ -123,6 +123,7 @@ export function SyscomFilterSidebar({
   // States for search inputs
   const [searchCat, setSearchCat] = useState("");
   const [searchMarca, setSearchMarca] = useState("");
+  const [mobileOpen, setMobileOpen] = useState(false);
 
   const filteredLineas = useMemo(() => {
     let base = lineas;
@@ -169,7 +170,6 @@ export function SyscomFilterSidebar({
   ].filter(Boolean).length;
 
   const handleClearAll = () => {
-    // Navigate to plain catalog with no filters
     window.location.href = '/?category=22';
   };
 
@@ -180,26 +180,34 @@ export function SyscomFilterSidebar({
   );
 
   return (
-    <div className="w-full bg-card dark:bg-[#0a0f1d] rounded-sm text-card-foreground dark:text-white p-5 border border-border dark:border-[#1c2331] shadow-xl">
+    <div className="w-full bg-card dark:bg-[#0a0f1d] rounded-xl text-card-foreground dark:text-white p-4 sm:p-5 border border-border dark:border-[#1c2331] shadow-lg">
       
-      {/* Header with active filter count + clear button */}
-      <div className="flex items-center justify-between mb-4">
-        <span className="text-sm font-bold text-foreground dark:text-white">
-          Filtros
+      {/* Header with active filter count + mobile toggle + clear button */}
+      <div className="flex items-center justify-between">
+        <button
+          type="button"
+          onClick={() => setMobileOpen(!mobileOpen)}
+          className="flex md:cursor-default items-center gap-2 text-sm font-bold text-foreground dark:text-white w-full md:w-auto text-left"
+        >
+          <span>Filtros y Orden</span>
           {activeFilterCount > 0 && (
-            <span className="ml-2 bg-[#4185f4] text-white text-[10px] px-2 py-0.5 rounded-full font-bold">{activeFilterCount}</span>
+            <span className="bg-[#4185f4] text-white text-[10px] px-2 py-0.5 rounded-full font-bold">{activeFilterCount}</span>
           )}
-        </span>
+          <span className="md:hidden ml-auto text-xs text-primary font-semibold">
+            {mobileOpen ? 'Ocultar ▲' : 'Mostrar ▼'}
+          </span>
+        </button>
         {activeFilterCount > 0 && (
           <button
             onClick={handleClearAll}
-            className="text-[11px] text-[#4185f4] hover:underline font-semibold"
+            className="text-[11px] text-[#4185f4] hover:underline font-semibold ml-3 shrink-0"
           >
             Limpiar todo
           </button>
         )}
       </div>
 
+      <div className={cn("mt-4 md:block", mobileOpen ? "block" : "hidden")}>
       {/* 1. Ordenar por */}
       <div className="mb-0">
         <SectionTitle>Ordenar por</SectionTitle>
@@ -285,7 +293,7 @@ export function SyscomFilterSidebar({
                 <Switch 
                     className="data-[state=checked]:bg-[#eab308] data-[state=unchecked]:bg-muted dark:data-[state=unchecked]:bg-[#2a344a]" 
                     checked={selectedOferta}
-                    onCheckedChange={(checked) => onFilterChange('oferta', checked ? 'true' : null)}
+                    onCheckedChange={(checked) => onFilterChange('en_oferta', checked ? 'true' : null)}
                 />
                 <span className="text-[13px] text-muted-foreground group-hover:text-foreground dark:text-zinc-100 dark:group-hover:text-white">En oferta</span>
             </label>
@@ -367,6 +375,7 @@ export function SyscomFilterSidebar({
             initialVisibleCount={8}
             />
         </div>
+      </div>
       </div>
 
     </div>

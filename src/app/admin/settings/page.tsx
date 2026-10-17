@@ -22,6 +22,7 @@ import {
 
 export default function AdminSettingsPage() {
   const [shippingCost, setShippingCost] = useState<number | string>('');
+  const [freeShippingThreshold, setFreeShippingThreshold] = useState<number | string>(0);
   const [vatRate, setVatRate] = useState<number | string>('');
   const [profitMargin, setProfitMargin] = useState<number | string>('');
   
@@ -30,7 +31,7 @@ export default function AdminSettingsPage() {
   const [saved, setSaved] = useState(false);
 
   // Logo
-  const [currentLogoUrl, setCurrentLogoUrl] = useState<string | null>(null);
+  const [currentLogoUrl, setCurrentLogoUrl] = useState<string | null>('/logo.png');
   const [logoPreview, setLogoPreview] = useState<string | null>(null);
   const [logoFile, setLogoFile] = useState<File | null>(null);
   const [isUploadingLogo, setIsUploadingLogo] = useState(false);
@@ -39,8 +40,8 @@ export default function AdminSettingsPage() {
   // Datos de empresa y bancarios
   const [bankDetails, setBankDetails] = useState<BankDetails>({
     companyName: 'BORARLY',
-    email: 'contacto@BORARLY.com',
-    phone: '+52 999 310 1452',
+    email: 'ventas@borarly.com',
+    phone: '+52 1 999 904 0931',
     beneficiary: 'BORARLY',
     clabe: '012 180 01576278534 6',
     bank: 'BBVA',
@@ -62,6 +63,7 @@ export default function AdminSettingsPage() {
             getBankDetails(),
         ]);
         setShippingCost(shippingSettings.cost);
+        setFreeShippingThreshold(shippingSettings.freeShippingThreshold ?? 0);
         setVatRate(vat * 100);
         setProfitMargin(profit * 100);
         setCurrentLogoUrl(logoUrl);
@@ -96,6 +98,7 @@ export default function AdminSettingsPage() {
     setSaved(false);
     
     const costValue = Number(shippingCost);
+    const thresholdValue = Number(freeShippingThreshold) || 0;
     const vatValue = Number(vatRate) / 100;
     const profitValue = Number(profitMargin) / 100;
 
@@ -107,7 +110,7 @@ export default function AdminSettingsPage() {
 
     try {
       await Promise.all([
-          updateShippingSettings(costValue, 0),
+          updateShippingSettings(costValue, thresholdValue),
           updateVatRate(vatValue),
           updateProfitMargin(profitValue),
       ]);
@@ -282,7 +285,7 @@ export default function AdminSettingsPage() {
                 </div>
                 <div>
                   <p className="text-xs font-black uppercase tracking-widest text-emerald-500">Envío</p>
-                  <p className="text-[10px] text-muted-foreground">Tarifa plana fija</p>
+                  <p className="text-[10px] text-muted-foreground">Tarifa plana y envío gratis</p>
                 </div>
               </div>
               <div>
@@ -301,9 +304,23 @@ export default function AdminSettingsPage() {
                     disabled={isLoading}
                   />
                 </div>
-                <p className="text-[10px] text-muted-foreground mt-2">
-                  Se suma al total en el carrito de compras
-                </p>
+              </div>
+              <div>
+                <Label htmlFor="freeShippingThreshold" className="text-xs text-muted-foreground mb-1 block">Envío Gratis a partir de (0 = desactivado)</Label>
+                <div className="relative">
+                  <DollarSign className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
+                  <Input
+                    id="freeShippingThreshold"
+                    type="number"
+                    step="100"
+                    min="0"
+                    value={freeShippingThreshold}
+                    onChange={(e) => setFreeShippingThreshold(e.target.value)}
+                    className="pl-8 text-sm font-bold h-9"
+                    placeholder="0"
+                    disabled={isLoading}
+                  />
+                </div>
               </div>
             </div>
           </div>
