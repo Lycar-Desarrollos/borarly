@@ -51,10 +51,18 @@ export async function GET(request: NextRequest) {
       return 0;
     });
 
+    const debug = searchParams.get('debug') === '1';
+    let diag: string | undefined;
+    if (debug) {
+      const { getLastSyscomDiag } = await import('@/services/syscom');
+      diag = getLastSyscomDiag();
+    }
+
     return NextResponse.json({
       results: sorted,
       total: sorted.length,
-      isAi: isAi
+      isAi: isAi,
+      ...(debug ? { diag } : {})
     });
   } catch (error) {
     console.error('Search API error:', error);

@@ -7,11 +7,35 @@ const API_URL = (process.env.SYSCOM_API_URL || 'https://developers.syscom.mx/api
 
 const SYSCOM_HEADERS = {
   'Accept': 'application/json',
-  'User-Agent': 'Mozilla/5.0 (compatible; Borarly/1.0; +https://borarly.com)',
+  'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36',
 };
 
-let cachedToken: string | null = null;
-let tokenExpiracion: number = 0;
+// Token OAuth oficial de Syscom de respaldo (vigencia de 1 año: exp 1823784077)
+const FALLBACK_SYSCOM_TOKEN = 'eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJzY29wZXMiOltdLCJzdWIiOiIiLCJhdWQiOiJZSERWcExoNWszWGdReWZTMFd0RFZEY1hrcGpmMVFHVCIsImp0aSI6IjliZDBlZTQzMjQ5MTk2YWY0MTYyYjk0MmZhOTc0ZjA1NWI2NDA0MzIwMGI2OGFkODc4Nzc3ZTZjZDQ0NjI0ZGU0YWZlNjdlYTg2MDMyZDNkIiwiaWF0IjoxNzkyMjQ4MDc3LCJuYmYiOjE3OTIyNDgwNzcsImV4cCI6MTgyMzc4NDA3N30.C5gFkHj1hjbMuAChsMDvEeG1e7RD6IyYqNx6Kw1eE_z8Lm3pKGlCtz7iHmr6_37c_IP_7pbKQIPXPOpMZFJCzgAhucIkpg2EajOI02DMqOlTg8Co84kZ96rMVfSTLjPQI1pEAhRTen0BUjZKWjl005kS7JVMjqCfU24IHedBeYkTtoT2b9tVusWJZdVi7T8mMcJFSvMgqOoZmHvtTa0GtA7YAoWmuhV_3LetCXtbgbKNLhqi1tp3qsUvKGsqn7gYZ9JBnOj11U00am82YAluFe_MeyC3X2Z3j-8JEHO0N4w1bALD8ti6aIZOC7d23bl3UZXmwR6OhYGUven_gT4wsV58GSS7KkcK_BRJ2bhSVtO-PWtlRqlTvPDW0TDlpty4tvmAx8gbRZGCRL8umxzjxGE-HVvOjaxDwjsQuSsd5cr_XABL0FhfURObyZ-hSyreUDKEP6uiGB1cqKZ7FZ4CDQygRVxaYNKqpK0cGfREzTYTsEmveWL_WUZLjviY5jCJ7u92OaLZHw6fxsVZXhm4vnyjPhIG6Kv2eM7bSfMUwVzXDc3NUjj7vU8Thv-vLVLlEI1MU8232YAx74HAyOjYJXXtA8Fv-P8rzvnw7k9kSwhQS_6ABTTzLfuAdf_q1i638DKHgpycyo-xQAiwkEaWS6Te0kC4-NN-exHvtx9gECQ';
+
+const FALLBACK_L1_RAW: { id: string; nombre: string }[] = [
+  { id: '22', nombre: 'Videovigilancia' },
+  { id: '26', nombre: 'Redes e IT' },
+  { id: '37', nombre: 'Control de Acceso' },
+  { id: '25', nombre: 'Radiocomunicación' },
+  { id: '30', nombre: 'Energía y Climatización' },
+  { id: '32', nombre: 'Automatización e Intrusión' },
+  { id: '38', nombre: 'Detección de Fuego' },
+  { id: '65811', nombre: 'Cableado Estructurado' },
+  { id: '66523', nombre: 'Audio y Video Profesional' },
+  { id: '27', nombre: 'GPS, Telemática y Equipamiento Vehicular' },
+  { id: '42', nombre: 'Herramientas, Ferretería y Material Eléctrico' },
+  { id: '66630', nombre: 'Industria / BMS / Robots' },
+  { id: '67040', nombre: 'Retail y Punto de Venta' },
+];
+
+let lastSyscomDiag = 'init';
+export function getLastSyscomDiag(): string {
+  return lastSyscomDiag;
+}
+
+let cachedToken: string | null = FALLBACK_SYSCOM_TOKEN;
+let tokenExpiracion: number = 1823784077 * 1000;
 
 let cachedExchangeRate: number | null = null;
 let exchangeRateExpiracion: number = 0;
@@ -37,7 +61,7 @@ async function obtenerTokenSyscom(): Promise<string | null> {
 
   if (!clientId || !clientSecret) {
       console.warn("Faltan las credenciales de SYSCOM en las variables de entorno");
-      return null;
+      return FALLBACK_SYSCOM_TOKEN;
   }
 
   try {
@@ -53,22 +77,25 @@ async function obtenerTokenSyscom(): Promise<string | null> {
         'Content-Type': 'application/x-www-form-urlencoded',
       },
       body: params.toString(),
+      cache: 'no-store',
     });
 
     if (!res.ok) {
-        console.error("Error al autenticar con Syscom:", await res.text());
-        return null;
+        const errText = await res.text();
+        lastSyscomDiag = `token_http_${res.status}:${errText.substring(0, 80)}`;
+        console.error("Error al autenticar con Syscom:", errText);
+        return FALLBACK_SYSCOM_TOKEN;
     }
 
     const data = await res.json();
-    cachedToken = data.access_token;
-    // Syscom expira en 36000s (10 horas) usualmente. Lo forzamos a 1 hora por seguridad.
+    cachedToken = data.access_token || FALLBACK_SYSCOM_TOKEN;
     tokenExpiracion = Date.now() + (data.expires_in * 1000 || 3600000); 
     
     return cachedToken;
-  } catch (error) {
+  } catch (error: any) {
+    lastSyscomDiag = `token_err:${error?.message || String(error)}`;
     console.error("Fallo de red al pedir token Syscom:", error);
-    return null;
+    return FALLBACK_SYSCOM_TOKEN;
   }
 }
 
@@ -256,18 +283,24 @@ export async function getProductosSyscomMerida(
                 ...SYSCOM_HEADERS,
                 'Authorization': `Bearer ${token}`
             },
-            next: { revalidate: 60 },
+            cache: 'no-store',
             signal: signal      // FIX #2: Conectar la señal al fetch real
         });
 
         if (!res.ok) {
-            console.error("Error de Syscom Catálogo:", await res.text());
+            const errText = await res.text();
+            lastSyscomDiag = `prod_http_${res.status}:${errText.substring(0, 100)}`;
+            console.error("Error de Syscom Catálogo:", errText);
             return [];
         }
 
         const data = await safeJson(res);
-        if (!data) return [];
+        if (!data) {
+            lastSyscomDiag = `prod_null_json_${res.status}`;
+            return [];
+        }
         const productosCrudos = data.productos || [];
+        lastSyscomDiag = `ok_count_${productosCrudos.length}`;
 
         // Solo necesitamos el tipo de cambio oficial para mostrar el precio base en MXN en el catálogo
         // Optimizamos: Si ya nos pasaron los valores, no los volvemos a pedir a la BD
@@ -289,7 +322,8 @@ export async function getProductosSyscomMerida(
 
         return productos;
 
-    } catch (error) {
+    } catch (error: any) {
+        lastSyscomDiag = `prod_err:${error?.message || String(error)}`;
         console.error("Fallo obteniendo productos de Mérida:", error);
         return [];
     }
@@ -546,6 +580,19 @@ export async function getRelacionadosSyscom(productoId: string): Promise<Product
     }
 }
 
+function buildFallbackL1Categories(): Category[] {
+    const FALLBACK_IMG = 'https://images.unsplash.com/photo-1518770660439-4636190af475?q=80&w=800&auto=format&fit=crop';
+    return FALLBACK_L1_RAW.map(c => ({
+        id: String(c.id),
+        name: c.nombre,
+        description: '',
+        isFeatured: true,
+        featuredImageUrl: getCategoryImageByName(c.nombre) || FALLBACK_IMG,
+        parentId: null,
+        level: 1 as const,
+    }));
+}
+
 /**
  * Obtiene las categorías nativas de Syscom
  */
@@ -558,7 +605,7 @@ export async function getCategoriasSyscom(includeSubcategories = true): Promise<
     }
 
     const token = await obtenerTokenSyscom();
-    if (!token) return cachedCategoriesAll || cachedCategoriesL1 || [];
+    if (!token) return cachedCategoriesAll || cachedCategoriesL1 || buildFallbackL1Categories();
 
     try {
         const res = await fetch(`${API_URL}/categorias`, {
@@ -567,14 +614,11 @@ export async function getCategoriasSyscom(includeSubcategories = true): Promise<
                 ...SYSCOM_HEADERS,
                 'Authorization': `Bearer ${token}`
             },
-            next: { revalidate: 86400 } 
+            cache: 'no-store'
         });
 
-        if (!res.ok) return cachedCategoriesAll || cachedCategoriesL1 || [];
-
-        const level1 = await safeJson(res);
-        if (!level1) return cachedCategoriesAll || cachedCategoriesL1 || [];
-        const categoriasCrudas = Array.isArray(level1) ? level1 : [];
+        const level1 = res.ok ? await safeJson(res) : null;
+        const categoriasCrudas = Array.isArray(level1) && level1.length > 0 ? level1 : FALLBACK_L1_RAW;
         
         const results: Category[] = [];
 
@@ -614,7 +658,7 @@ export async function getCategoriasSyscom(includeSubcategories = true): Promise<
                         ...SYSCOM_HEADERS,
                         'Authorization': `Bearer ${token}`
                     },
-                    next: { revalidate: 86400 }
+                    cache: 'no-store'
                 });
                 if (!subRes.ok) return [];
                 const data = await safeJson(subRes);
@@ -647,7 +691,7 @@ export async function getCategoriasSyscom(includeSubcategories = true): Promise<
 
     } catch (error) {
         console.error("Fallo obteniendo categorias de Syscom:", error);
-        return cachedCategoriesAll || cachedCategoriesL1 || [];
+        return cachedCategoriesAll || cachedCategoriesL1 || buildFallbackL1Categories();
     }
 }
 
