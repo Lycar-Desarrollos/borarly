@@ -16,8 +16,5 @@
 	],
 	"images": {
 		"binding": "IMAGES"
-	},
-	"build": {
-		"command": "npx @opennextjs/cloudflare build --skipNextBuild"
 	}
 }
