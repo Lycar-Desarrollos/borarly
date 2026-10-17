@@ -52,7 +52,7 @@ export function Navbar() {
     setSearchTerm('');
   }, [pathname]);
 
-  // Fast live search via /api/search with debounce
+  // Fast live search via /api/search with browser fallback
   useEffect(() => {
     const fetchResults = async () => {
       if (searchTerm.length < 2) {
@@ -62,11 +62,30 @@ export function Navbar() {
       }
       setIsSearching(true);
       try {
-        const res = await fetch(`/api/search?q=${encodeURIComponent(searchTerm)}`);
-        if (res.ok) {
-          const data = await res.json();
-          setSearchResults(data.results || []);
+        let results: Product[] = [];
+        try {
+          const res = await fetch(`/api/search?q=${encodeURIComponent(searchTerm)}`);
+          if (res.ok) {
+            const data = await res.json();
+            if (Array.isArray(data.results) && data.results.length > 0) {
+              results = data.results;
+            }
+          }
+        } catch {
+          // Fallback to direct browser query
         }
+        if (results.length === 0) {
+          const { getProducts, getProductById } = await import('@/services/productService');
+          const q = searchTerm.trim();
+          if (/^\d{5,7}$/.test(q)) {
+            const exact = await getProductById(q);
+            if (exact) results = [exact];
+          }
+          if (results.length === 0) {
+            results = await getProducts(undefined, q, 12);
+          }
+        }
+        setSearchResults(results);
       } catch (error) {
         console.error("Error fetching live search results", error);
       } finally {

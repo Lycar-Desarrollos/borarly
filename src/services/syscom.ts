@@ -5,10 +5,15 @@ import { getExchangeRate, getVatRate, getProfitMargin } from './settingsService'
 
 const API_URL = (process.env.SYSCOM_API_URL || 'https://developers.syscom.mx/api/v1').trim().replace(/^['"]|['"]$/g, '');
 
-const SYSCOM_HEADERS = {
-  'Accept': 'application/json',
-  'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36',
-};
+const SYSCOM_HEADERS: Record<string, string> =
+  typeof window === 'undefined'
+    ? {
+        'Accept': 'application/json',
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36',
+      }
+    : {
+        'Accept': 'application/json',
+      };
 
 // Token OAuth oficial de Syscom de respaldo (vigencia de 1 año: exp 1823784077)
 const FALLBACK_SYSCOM_TOKEN = 'eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJzY29wZXMiOltdLCJzdWIiOiIiLCJhdWQiOiJZSERWcExoNWszWGdReWZTMFd0RFZEY1hrcGpmMVFHVCIsImp0aSI6IjliZDBlZTQzMjQ5MTk2YWY0MTYyYjk0MmZhOTc0ZjA1NWI2NDA0MzIwMGI2OGFkODc4Nzc3ZTZjZDQ0NjI0ZGU0YWZlNjdlYTg2MDMyZDNkIiwiaWF0IjoxNzkyMjQ4MDc3LCJuYmYiOjE3OTIyNDgwNzcsImV4cCI6MTgyMzc4NDA3N30.C5gFkHj1hjbMuAChsMDvEeG1e7RD6IyYqNx6Kw1eE_z8Lm3pKGlCtz7iHmr6_37c_IP_7pbKQIPXPOpMZFJCzgAhucIkpg2EajOI02DMqOlTg8Co84kZ96rMVfSTLjPQI1pEAhRTen0BUjZKWjl005kS7JVMjqCfU24IHedBeYkTtoT2b9tVusWJZdVi7T8mMcJFSvMgqOoZmHvtTa0GtA7YAoWmuhV_3LetCXtbgbKNLhqi1tp3qsUvKGsqn7gYZ9JBnOj11U00am82YAluFe_MeyC3X2Z3j-8JEHO0N4w1bALD8ti6aIZOC7d23bl3UZXmwR6OhYGUven_gT4wsV58GSS7KkcK_BRJ2bhSVtO-PWtlRqlTvPDW0TDlpty4tvmAx8gbRZGCRL8umxzjxGE-HVvOjaxDwjsQuSsd5cr_XABL0FhfURObyZ-hSyreUDKEP6uiGB1cqKZ7FZ4CDQygRVxaYNKqpK0cGfREzTYTsEmveWL_WUZLjviY5jCJ7u92OaLZHw6fxsVZXhm4vnyjPhIG6Kv2eM7bSfMUwVzXDc3NUjj7vU8Thv-vLVLlEI1MU8232YAx74HAyOjYJXXtA8Fv-P8rzvnw7k9kSwhQS_6ABTTzLfuAdf_q1i638DKHgpycyo-xQAiwkEaWS6Te0kC4-NN-exHvtx9gECQ';
@@ -478,6 +483,7 @@ export async function getProductoSyscomById(idOModelo: string): Promise<Product 
  * Extrae la descripción HTML completa de la ficha oficial de Syscom (con imágenes, banners, tablas y videos)
  */
 async function fetchRichHtmlDescription(link?: string, linkPrivado?: string): Promise<string | null> {
+    if (typeof window !== 'undefined') return null;
     try {
         const targetUrl = link ? `https://www.syscom.mx${link.startsWith('/') ? link : '/' + link}` : linkPrivado;
         if (!targetUrl) return null;

@@ -59,7 +59,7 @@ export async function GET(request: NextRequest) {
 
     const contentType = res.headers.get('content-type') || '';
     if (!res.ok || !contentType.startsWith('image/')) {
-      return NextResponse.redirect(FALLBACK_IMAGE_URL);
+      return NextResponse.redirect(cleanUrl);
     }
 
     const buffer = await res.arrayBuffer();

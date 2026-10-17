@@ -29,7 +29,9 @@ interface ProductDetailViewProps {
     allCategories: Category[];
 }
 
-export function ProductDetailView({ product, relatedProducts, allCategories }: ProductDetailViewProps) {
+export function ProductDetailView({ product: initialProduct, relatedProducts: initialRelated, allCategories }: ProductDetailViewProps) {
+  const [product, setProduct] = useState<Product>(initialProduct);
+  const [relatedProducts, setRelatedProducts] = useState<Product[]>(initialRelated);
   const [selectedImageIndex, setSelectedImageIndex] = useState(0);
   const [isZoomModalOpen, setIsZoomModalOpen] = useState(false);
   const [zoomedImageUrl, setZoomedImageUrl] = useState('');
@@ -42,6 +44,30 @@ export function ProductDetailView({ product, relatedProducts, allCategories }: P
   const router = useRouter();
   
   const isInWishlist = isProductInWishlist(product.id);
+
+  useEffect(() => {
+    setProduct(initialProduct);
+    setRelatedProducts(initialRelated);
+    if (initialProduct.name !== 'Cargando producto...' && initialProduct.price > 0) {
+      return;
+    }
+    let isMounted = true;
+    async function loadBrowserProduct() {
+      try {
+        const { getProductById, getRelatedProductsForProduct } = await import('@/services/productService');
+        const fullProd = await getProductById(initialProduct.id);
+        if (fullProd && isMounted) {
+          setProduct(fullProd);
+          const rel = await getRelatedProductsForProduct(fullProd);
+          if (isMounted) setRelatedProducts(rel);
+        }
+      } catch (err) {
+        console.error("Error loading product in browser:", err);
+      }
+    }
+    loadBrowserProduct();
+    return () => { isMounted = false; };
+  }, [initialProduct, initialRelated]);
 
   const categoryPath = useMemo(() => {
     if (!product.category || !allCategories.length) return [];

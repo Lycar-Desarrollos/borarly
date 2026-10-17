@@ -113,16 +113,28 @@ export default async function ProductDetailPage(props: ProductDetailPageProps) {
     notFound();
   }
 
-  const product = await getProductById(productSku);
-  
-  if (!product) {
-    notFound();
-  }
+  const serverProduct = await getProductById(productSku);
+  const allCategories = await getCategories(false);
+  const relatedProducts = serverProduct ? await getRelatedProductsForProduct(serverProduct) : [];
 
-  const [allCategories, relatedProducts] = await Promise.all([
-    getCategories(false),
-    getRelatedProductsForProduct(product),
-  ]);
+  const product: Product = serverProduct || {
+    id: productSku,
+    name: 'Cargando producto...',
+    description: '',
+    price: 0,
+    currency: 'MXN',
+    costPrice: 0,
+    profitMargin: 0,
+    imageUrls: ['https://placehold.co/600x400.png'],
+    category: '',
+    stock: 0,
+    brand: '',
+    line: productSku,
+    series: '',
+    isFeatured: false,
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
+  };
 
   // SEO: Create JSON-LD structured data for Google Shopping and rich results
   const productSchema = {

@@ -65,12 +65,30 @@ export function CategoryShowcaseCarousel({
           url = `/api/search?q=${encodeURIComponent(activeTab.marca)}`;
         }
 
-        const res = await fetch(url);
-        if (res.ok) {
-          const data = await res.json();
-          if (isMounted && Array.isArray(data.results)) {
-            setProducts(data.results);
+        let results: Product[] = [];
+        try {
+          const res = await fetch(url);
+          if (res.ok) {
+            const data = await res.json();
+            if (Array.isArray(data.results) && data.results.length > 0) {
+              results = data.results;
+            }
           }
+        } catch {
+          // Ignore server API error and fall back to browser CORS fetch
+        }
+
+        if (results.length === 0) {
+          const { getProducts } = await import('@/services/productService');
+          results = await getProducts(
+            activeTab.categoryId || undefined,
+            activeTab.searchQuery || activeTab.marca || undefined,
+            12
+          );
+        }
+
+        if (isMounted) {
+          setProducts(results);
         }
       } catch (error) {
         console.error("Error loading showcase products", error);
