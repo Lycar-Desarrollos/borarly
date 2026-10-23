@@ -95,6 +95,20 @@ function docToCategory(docSnapshot: any): Category {
   };
 }
 
+/**
+ * Pone primero los productos con existencia (stock > 0) y despues los agotados / bajo pedido.
+ * Es un orden estable: dentro de cada grupo se respeta el orden original de Syscom.
+ */
+export function inStockFirst<T extends { stock?: number }>(products: T[]): T[] {
+  const withStock: T[] = [];
+  const withoutStock: T[] = [];
+  for (const p of products) {
+    if ((p.stock ?? 0) > 0) withStock.push(p);
+    else withoutStock.push(p);
+  }
+  return [...withStock, ...withoutStock];
+}
+
 export async function getProducts(
   categoryFilter?: string,
   searchTerm?: string,
@@ -122,6 +136,11 @@ export async function getProducts(
       oferta,
       outlet
     );
+
+    // Con existencia primero. Si el usuario eligio un orden explicito (precio, etc.) se respeta tal cual.
+    if (!orden) {
+      products = inStockFirst(products);
+    }
 
     // Mantenemos el límite post-procesado (Syscom pagina de 15 en 15 o similar, pero por si acaso acortamos visualmente)
     if (resultLimit && products.length > resultLimit) {

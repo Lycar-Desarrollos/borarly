@@ -48,7 +48,10 @@ export async function GET(request: NextRequest) {
       const bModelMatch = (b.line || '').toLowerCase().includes(normalizedQ);
       if (aModelMatch && !bModelMatch) return -1;
       if (!aModelMatch && bModelMatch) return 1;
-      return 0;
+      // Desempate: con existencia primero
+      const aStock = (a.stock ?? 0) > 0 ? 1 : 0;
+      const bStock = (b.stock ?? 0) > 0 ? 1 : 0;
+      return bStock - aStock;
     });
 
     const debug = searchParams.get('debug') === '1';
