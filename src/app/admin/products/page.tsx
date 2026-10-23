@@ -25,11 +25,11 @@ export default async function AdminProductsPage() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <h1 className="text-3xl font-bold">Gestionar Productos</h1>
-        <Link href="/admin/products/new" legacyBehavior passHref>
-          <Button>
+        <Button asChild>
+          <Link href="/admin/products/new">
             <PlusCircle className="mr-2 h-5 w-5" /> Añadir Nuevo Producto
-          </Button>
-        </Link>
+          </Link>
+        </Button>
       </div>
       
       <Suspense fallback={<DataTableSkeleton />}>

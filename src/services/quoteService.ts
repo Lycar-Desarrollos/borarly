@@ -13,6 +13,7 @@ import {
   updateDoc,
   deleteDoc,
   query,
+  where,
   orderBy,
   Timestamp,
   runTransaction,
@@ -31,7 +32,11 @@ function docToQuote(docSnapshot: any): Quote {
     id: docSnapshot.id,
     quoteNumber: data.quoteNumber || `QUOTE-${docSnapshot.id.substring(0,5)}`,
     customerName: data.customerName || '',
+    userId: data.userId || undefined,
     customerEmail: data.customerEmail || '',
+    customerCompany: data.customerCompany || undefined,
+    customerPhone: data.customerPhone || undefined,
+    customerRfc: data.customerRfc || undefined,
     companyPhone: data.companyPhone || undefined,
     items: data.items || [],
     subtotal: data.subtotal || 0,
@@ -194,4 +199,37 @@ export async function deleteQuote(id: string): Promise<void> {
 // Export the function to be used in the PDF generation
 export async function getQuoteLogoUrl(): Promise<string | null> {
     return getLogoUrlFromSettings();
+}
+
+// Get quotes belonging to a specific user (by userId or customerEmail)
+export async function getUserQuotes(userId: string, userEmail?: string | null): Promise<Quote[]> {
+  try {
+    const quotesRef = collection(db, QUOTES_COLLECTION);
+    const resultsMap = new Map<string, Quote>();
+
+    if (userId) {
+      const qByUid = query(quotesRef, where('userId', '==', userId));
+      const snapByUid = await getDocs(qByUid);
+      snapByUid.docs.forEach(d => {
+        const quote = docToQuote(d);
+        resultsMap.set(quote.id, quote);
+      });
+    }
+
+    if (userEmail) {
+      const qByEmail = query(quotesRef, where('customerEmail', '==', userEmail));
+      const snapByEmail = await getDocs(qByEmail);
+      snapByEmail.docs.forEach(d => {
+        const quote = docToQuote(d);
+        resultsMap.set(quote.id, quote);
+      });
+    }
+
+    const list = Array.from(resultsMap.values());
+    list.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+    return list;
+  } catch (error) {
+    console.error("Error fetching user quotes:", error);
+    return [];
+  }
 }

@@ -202,12 +202,37 @@ export default async function ProductDetailPage(props: ProductDetailPageProps) {
     },
   };
 
+  // SEO: BreadcrumbList para que Google muestre la ruta (Inicio > Categoria > Producto) en resultados
+  const productCategory = allCategories.find(c => c.id === product.category || c.id === product.categoryId);
+  const breadcrumbSchema = serverProduct ? {
+    '@context': 'https://schema.org',
+    '@type': 'BreadcrumbList',
+    itemListElement: [
+      { name: 'Inicio', url: 'https://borarly.com' },
+      ...(productCategory
+        ? [{ name: productCategory.alias || productCategory.name, url: `https://borarly.com/?category=${encodeURIComponent(productCategory.id)}` }]
+        : []),
+      { name: product.name, url: `https://borarly.com/products/${product.id}` },
+    ].map((item, i) => ({
+      '@type': 'ListItem',
+      position: i + 1,
+      name: item.name,
+      item: item.url,
+    })),
+  } : null;
+
   return (
     <>
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(productSchema) }}
       />
+      {breadcrumbSchema && (
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbSchema) }}
+        />
+      )}
       <ProductDetailView 
           product={{ ...product, description: sanitizeDescriptionHtml(product.description) }} 
           relatedProducts={relatedProducts} 

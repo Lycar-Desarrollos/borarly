@@ -353,9 +353,9 @@ export default function CheckoutPage() {
               </div>
               <p className="text-muted-foreground">Te hemos enviado un recibo a <span className="font-medium text-foreground">{contactEmail}</span>.</p>
               <div className="pt-6">
-                <Link href="/profile/orders" legacyBehavior passHref>
-                    <Button size="lg" className="rounded-full px-8 shadow-lg hover:scale-105 transition-transform"><ArrowLeft className="mr-2 w-4 h-4" /> Ver mis Pedidos</Button>
-                </Link>
+                <Button asChild size="lg" className="rounded-full px-8 shadow-lg hover:scale-105 transition-transform">
+                    <Link href="/profile/orders"><ArrowLeft className="mr-2 w-4 h-4" /> Ver mis Pedidos</Link>
+                </Button>
               </div>
           </div>
       )
@@ -408,7 +408,7 @@ export default function CheckoutPage() {
         <Card className="bg-card/50 backdrop-blur-xl shadow-2xl border-0">
           <CardContent className="py-16 text-center">
             <p className="text-muted-foreground mb-6 text-lg">Tu carrito está vacío. Agrega productos para poder pagar.</p>
-            <Link href="/" legacyBehavior passHref><Button size="lg" className="rounded-full">Ir al Catálogo</Button></Link>
+            <Button asChild size="lg" className="rounded-full"><Link href="/">Ir al Catálogo</Link></Button>
           </CardContent>
         </Card>
       ) : (

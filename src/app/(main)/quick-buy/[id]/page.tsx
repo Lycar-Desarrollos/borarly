@@ -153,7 +153,7 @@ Por favor, confírmame los datos para realizar la transferencia SPEI. Gracias.`;
       return (
         <div className="text-center py-10">
             <h1 className="text-2xl font-bold">Producto no encontrado</h1>
-            <Link href="/" legacyBehavior passHref><Button variant="link">Volver a la tienda</Button></Link>
+            <Button asChild variant="link"><Link href="/">Volver a la tienda</Link></Button>
         </div>
       );
   }

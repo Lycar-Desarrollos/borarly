@@ -2,6 +2,7 @@
 import { getProducts, getCategories, getFeaturedCategories } from '@/services/productService';
 import type { Product, Category } from '@/lib/types';
 import { Suspense } from 'react';
+import type { Metadata } from 'next';
 import { Skeleton } from '@/components/ui/skeleton';
 import { ProductDisplay } from '@/components/products/ProductDisplay';
 
@@ -54,6 +55,42 @@ interface HomePageProps {
     en_oferta?: string;
     outlet?: string;
   }>;
+}
+
+/**
+ * SEO: el layout raiz fija canonical = home para TODA la app, lo que hacia que Google
+ * descartara las paginas de categoria. Aqui cada categoria se autocanonicaliza y
+ * las busquedas/filtros (contenido duplicado) se marcan noindex.
+ */
+export async function generateMetadata(props: HomePageProps): Promise<Metadata> {
+  const sp = await props.searchParams;
+  const hasFilters = !!(
+    sp.search || sp.marca || sp.orden || sp.sucursal || sp.nuevo ||
+    sp.caja_abierta || sp.en_existencia || sp.en_oferta || sp.outlet
+  );
+
+  if (hasFilters) {
+    return { robots: { index: false, follow: true } };
+  }
+
+  if (sp.category && sp.category !== 'all') {
+    try {
+      const cats = await getCategories(true);
+      const cat = cats.find(c => c.id === sp.category);
+      if (cat) {
+        const name = cat.alias || cat.name;
+        return {
+          title: `${name} â€” Comprar en lÃ­nea`,
+          description: `Compra ${name} en Borarly: equipos nuevos con garantÃ­a de fÃ¡brica, precios con IVA incluido, facturaciÃ³n CFDI 4.0 y envÃ­o a todo MÃ©xico.`,
+          alternates: { canonical: `https://borarly.com/?category=${encodeURIComponent(cat.id)}` },
+        };
+      }
+    } catch {
+      /* usa metadatos por defecto */
+    }
+  }
+
+  return {};
 }
 
 export default async function HomePage(props: HomePageProps) {

@@ -86,15 +86,13 @@ export function UpcomingEventsSection() {
                   />
             </div>
             <CardFooter className="p-0 bg-primary mt-auto">
-              <Link href={event.buttonLink || '#'} passHref legacyBehavior>
-                <a target="_blank" rel="noopener noreferrer" className="w-full">
+              <Link href={event.buttonLink || '#'} target="_blank" rel="noopener noreferrer" className="w-full">
                   <Button
                     variant="default"
                     className="w-full rounded-none rounded-b-lg h-12 text-base font-semibold bg-primary text-primary-foreground hover:brightness-110"
                   >
                     {event.buttonText}
                   </Button>
-                </a>
               </Link>
             </CardFooter>
           </Card>

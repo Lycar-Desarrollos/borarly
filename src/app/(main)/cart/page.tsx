@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import Image from 'next/image';
 import Link from 'next/link';
-import { Trash2, Minus, Plus, ShoppingCart, MessageCircle, Truck, UserPlus, LogIn, ShieldAlert, UserCheck } from 'lucide-react';
+import { Trash2, Minus, Plus, ShoppingCart, MessageCircle, Truck, UserPlus, LogIn, ShieldAlert, UserCheck, FileSpreadsheet } from 'lucide-react';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
 import { SecureCheckoutBox } from '@/components/trust/PaymentShippingLogos';
@@ -228,15 +228,29 @@ export default function CartPage() {
           </CardContent>
           <CardFooter className="flex-col gap-3">
             {currentUser ? (
-              <Button asChild size="lg" className="w-full bg-primary hover:bg-primary/90 text-white font-bold h-12 rounded-xl text-base shadow-md">
-                <Link href="/checkout">Proceder al Pago Seguro</Link>
-              </Button>
+              <div className="w-full space-y-2.5">
+                <Button asChild size="lg" className="w-full bg-primary hover:bg-primary/90 text-white font-bold h-12 rounded-xl text-base shadow-md">
+                  <Link href="/checkout">Proceder al Pago Seguro</Link>
+                </Button>
+                <Button asChild variant="outline" size="lg" className="w-full border-primary/40 text-primary hover:bg-primary/10 font-bold h-11 rounded-xl text-sm">
+                  <Link href="/profile/quotes?fromCart=1">
+                    <FileSpreadsheet className="w-4 h-4 mr-2" />
+                    Generar Cotización PDF con Logo
+                  </Link>
+                </Button>
+              </div>
             ) : (
               <div className="w-full space-y-2.5">
                 <Button asChild size="lg" className="w-full bg-primary hover:bg-primary/90 text-primary-foreground font-semibold h-12 text-sm">
                   <Link href="/signup?redirect=/checkout">
                     <UserPlus className="w-4 h-4 mr-2" />
                     Crear Cuenta para Comprar
+                  </Link>
+                </Button>
+                <Button asChild variant="outline" size="sm" className="w-full border-primary/40 text-primary hover:bg-primary/10 font-semibold h-10 rounded-xl text-xs">
+                  <Link href="/login?redirect=/profile/quotes?fromCart=1">
+                    <FileSpreadsheet className="w-4 h-4 mr-2" />
+                    Iniciar Sesión para Cotizar en PDF
                   </Link>
                 </Button>
                 <p className="text-center text-sm text-muted-foreground">

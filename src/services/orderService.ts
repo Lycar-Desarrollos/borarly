@@ -125,14 +125,15 @@ export async function createOrderFromQuote(quote: Quote): Promise<Order> {
     throw new Error('No se proporcionó una cotización para crear el pedido.');
   }
 
-  const userId = quote.customerEmail; 
+  const userId = quote.userId || quote.customerEmail; 
 
   const orderItems: OrderItem[] = quote.items.map(item => ({
     productId: item.productId,
+    sku: item.sku || item.productId,
     name: item.name,
     quantity: item.quantity,
     price: item.price,
-    imageUrl: '',
+    imageUrl: item.imageUrl || '',
   }));
 
   const paymentReference = Date.now().toString().slice(-8);

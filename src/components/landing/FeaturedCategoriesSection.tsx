@@ -9,12 +9,14 @@ import type { Category } from '@/lib/types';
 import { Skeleton } from '@/components/ui/skeleton';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { useRef, useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 
 interface FeaturedCategoriesSectionProps {
   categories: Category[];
 }
 
 export function FeaturedCategoriesSection({ categories }: FeaturedCategoriesSectionProps) {
+  const router = useRouter();
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const [showLeftArrow, setShowLeftArrow] = useState(false);
   const [showRightArrow, setShowRightArrow] = useState(false);
@@ -52,11 +54,9 @@ export function FeaturedCategoriesSection({ categories }: FeaturedCategoriesSect
         <h2 className="text-2xl sm:text-3xl font-black tracking-tight text-foreground">
           CATEGORÍAS DESTACADAS
         </h2>
-        <Link href="/?category=all" legacyBehavior passHref>
-           <Button variant="link" className="text-primary hover:underline font-bold text-xs sm:text-sm">
-             Mostrar todas
-           </Button>
-        </Link>
+        <Button variant="link" onClick={() => router.push('/?category=all')} className="text-primary hover:underline font-bold text-xs sm:text-sm">
+          Mostrar todas
+        </Button>
       </div>
       
       {categories.length === 0 ? (
@@ -105,8 +105,7 @@ export function FeaturedCategoriesSection({ categories }: FeaturedCategoriesSect
               const aiHint = !category.featuredImageUrl ? hintText : undefined;
 
               return (
-                <Link key={category.id} href={`/?category=${encodeURIComponent(category.id)}`} passHref legacyBehavior>
-                  <a className="block w-48 md:w-56 shrink-0 group">
+                <Link key={category.id} href={`/?category=${encodeURIComponent(category.id)}`} className="block w-48 md:w-56 shrink-0 group">
                     <Card className="overflow-hidden shadow-md hover:shadow-lg transition-transform duration-300 hover:-translate-y-1 rounded-lg h-full flex flex-col border border-border/50">
                       <div className="relative w-full aspect-[3/2] bg-white">
                         <Image
@@ -125,7 +124,6 @@ export function FeaturedCategoriesSection({ categories }: FeaturedCategoriesSect
                         <h3 className="text-sm font-semibold text-center text-card-foreground line-clamp-2">{category.alias || category.name}</h3>
                       </CardContent>
                     </Card>
-                  </a>
                 </Link>
               );
             })}

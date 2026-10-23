@@ -10,7 +10,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
-import { Loader2, User, Mail, MapPin, Edit3, Phone, BookOpen, FileText } from 'lucide-react';
+import { Loader2, User, Mail, MapPin, Edit3, Phone, BookOpen, FileText, FileSpreadsheet } from 'lucide-react';
 import { Separator } from '@/components/ui/separator';
 import Link from 'next/link';
 import { doc, updateDoc } from 'firebase/firestore';
@@ -146,25 +146,34 @@ export default function ProfilePage() {
                   
                   <Separator className="my-6" />
                   
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <Link href="/profile/addresses" legacyBehavior passHref>
-                        <Button variant="outline" className="h-auto py-4 flex flex-col items-center justify-center gap-2 hover:border-primary hover:bg-primary/5">
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                    <Button asChild variant="outline" className="h-auto py-4 flex flex-col items-center justify-center gap-2 hover:border-primary hover:bg-primary/5">
+                        <Link href="/profile/quotes">
+                            <FileSpreadsheet className="h-6 w-6 text-primary" />
+                            <div className="text-center">
+                                <span className="block font-bold">Mis Cotizaciones</span>
+                                <span className="text-xs text-muted-foreground font-normal">Crea PDFs con el logo de BORARLY</span>
+                            </div>
+                        </Link>
+                    </Button>
+                    <Button asChild variant="outline" className="h-auto py-4 flex flex-col items-center justify-center gap-2 hover:border-primary hover:bg-primary/5">
+                        <Link href="/profile/addresses">
                             <BookOpen className="h-6 w-6 text-primary" />
                             <div className="text-center">
                                 <span className="block font-bold">Libreta de Direcciones</span>
                                 <span className="text-xs text-muted-foreground font-normal">Gestiona dónde enviamos tus pedidos</span>
                             </div>
-                        </Button>
-                    </Link>
-                    <Link href="/profile/billing" legacyBehavior passHref>
-                        <Button variant="outline" className="h-auto py-4 flex flex-col items-center justify-center gap-2 hover:border-blue-500 hover:bg-blue-500/5">
+                        </Link>
+                    </Button>
+                    <Button asChild variant="outline" className="h-auto py-4 flex flex-col items-center justify-center gap-2 hover:border-blue-500 hover:bg-blue-500/5">
+                        <Link href="/profile/billing">
                             <FileText className="h-6 w-6 text-blue-500" />
                             <div className="text-center">
                                 <span className="block font-bold">Datos de Facturación</span>
                                 <span className="text-xs text-muted-foreground font-normal">Administra tus RFCs y CFDI 4.0</span>
                             </div>
-                        </Button>
-                    </Link>
+                        </Link>
+                    </Button>
                   </div>
                 </div>
               )}

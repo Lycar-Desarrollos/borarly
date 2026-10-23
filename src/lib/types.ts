@@ -203,6 +203,7 @@ export interface QuoteItem {
   quantity: number;
   price: number; // The quoted price per unit
   stockAtTimeOfQuote?: number;
+  imageUrl?: string;
 }
 
 export type QuoteStatus = 'draft' | 'sent' | 'accepted' | 'expired' | 'cancelled';
@@ -211,8 +212,12 @@ export type DiscountType = 'percentage' | 'fixed';
 export interface Quote {
   id: string; // Firestore document ID
   quoteNumber: string; // Human-readable, sequential number
+  userId?: string; // Optional UID of the customer who created the quote
   customerName: string;
   customerEmail: string;
+  customerCompany?: string;
+  customerPhone?: string;
+  customerRfc?: string;
   companyPhone?: string; // Custom seller/company phone number for this quote
   items: QuoteItem[];
   subtotal: number;

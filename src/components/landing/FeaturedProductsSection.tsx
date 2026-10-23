@@ -21,9 +21,9 @@ export function FeaturedProductsSection({ initialProducts }: FeaturedProductsSec
         <p className="text-center text-muted-foreground">No hay productos destacados en este momento.</p>
       )}
       <div className="text-center mt-8">
-        <Link href="/?category=all" passHref legacyBehavior>
-          <Button variant="outline" size="lg">Ver Todos los Productos</Button>
-        </Link>
+        <Button asChild variant="outline" size="lg">
+          <Link href="/?category=all">Ver Todos los Productos</Link>
+        </Button>
       </div>
     </section>
   );

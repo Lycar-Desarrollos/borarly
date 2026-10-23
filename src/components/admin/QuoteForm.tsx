@@ -301,6 +301,7 @@ export function QuoteForm({ quote: initialQuote }: { quote?: Quote }) {
     const pdfLogoUrl = await getQuoteLogoUrl();
     let logoBase64: string | null = null;
     if (pdfLogoUrl) logoBase64 = await getImageBase64(pdfLogoUrl);
+    if (!logoBase64) logoBase64 = await getImageBase64('/logo.png');
 
     if (logoBase64) {
       try { doc.addImage(logoBase64, 'PNG', 14, 12, 48, 12); } catch { /* skip */ }

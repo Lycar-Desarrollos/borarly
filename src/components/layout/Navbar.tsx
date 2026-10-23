@@ -5,7 +5,7 @@ import {
   ShoppingCart, User, Search, LogOut, LayoutDashboard, Heart, Loader2, 
   MessageCircle, Menu, Video, Network, Key, Zap, Server, ChevronRight, 
   ChevronDown, Shield, Flame, Cable, Speaker, Hammer, Camera, Mic, MicOff, 
-  Sparkles, X, Check, Box, Tag, ArrowRight, Layers, HelpCircle
+  Sparkles, X, Check, Box, Tag, ArrowRight, Layers, HelpCircle, FileSpreadsheet
 } from 'lucide-react'; 
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -413,6 +413,9 @@ export function Navbar() {
                     <Link href="/profile"><User className="mr-2 h-4 w-4" /><span>Mi Perfil</span></Link>
                   </DropdownMenuItem>
                   <DropdownMenuItem asChild>
+                    <Link href="/profile/quotes"><FileSpreadsheet className="mr-2 h-4 w-4" /><span>Mis Cotizaciones</span></Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem asChild>
                     <Link href="/profile/orders"><ShoppingCart className="mr-2 h-4 w-4" /><span>Mis Pedidos</span></Link>
                   </DropdownMenuItem>
                   <DropdownMenuItem asChild>
@@ -536,6 +539,12 @@ export function Navbar() {
                   <Link href="/profile">
                     <User className="mr-2 h-4 w-4" />
                     <span>Mi Perfil</span>
+                  </Link>
+                </DropdownMenuItem>
+                <DropdownMenuItem asChild>
+                  <Link href="/profile/quotes">
+                    <FileSpreadsheet className="mr-2 h-4 w-4" />
+                    <span>Mis Cotizaciones</span>
                   </Link>
                 </DropdownMenuItem>
                 <DropdownMenuItem asChild>

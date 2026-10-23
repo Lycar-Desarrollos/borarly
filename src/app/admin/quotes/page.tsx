@@ -176,6 +176,9 @@ export default function AdminQuotesPage() {
     if (logoUrlToUse) {
       logoBase64 = await getImageBase64(logoUrlToUse);
     }
+    if (!logoBase64) {
+      logoBase64 = await getImageBase64('/logo.png');
+    }
 
     if (logoBase64) {
       try {

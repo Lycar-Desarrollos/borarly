@@ -64,9 +64,9 @@ export default function WishlistPage() {
         <HeartCrack className="mx-auto h-24 w-24 text-muted-foreground mb-6" />
         <h1 className="text-3xl font-semibold mb-4">Por favor, Inicia Sesión</h1>
         <p className="text-muted-foreground mb-8">Inicia sesión para ver tu lista de deseos.</p>
-        <Link href="/login?redirect=/profile/wishlist" legacyBehavior passHref>
-          <Button size="lg">Iniciar Sesión</Button>
-        </Link>
+        <Button asChild size="lg">
+          <Link href="/login?redirect=/profile/wishlist">Iniciar Sesión</Link>
+        </Button>
       </div>
     );
   }
@@ -77,9 +77,9 @@ export default function WishlistPage() {
         <HeartCrack className="mx-auto h-24 w-24 text-muted-foreground mb-6" />
         <h1 className="text-3xl font-semibold mb-4">Tu Lista de Deseos está Vacía</h1>
         <p className="text-muted-foreground mb-8">Parece que no has añadido nada todavía.</p>
-        <Link href="/" legacyBehavior passHref>
-          <Button size="lg">Descubrir Productos</Button>
-        </Link>
+        <Button asChild size="lg">
+          <Link href="/">Descubrir Productos</Link>
+        </Button>
       </div>
     );
   }

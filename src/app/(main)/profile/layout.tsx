@@ -4,13 +4,14 @@
 import type { ReactNode } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { User, ShoppingBag, Heart, MapPin, FileText } from 'lucide-react';
+import { User, ShoppingBag, Heart, MapPin, FileText, FileSpreadsheet } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 export default function ProfileLayout({ children }: { children: ReactNode }) {
   const pathname = usePathname();
 
   const getActiveTab = () => {
+    if (pathname.includes('/quotes')) return 'quotes';
     if (pathname.includes('/orders')) return 'orders';
     if (pathname.includes('/wishlist')) return 'wishlist';
     if (pathname.includes('/addresses')) return 'addresses';
@@ -27,6 +28,9 @@ export default function ProfileLayout({ children }: { children: ReactNode }) {
         <div className="flex flex-row md:flex-col gap-2 overflow-x-auto pb-2 md:pb-0 scrollbar-hide w-full">
             <Link href="/profile" className={cn("flex flex-col md:flex-row items-center md:items-start md:justify-start gap-2 py-3 px-4 rounded-xl transition-colors font-medium text-sm whitespace-nowrap", activeTab === 'profile' ? "bg-primary/10 text-primary" : "text-muted-foreground hover:bg-muted/50 hover:text-foreground")}>
                 <User className="h-5 w-5"/> <span className="hidden sm:inline">Perfil Completo</span>
+            </Link>
+            <Link href="/profile/quotes" className={cn("flex flex-col md:flex-row items-center md:items-start md:justify-start gap-2 py-3 px-4 rounded-xl transition-colors font-medium text-sm whitespace-nowrap", activeTab === 'quotes' ? "bg-primary/10 text-primary" : "text-muted-foreground hover:bg-muted/50 hover:text-foreground")}>
+                <FileSpreadsheet className="h-5 w-5"/> <span className="hidden sm:inline">Mis Cotizaciones</span>
             </Link>
             <Link href="/profile/orders" className={cn("flex flex-col md:flex-row items-center md:items-start md:justify-start gap-2 py-3 px-4 rounded-xl transition-colors font-medium text-sm whitespace-nowrap", activeTab === 'orders' ? "bg-primary/10 text-primary" : "text-muted-foreground hover:bg-muted/50 hover:text-foreground")}>
                 <ShoppingBag className="h-5 w-5"/> <span className="hidden sm:inline">Historial de Pedidos</span>
