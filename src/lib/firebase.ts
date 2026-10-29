@@ -58,11 +58,11 @@ const restCache: Record<string, { data: Record<string, Record<string, any>>; exp
 
 /**
  * Fetches an entire Firestore collection via the lightweight REST API (server-safe for Cloudflare Workers,
- * avoiding @grpc/grpc-js / node:http2 crashes in workerd). Cached in memory for 5 minutes.
+ * avoiding @grpc/grpc-js / node:http2 crashes in workerd). Cached in memory for 10 minutes.
  */
 export async function fetchFirestoreCollectionRest(
   collectionName: string,
-  ttlMs = 300000
+  ttlMs = 600000
 ): Promise<Record<string, Record<string, any>>> {
   const cached = restCache[collectionName];
   if (cached && Date.now() < cached.expiresAt) {
@@ -75,7 +75,11 @@ export async function fetchFirestoreCollectionRest(
     const res = await fetch(url, {
       headers: { Accept: 'application/json' },
     });
-    if (!res.ok) return cached?.data || {};
+    if (!res.ok) {
+      const fallbackData = cached?.data || {};
+      restCache[collectionName] = { data: fallbackData, expiresAt: Date.now() + ttlMs };
+      return fallbackData;
+    }
     const json = await res.json();
     const docs: Record<string, Record<string, any>> = {};
     if (Array.isArray(json.documents)) {
@@ -91,9 +95,10 @@ export async function fetchFirestoreCollectionRest(
     return docs;
   } catch (error) {
     console.warn(`Firestore REST fallback error for ${collectionName}:`, error);
-    return cached?.data || {};
+    const fallbackData = cached?.data || {};
+    restCache[collectionName] = { data: fallbackData, expiresAt: Date.now() + ttlMs };
+    return fallbackData;
   }
 }
 
 export { app, auth, db, storage };
-

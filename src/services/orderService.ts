@@ -7,7 +7,7 @@
  * - createOrderFromQuote - Creates a new order from an existing quote.
  */
 
-import { db } from '@/lib/firebase';
+import { db, auth } from '@/lib/firebase';
 import type { Order, OrderItem, Quote } from '@/lib/types';
 import {
   collection,
@@ -20,6 +20,65 @@ import {
 } from 'firebase/firestore';
 
 const ORDERS_COLLECTION = 'orders';
+
+export interface OrderFinancialBreakdown {
+  subtotalSinIva: number;
+  subtotalConIva: number;
+  vatAmount: number;
+  shippingCost: number;
+  totalAmount: number;
+  itemsAreVatInclusive: boolean;
+}
+
+/**
+ * Calcula de forma exacta y uniforme el desglose fiscal de cualquier pedido (Checkout o Cotización):
+ * - Subtotal (sin IVA)
+ * - IVA (16%)
+ * - Envío
+ * - Total (MXN, IVA incluido)
+ */
+export function getOrderFinancials(order: Order): OrderFinancialBreakdown {
+  const shippingCost = Number(order.shippingCost) || 0;
+  const totalAmount = Number(order.totalAmount) || 0;
+  const rawSubtotal = Number(order.subtotal) || 0;
+  const rawVat = Number(order.vatAmount) || 0;
+
+  // Detectar si rawSubtotal fue guardado SIN IVA (ej. cotización donde subtotal + vat + shipping ≈ total)
+  const sumAsNet = rawSubtotal + rawVat + shippingCost;
+  const sumAsGross = rawSubtotal + shippingCost;
+
+  if (rawVat > 0 && Math.abs(sumAsNet - totalAmount) < 0.5 && Math.abs(sumAsGross - totalAmount) >= 0.5) {
+    // El pedido guardó subtotal SIN IVA
+    const subtotalSinIva = parseFloat(rawSubtotal.toFixed(2));
+    const vatAmount = parseFloat(rawVat.toFixed(2));
+    const subtotalConIva = parseFloat((subtotalSinIva + vatAmount).toFixed(2));
+    const itemsSum = (order.items || []).reduce((acc, i) => acc + (Number(i.price) || 0) * (Number(i.quantity) || 1), 0);
+    const itemsAreVatInclusive = Math.abs(itemsSum - subtotalConIva) < Math.abs(itemsSum - subtotalSinIva);
+    return {
+      subtotalSinIva,
+      subtotalConIva,
+      vatAmount,
+      shippingCost,
+      totalAmount: parseFloat(totalAmount.toFixed(2)),
+      itemsAreVatInclusive,
+    };
+  }
+
+  // Caso estándar (Checkout): totalAmount - shippingCost ya incluye el 16% de IVA
+  const grossProducts = Math.max(0, totalAmount > 0 ? totalAmount - shippingCost : rawSubtotal);
+  const subtotalSinIva = parseFloat((grossProducts / 1.16).toFixed(2));
+  const vatAmount = parseFloat((grossProducts - subtotalSinIva).toFixed(2));
+  const subtotalConIva = parseFloat(grossProducts.toFixed(2));
+
+  return {
+    subtotalSinIva,
+    subtotalConIva,
+    vatAmount,
+    shippingCost,
+    totalAmount: parseFloat((subtotalConIva + shippingCost).toFixed(2)),
+    itemsAreVatInclusive: true,
+  };
+}
 
 /**
  * Helper to convert a Firestore document to an Order object.
@@ -127,25 +186,43 @@ export async function createOrderFromQuote(quote: Quote): Promise<Order> {
 
   const userId = quote.userId || quote.customerEmail; 
 
+  // En las cotizaciones, item.price se almacena SIN IVA.
+  // Detectamos si item.price ya tiene IVA o si está sin IVA comparando con quote.subtotal y quote.totalAmount.
+  const rawItemsSum = quote.items.reduce((acc, item) => acc + (Number(item.price) || 0) * (Number(item.quantity) || 1), 0);
+  const discountVal = Number(quote.discountValue) || 0;
+  const discountAmt = quote.discountType === 'percentage'
+    ? Math.min(rawItemsSum, rawItemsSum * (discountVal / 100))
+    : Math.min(rawItemsSum, discountVal);
+  const subAfterDiscountSinIva = Math.max(0, rawItemsSum - discountAmt);
+
+  // Garantizar SIEMPRE que el IVA (16%) esté calculado y sumado al crear un pedido desde cotización
+  const vatRate = 0.16;
+  const calculatedVat = parseFloat((subAfterDiscountSinIva * vatRate).toFixed(2));
+  const effectiveVatAmount = quote.vatAmount && quote.vatAmount > 0 ? parseFloat(quote.vatAmount.toFixed(2)) : calculatedVat;
+  const shipping = Number(quote.shippingCost) || 0;
+  const grossSubtotalWithVat = parseFloat((subAfterDiscountSinIva + effectiveVatAmount).toFixed(2));
+  const finalTotalWithVat = parseFloat((grossSubtotalWithVat + shipping).toFixed(2));
+
+  // Guardamos el precio unitario CON IVA en los ítems del pedido (igual que en el Checkout normal)
   const orderItems: OrderItem[] = quote.items.map(item => ({
     productId: item.productId,
     sku: item.sku || item.productId,
     name: item.name,
     quantity: item.quantity,
-    price: item.price,
+    price: parseFloat((item.price * (1 + vatRate)).toFixed(2)),
     imageUrl: item.imageUrl || '',
   }));
 
-  const paymentReference = Date.now().toString().slice(-8);
+  const paymentReference = `SPEI-${Date.now().toString().slice(-8)}`;
   const nowIso = new Date().toISOString();
 
   const newOrderData: Omit<Order, 'id'> = {
     userId: userId,
     items: orderItems,
-    subtotal: quote.subtotal,
-    shippingCost: quote.shippingCost || 0,
-    vatAmount: quote.vatAmount,
-    totalAmount: quote.totalAmount,
+    subtotal: grossSubtotalWithVat,
+    shippingCost: shipping,
+    vatAmount: effectiveVatAmount,
+    totalAmount: finalTotalWithVat,
     status: 'pending',
     createdAt: nowIso,
     updatedAt: nowIso,
@@ -154,11 +231,11 @@ export async function createOrderFromQuote(quote: Quote): Promise<Order> {
       city: 'Por definir',
       zip: '00000',
       country: 'México',
-      phone: 'Pendiente',
+      phone: quote.customerPhone || 'Pendiente',
       contactEmail: quote.customerEmail,
     },
     paymentDetails: {
-      method: 'Transferencia Bancaria',
+      method: 'spei',
       instructions: `Pedido generado desde Cotización ${quote.quoteNumber}.`,
     },
     paymentReference: paymentReference,
@@ -172,6 +249,44 @@ export async function createOrderFromQuote(quote: Quote): Promise<Order> {
       updatedAt: Timestamp.fromDate(new Date(nowIso)),
     };
     const docRef = await addDoc(ordersCollectionRef, firestoreOrderData);
+
+    // Notificar conversión de cotización a pedido en ventas@borarly.com
+    try {
+      const token = await auth.currentUser?.getIdToken();
+      if (token && typeof window !== 'undefined') {
+        await fetch('/api/orders/notify', {
+          method: 'POST',
+          keepalive: true,
+          headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+          body: JSON.stringify({
+            orderId: docRef.id,
+            reference: paymentReference,
+            createdAt: nowIso,
+            status: 'pending',
+            paymentMethod: 'spei',
+            customer: {
+              name: quote.customerName || 'Cliente',
+              email: quote.customerEmail || '',
+              phone: quote.customerPhone || '',
+            },
+            shipping: {
+              street: newOrderData.shippingAddress.street,
+              city: newOrderData.shippingAddress.city,
+              zip: newOrderData.shippingAddress.zip,
+              country: newOrderData.shippingAddress.country,
+            },
+            items: orderItems.map(({ name, sku, quantity, price, imageUrl }) => ({ name, sku, quantity, price, imageUrl })),
+            subtotal: parseFloat(subAfterDiscountSinIva.toFixed(2)),
+            vatAmount: effectiveVatAmount,
+            shippingCost: shipping,
+            total: finalTotalWithVat,
+            billing: null,
+          }),
+        });
+      }
+    } catch (notifyErr) {
+      console.warn('[OrderService] No se pudo enviar notificación de correo:', notifyErr);
+    }
 
     return {
       id: docRef.id,

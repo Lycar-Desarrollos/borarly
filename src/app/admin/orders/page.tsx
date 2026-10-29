@@ -14,9 +14,9 @@ import {
 import { useToast } from '@/hooks/use-toast';
 import type { Order } from '@/lib/types';
 import { Timestamp, doc, updateDoc, deleteDoc } from 'firebase/firestore';
-import { db, storage } from '@/lib/firebase';
+import { db, storage, auth } from '@/lib/firebase';
 import { ref as storageRef, uploadBytesResumable, getDownloadURL } from 'firebase/storage';
-import { fetchAllOrders } from '@/services/orderService';
+import { fetchAllOrders, getOrderFinancials } from '@/services/orderService';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import {
   Dialog, DialogContent, DialogDescription, DialogHeader,
@@ -270,6 +270,7 @@ export default function AdminOrdersPage() {
 
     let logoBase64: string | null = null;
     if (pdfLogoUrl) logoBase64 = await getImageBase64(pdfLogoUrl);
+    if (!logoBase64) logoBase64 = await getImageBase64('/logo.png');
 
     if (logoBase64) {
       try { pdfDoc.addImage(logoBase64, 'PNG', 14, 12, 48, 12); } catch { /* skip */ }
@@ -313,43 +314,58 @@ export default function AdminOrdersPage() {
       pdfDoc.text(order.userId || 'Cliente BORARLY', 120, currentY);
     }
 
+    const fin = getOrderFinancials(order);
+
     (pdfDoc as any).autoTable({
       startY: 85,
-      head: [['#', 'Producto / Modelo', 'Cant.', 'Precio Unit.', 'Total']],
-      body: order.items.map((item, i) => [
-        i + 1,
-        item.name + `\n(Modelo: ${item.sku || item.productId})`,
-        item.quantity,
-        fmt(item.price),
-        fmt(item.price * item.quantity),
-      ]),
+      head: [['#', 'Producto / Modelo', 'Cant.', 'P. Unit. (s/IVA)', 'P. Unit. (c/IVA)', 'Importe (s/IVA)']],
+      body: order.items.map((item, i) => {
+        const unitConIva = fin.itemsAreVatInclusive ? item.price : item.price * 1.16;
+        const unitSinIva = fin.itemsAreVatInclusive ? item.price / 1.16 : item.price;
+        return [
+          i + 1,
+          item.name + `\n(Modelo: ${item.sku || item.productId})`,
+          item.quantity,
+          fmt(unitSinIva),
+          fmt(unitConIva),
+          fmt(unitSinIva * item.quantity),
+        ];
+      }),
       theme: 'striped',
       headStyles: { fillColor: [2, 86, 185] },
-      styles: { halign: 'center' },
-      columnStyles: { 1: { halign: 'left', cellWidth: 80 }, 3: { halign: 'right' }, 4: { halign: 'right' } },
+      styles: { halign: 'center', fontSize: 9 },
+      columnStyles: {
+        0: { cellWidth: 10 },
+        1: { halign: 'left', cellWidth: 72 },
+        2: { cellWidth: 16 },
+        3: { halign: 'right', cellWidth: 29 },
+        4: { halign: 'right', cellWidth: 29 },
+        5: { halign: 'right', cellWidth: 30 },
+      },
     });
 
     const finalY = (pdfDoc as any).lastAutoTable.finalY || 140;
-    const totalsX = 140;
+    const totalsX = 148;
     let totalsY = finalY + 10;
 
-    pdfDoc.setFontSize(12);
-    pdfDoc.text('Subtotal:', totalsX, totalsY, { align: 'right' });
-    pdfDoc.text(fmt(order.subtotal), 200, totalsY, { align: 'right' });
-
-    if (order.shippingCost > 0) {
-      totalsY += 7;
-      pdfDoc.text('Envío:', totalsX, totalsY, { align: 'right' });
-      pdfDoc.text(fmt(order.shippingCost), 200, totalsY, { align: 'right' });
-    }
+    pdfDoc.setFontSize(11);
+    pdfDoc.setFont('helvetica', 'normal');
+    pdfDoc.text('Subtotal (sin IVA):', totalsX, totalsY, { align: 'right' });
+    pdfDoc.text(fmt(fin.subtotalSinIva), 200, totalsY, { align: 'right' });
 
     totalsY += 7;
     pdfDoc.text('IVA (16%):', totalsX, totalsY, { align: 'right' });
-    pdfDoc.text(fmt(order.vatAmount), 200, totalsY, { align: 'right' });
+    pdfDoc.text(fmt(fin.vatAmount), 200, totalsY, { align: 'right' });
 
-    totalsY += 7; pdfDoc.setFont('helvetica', 'bold');
-    pdfDoc.text('Total (MXN):', totalsX, totalsY, { align: 'right' });
-    pdfDoc.text(fmt(order.totalAmount), 200, totalsY, { align: 'right' });
+    totalsY += 7;
+    pdfDoc.text('Costo de envío:', totalsX, totalsY, { align: 'right' });
+    pdfDoc.text(fin.shippingCost > 0 ? fmt(fin.shippingCost) : 'Gratis', 200, totalsY, { align: 'right' });
+
+    totalsY += 8;
+    pdfDoc.setFontSize(12);
+    pdfDoc.setFont('helvetica', 'bold');
+    pdfDoc.text('Total (MXN, IVA incl.):', totalsX, totalsY, { align: 'right' });
+    pdfDoc.text(fmt(fin.totalAmount), 200, totalsY, { align: 'right' });
 
     let paymentY = totalsY + 15;
     if (paymentY > 250) { pdfDoc.addPage(); paymentY = 20; }
@@ -379,31 +395,34 @@ export default function AdminOrdersPage() {
     const headers = [
       'Folio', 'ID Completo', 'Fecha', 'Estado', 'Referencia Pago', 'Metodo Pago',
       'Email Cliente', 'Telefono', 'Ciudad', 'CP', 'Requiere Factura', 'RFC',
-      'Razon Social', 'Paqueteria', 'Guia', 'Articulos', 'Subtotal', 'Envio', 'IVA', 'Total',
+      'Razon Social', 'Paqueteria', 'Guia', 'Articulos', 'Subtotal (sin IVA)', 'IVA (16%)', 'Envio', 'Total (IVA incl.)',
     ];
     const escape = (v: unknown) => `"${String(v ?? '').replace(/"/g, '""')}"`;
-    const rows = target.map(o => [
-      o.id.substring(0, 8).toUpperCase(),
-      o.id,
-      o.createdAt,
-      STATUS_TRANSLATIONS[o.status],
-      o.paymentReference || '',
-      o.paymentDetails?.method || '',
-      o.shippingAddress?.contactEmail || '',
-      o.shippingAddress?.phone || '',
-      o.shippingAddress?.city || '',
-      o.shippingAddress?.zip || '',
-      o.requiresBilling ? 'SI' : 'NO',
-      o.billingDetails?.rfc || '',
-      o.billingDetails?.razonSocial || '',
-      o.shippingProvider || '',
-      o.trackingNumber || '',
-      o.items.map(i => `${i.quantity}x ${i.sku || i.productId} (${i.name})`).join(' | '),
-      o.subtotal,
-      o.shippingCost,
-      o.vatAmount,
-      o.totalAmount,
-    ].map(escape).join(','));
+    const rows = target.map(o => {
+      const fin = getOrderFinancials(o);
+      return [
+        o.id.substring(0, 8).toUpperCase(),
+        o.id,
+        o.createdAt,
+        STATUS_TRANSLATIONS[o.status],
+        o.paymentReference || '',
+        o.paymentDetails?.method || '',
+        o.shippingAddress?.contactEmail || '',
+        o.shippingAddress?.phone || '',
+        o.shippingAddress?.city || '',
+        o.shippingAddress?.zip || '',
+        o.requiresBilling ? 'SI' : 'NO',
+        o.billingDetails?.rfc || '',
+        o.billingDetails?.razonSocial || '',
+        o.shippingProvider || '',
+        o.trackingNumber || '',
+        o.items.map(i => `${i.quantity}x ${i.sku || i.productId} (${i.name})`).join(' | '),
+        fin.subtotalSinIva,
+        fin.vatAmount,
+        fin.shippingCost,
+        fin.totalAmount,
+      ].map(escape).join(',');
+    });
 
     const csv = '\uFEFF' + [headers.map(escape).join(','), ...rows].join('\r\n');
     const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
@@ -497,6 +516,70 @@ export default function AdminOrdersPage() {
     const folio = order.id.substring(0, 8).toUpperCase();
     const msg = `Hola, te escribimos de Borarly respecto a tu pedido #${folio}.`;
     return `https://wa.me/${phone}?text=${encodeURIComponent(msg)}`;
+  };
+
+  const [isSendingEmail, setIsSendingEmail] = useState(false);
+
+  const handleSendOrderEmail = async (order: Order) => {
+    setIsSendingEmail(true);
+    try {
+      const token = await auth.currentUser?.getIdToken();
+      if (!token) {
+        toast({ title: 'Sesión requerida', description: 'Inicia sesión nuevamente para enviar el correo.', variant: 'destructive' });
+        return;
+      }
+      const fin = getOrderFinancials(order);
+      const res = await fetch('/api/orders/notify', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+        body: JSON.stringify({
+          orderId: order.id,
+          reference: order.paymentReference || order.id.substring(0, 8).toUpperCase(),
+          createdAt: order.createdAt,
+          status: order.status,
+          paymentMethod: order.paymentDetails?.method || 'spei',
+          customer: {
+            name: order.billingDetails?.razonSocial || order.shippingAddress?.contactEmail || 'Cliente Borarly',
+            email: order.shippingAddress?.contactEmail || '',
+            phone: order.shippingAddress?.phone || '',
+          },
+          shipping: {
+            street: order.shippingAddress?.street || 'Envío estándar',
+            city: order.shippingAddress?.city || '',
+            zip: order.shippingAddress?.zip || '',
+            country: order.shippingAddress?.country || 'México',
+          },
+          items: (order.items || []).map(it => ({
+            name: it.name,
+            sku: it.sku || it.productId,
+            quantity: it.quantity,
+            price: fin.itemsAreVatInclusive ? it.price : parseFloat((it.price * 1.16).toFixed(2)),
+            imageUrl: it.imageUrl || '',
+          })),
+          subtotal: fin.subtotalSinIva,
+          vatAmount: fin.vatAmount,
+          shippingCost: fin.shippingCost,
+          total: fin.totalAmount,
+          billing: order.requiresBilling && order.billingDetails ? order.billingDetails : null,
+        }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok || !data?.ok) {
+        throw new Error(data?.error || 'Error al enviar correo');
+      }
+      toast({
+        title: 'Aviso enviado a ventas@borarly.com',
+        description: `Se envió el detalle del pedido #${order.id.substring(0, 8).toUpperCase()} a ventas@borarly.com.`,
+      });
+    } catch (err: any) {
+      toast({
+        title: 'No se pudo enviar el correo',
+        description: err?.message || 'Verifica la configuración SMTP.',
+        variant: 'destructive',
+      });
+    } finally {
+      setIsSendingEmail(false);
+    }
   };
 
   return (
@@ -837,37 +920,45 @@ export default function AdminOrdersPage() {
                   </div>
 
                   {/* Desglose financiero */}
-                  <div className="divide-y divide-border text-xs sm:text-sm">
-                    <div className="py-3 space-y-2">
-                      <div className="flex items-center justify-between font-semibold text-foreground">
-                        <span>Subtotal de productos</span>
-                        <span>{fmt(detailOrder.subtotal)}</span>
-                      </div>
-                      {detailOrder.items.map((item, idx) => (
-                        <div key={idx} className="flex items-start justify-between gap-3 text-xs text-muted-foreground">
-                          <span className="line-clamp-1">{item.quantity}× {item.name}</span>
-                          <span className="shrink-0">{fmt(item.price * item.quantity)}</span>
+                  {(() => {
+                    const fin = getOrderFinancials(detailOrder);
+                    return (
+                      <div className="divide-y divide-border text-xs sm:text-sm">
+                        <div className="py-3 space-y-2">
+                          <div className="flex items-center justify-between font-semibold text-foreground">
+                            <span>Subtotal (sin IVA)</span>
+                            <span>{fmt(fin.subtotalSinIva)}</span>
+                          </div>
+                          {detailOrder.items.map((item, idx) => {
+                            const unitSinIva = fin.itemsAreVatInclusive ? item.price / 1.16 : item.price;
+                            return (
+                              <div key={idx} className="flex items-start justify-between gap-3 text-xs text-muted-foreground">
+                                <span className="line-clamp-1">{item.quantity}× {item.name}</span>
+                                <span className="shrink-0">{fmt(unitSinIva * item.quantity)}</span>
+                              </div>
+                            );
+                          })}
                         </div>
-                      ))}
-                    </div>
 
-                    <div className="py-3 flex items-center justify-between">
-                      <span className="font-semibold text-foreground">Costo de envío</span>
-                      <span className="font-medium text-foreground">
-                        {detailOrder.shippingCost > 0 ? fmt(detailOrder.shippingCost) : 'Gratis'}
-                      </span>
-                    </div>
+                        <div className="py-3 flex items-center justify-between">
+                          <span className="font-semibold text-foreground">IVA (16%)</span>
+                          <span className="font-medium text-foreground">{fmt(fin.vatAmount)}</span>
+                        </div>
 
-                    <div className="py-3 flex items-center justify-between">
-                      <span className="font-semibold text-foreground">IVA (16%)</span>
-                      <span className="font-medium text-foreground">{fmt(detailOrder.vatAmount)}</span>
-                    </div>
+                        <div className="py-3 flex items-center justify-between">
+                          <span className="font-semibold text-foreground">Costo de envío</span>
+                          <span className="font-medium text-foreground">
+                            {fin.shippingCost > 0 ? fmt(fin.shippingCost) : 'Gratis'}
+                          </span>
+                        </div>
 
-                    <div className="pt-3 flex items-center justify-between text-sm font-bold text-foreground">
-                      <span>Total (MXN)</span>
-                      <span>{fmt(detailOrder.totalAmount)}</span>
-                    </div>
-                  </div>
+                        <div className="pt-3 flex items-center justify-between text-sm font-bold text-foreground">
+                          <span>Total (MXN, IVA incl.)</span>
+                          <span>{fmt(fin.totalAmount)}</span>
+                        </div>
+                      </div>
+                    );
+                  })()}
 
                   <div className="border-t border-border pt-4 space-y-2">
                     <button
@@ -877,6 +968,15 @@ export default function AdminOrdersPage() {
                     >
                       <FileText className="h-4 w-4" />
                       Descargar comprobante de pedido (PDF)
+                    </button>
+                    <button
+                      type="button"
+                      disabled={isSendingEmail}
+                      onClick={() => handleSendOrderEmail(detailOrder)}
+                      className="flex w-full items-center gap-2 text-xs font-semibold text-primary hover:underline pt-1 disabled:opacity-50"
+                    >
+                      {isSendingEmail ? <Loader2 className="h-4 w-4 animate-spin" /> : <Mail className="h-4 w-4" />}
+                      Enviar aviso a ventas@borarly.com
                     </button>
                     <button
                       type="button"

@@ -121,13 +121,23 @@ export function buildOrderEmailHtml(d: OrderEmailData) {
               ${sectionTitle(`Productos (${d.items.reduce((a, i) => a + i.quantity, 0)})`)}
               <table role="presentation" width="100%" cellpadding="0" cellspacing="0">${itemsHtml}</table>
 
-              <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin-top:14px;">
-                ${row('Subtotal (sin IVA)', money(d.subtotal - d.vatAmount))}
-                ${row('IVA (16%)', money(d.vatAmount))}
-                ${row('Envío', d.shippingCost === 0 ? '<span style="color:#16a34a;font-weight:bold;">Gratis</span>' : money(d.shippingCost))}
+              ${(() => {
+                const shippingCost = Number(d.shippingCost) || 0;
+                const total = Number(d.total) || 0;
+                const rawSub = Number(d.subtotal) || 0;
+                const rawVat = Number(d.vatAmount) || 0;
+                const isNetSub = rawVat > 0 && Math.abs(rawSub + rawVat + shippingCost - total) < 0.5 && Math.abs(rawSub + shippingCost - total) >= 0.5;
+                const grossProducts = Math.max(0, total > 0 ? total - shippingCost : rawSub);
+                const subtotalSinIva = isNetSub ? rawSub : grossProducts / 1.16;
+                const vatAmount = isNetSub ? rawVat : grossProducts - subtotalSinIva;
+                return `<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin-top:14px;">
+                ${row('Subtotal (sin IVA)', money(subtotalSinIva))}
+                ${row('IVA (16%)', money(vatAmount))}
+                ${row('Envío', shippingCost === 0 ? '<span style="color:#16a34a;font-weight:bold;">Gratis</span>' : money(shippingCost))}
                 <tr><td colspan="2" style="border-top:1px solid #e5e7eb;padding-top:6px;"></td></tr>
-                ${row('Total', money(d.total), true)}
-              </table>
+                ${row('Total (IVA incl.)', money(total), true)}
+              </table>`;
+              })()}
 
               <div style="height:24px;"></div>
               <table role="presentation" width="100%" cellpadding="0" cellspacing="0"><tr>

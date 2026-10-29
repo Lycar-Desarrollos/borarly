@@ -330,27 +330,35 @@ export function QuoteForm({ quote: initialQuote }: { quote?: Quote }) {
 
     (doc as any).autoTable({
       startY: 80,
-      head: [['#', 'Producto', 'Cant.', 'Precio Unit.', 'Total']],
+      head: [['#', 'Producto / Modelo', 'Cant.', 'P. Unit. (s/IVA)', 'P. Unit. (c/IVA)', 'Importe (s/IVA)']],
       body: items.map((item, i) => [
         i + 1,
         item.name + `\nModelo: ${item.sku || item.productId}`,
         item.quantity,
         formatCurrency(item.price),
+        formatCurrency(item.price * (1 + (includeVat ? vatRate : 0))),
         formatCurrency(item.price * item.quantity),
       ]),
       theme: 'striped',
       headStyles: { fillColor: [2, 86, 185] },
-      styles: { halign: 'center' },
-      columnStyles: { 1: { halign: 'left', cellWidth: 80 }, 3: { halign: 'right' }, 4: { halign: 'right' } },
+      styles: { halign: 'center', fontSize: 9 },
+      columnStyles: {
+        0: { cellWidth: 10 },
+        1: { halign: 'left', cellWidth: 72 },
+        2: { cellWidth: 16 },
+        3: { halign: 'right', cellWidth: 29 },
+        4: { halign: 'right', cellWidth: 29 },
+        5: { halign: 'right', cellWidth: 30 },
+      },
     });
 
     const finalY = (doc as any).lastAutoTable.finalY || 140;
     let notesY = finalY + 10;
-    const totalsX = 140;
+    const totalsX = 148;
     let totalsY = finalY + 10;
 
-    doc.setFontSize(12);
-    doc.text('Subtotal:', totalsX, totalsY, { align: 'right' });
+    doc.setFontSize(11);
+    doc.text('Subtotal (sin IVA):', totalsX, totalsY, { align: 'right' });
     doc.text(formatCurrency(subtotal), 200, totalsY, { align: 'right' });
     if (discountAmount > 0) {
       totalsY += 7;
@@ -359,18 +367,18 @@ export function QuoteForm({ quote: initialQuote }: { quote?: Quote }) {
       doc.text(`-${formatCurrency(discountAmount)}`, 200, totalsY, { align: 'right' });
       doc.setTextColor(0, 0, 0);
     }
-    if (shippingCost > 0) {
-      totalsY += 7;
-      doc.text('Envío:', totalsX, totalsY, { align: 'right' });
-      doc.text(formatCurrency(shippingCost), 200, totalsY, { align: 'right' });
-    }
     if (includeVat) {
       totalsY += 7;
       doc.text(`IVA (${(vatRate * 100).toFixed(0)}%):`, totalsX, totalsY, { align: 'right' });
       doc.text(formatCurrency(vatAmount), 200, totalsY, { align: 'right' });
     }
-    totalsY += 7; doc.setFont('helvetica', 'bold');
-    doc.text('Total (MXN):', totalsX, totalsY, { align: 'right' });
+    if (shippingCost > 0) {
+      totalsY += 7;
+      doc.text('Envío:', totalsX, totalsY, { align: 'right' });
+      doc.text(formatCurrency(shippingCost), 200, totalsY, { align: 'right' });
+    }
+    totalsY += 8; doc.setFontSize(12); doc.setFont('helvetica', 'bold');
+    doc.text('Total (MXN, IVA incl.):', totalsX, totalsY, { align: 'right' });
     doc.text(formatCurrency(totalAmount), 200, totalsY, { align: 'right' });
 
     if (notes) {
@@ -581,12 +589,13 @@ export function QuoteForm({ quote: initialQuote }: { quote?: Quote }) {
           <Table>
             <TableHeader>
               <TableRow className="bg-[#0256b9] hover:bg-[#02499e] border-none">
-                <TableHead className="text-white font-bold min-w-[240px]">Producto / Concepto</TableHead>
-                <TableHead className="w-[140px] text-white font-bold">Modelo / SKU</TableHead>
-                <TableHead className="w-[80px] text-white font-bold">Stock</TableHead>
-                <TableHead className="w-[100px] text-white font-bold">Cant.</TableHead>
-                <TableHead className="w-[150px] text-white font-bold text-right">Precio s/IVA</TableHead>
-                <TableHead className="w-[150px] text-white font-bold text-right">Total Línea</TableHead>
+                <TableHead className="text-white font-bold min-w-[220px]">Producto / Concepto</TableHead>
+                <TableHead className="w-[130px] text-white font-bold">Modelo / SKU</TableHead>
+                <TableHead className="w-[75px] text-white font-bold">Stock</TableHead>
+                <TableHead className="w-[90px] text-white font-bold">Cant.</TableHead>
+                <TableHead className="w-[135px] text-white font-bold text-right">Precio s/IVA</TableHead>
+                <TableHead className="w-[130px] text-white font-bold text-right">Precio c/IVA</TableHead>
+                <TableHead className="w-[140px] text-white font-bold text-right">Total s/IVA</TableHead>
                 <TableHead className="w-[48px]"></TableHead>
               </TableRow>
             </TableHeader>
@@ -628,6 +637,9 @@ export function QuoteForm({ quote: initialQuote }: { quote?: Quote }) {
                       className="h-8 text-right"
                     />
                   </TableCell>
+                  <TableCell className="text-right text-xs text-muted-foreground font-medium">
+                    {formatCurrency(item.price * (1 + (includeVat ? vatRate : 0)))}
+                  </TableCell>
                   <TableCell className="text-right font-semibold">
                     {formatCurrency(item.price * item.quantity)}
                   </TableCell>
@@ -639,7 +651,7 @@ export function QuoteForm({ quote: initialQuote }: { quote?: Quote }) {
                 </TableRow>
               )) : (
                 <TableRow>
-                  <TableCell colSpan={7} className="text-center h-24 text-muted-foreground">
+                  <TableCell colSpan={8} className="text-center h-24 text-muted-foreground">
                     <div className="flex flex-col items-center gap-2">
                       <Package className="h-8 w-8 opacity-30" />
                       Busca productos arriba o añade un concepto manual para empezar

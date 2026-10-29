@@ -1,4 +1,3 @@
-
 /**
  * @fileOverview Service functions for managing app-wide settings in Firestore.
  */
@@ -15,37 +14,53 @@ const CURRENCY_DOC_ID = 'currency';
 const TAX_DOC_ID = 'taxes';
 const PROFIT_DOC_ID = 'profit_margin';
 
+const DEFAULT_VAT_RATE = 0.16;      // 16% IVA México obligatorio por defecto
+const DEFAULT_PROFIT_MARGIN = 0.25; // 25% Margen de ganancia comercial por defecto
+
+// Caché en memoria (TTL 5 minutos) para evitar agotar la cuota gratuita de 50,000 lecturas diarias de Firestore
+const SETTINGS_CACHE_TTL_MS = 5 * 60 * 1000;
+let cachedVatRate: { value: number; expiresAt: number } | null = null;
+let cachedProfitMargin: { value: number; expiresAt: number } | null = null;
+let cachedShippingSettings: { value: { cost: number; freeShippingThreshold: number | null }; expiresAt: number } | null = null;
+
 
 /**
  * Gets the current shipping settings from Firestore.
  * @returns An object with shippingCost and freeShippingThreshold.
  */
 export async function getShippingSettings(): Promise<{ cost: number; freeShippingThreshold: number | null }> {
+  if (cachedShippingSettings && Date.now() < cachedShippingSettings.expiresAt) {
+    return cachedShippingSettings.value;
+  }
   try {
     if (typeof window === 'undefined') {
       const docs = await fetchFirestoreCollectionRest(SETTINGS_COLLECTION);
       const data = docs[SHIPPING_DOC_ID] as AppSettings | undefined;
       if (data) {
-        return {
+        const result = {
           cost: data.shippingCost || 0,
           freeShippingThreshold: typeof data.freeShippingThreshold === 'number' ? data.freeShippingThreshold : null,
         };
+        cachedShippingSettings = { value: result, expiresAt: Date.now() + SETTINGS_CACHE_TTL_MS };
+        return result;
       }
-      return { cost: 0, freeShippingThreshold: null };
+      return cachedShippingSettings?.value ?? { cost: 0, freeShippingThreshold: null };
     }
     const shippingDocRef = doc(db, SETTINGS_COLLECTION, SHIPPING_DOC_ID);
     const docSnap = await getDoc(shippingDocRef);
     if (docSnap.exists()) {
       const data = docSnap.data() as AppSettings;
-      return {
+      const result = {
         cost: data.shippingCost || 0,
         freeShippingThreshold: typeof data.freeShippingThreshold === 'number' ? data.freeShippingThreshold : null,
       };
+      cachedShippingSettings = { value: result, expiresAt: Date.now() + SETTINGS_CACHE_TTL_MS };
+      return result;
     }
-    return { cost: 0, freeShippingThreshold: null };
+    return cachedShippingSettings?.value ?? { cost: 0, freeShippingThreshold: null };
   } catch (error) {
     console.error("Error fetching shipping settings:", error);
-    return { cost: 0, freeShippingThreshold: null };
+    return cachedShippingSettings?.value ?? { cost: 0, freeShippingThreshold: null };
   }
 }
 
@@ -61,6 +76,10 @@ export async function updateShippingSettings(cost: number, freeShippingThreshold
         shippingCost: cost,
         freeShippingThreshold: freeShippingThreshold 
     }, { merge: true });
+    cachedShippingSettings = {
+      value: { cost, freeShippingThreshold },
+      expiresAt: Date.now() + SETTINGS_CACHE_TTL_MS,
+    };
   } catch (error) {
     console.error("Error updating shipping settings:", error);
     throw new Error("Failed to update shipping settings.");
@@ -176,23 +195,30 @@ export async function updateExchangeRate(rate: number): Promise<void> {
  * @returns The VAT rate as a decimal (e.g., 0.16 for 16%), or a default value.
  */
 export async function getVatRate(): Promise<number> {
+  if (cachedVatRate && Date.now() < cachedVatRate.expiresAt) {
+    return cachedVatRate.value;
+  }
   try {
     if (typeof window === 'undefined') {
       const docs = await fetchFirestoreCollectionRest(SETTINGS_COLLECTION);
       const data = docs[TAX_DOC_ID] as AppSettings | undefined;
-      return typeof data?.vatRate === 'number' && data.vatRate >= 0 ? data.vatRate : 0.16;
+      const rate = typeof data?.vatRate === 'number' && data.vatRate > 0 ? data.vatRate : DEFAULT_VAT_RATE;
+      cachedVatRate = { value: rate, expiresAt: Date.now() + SETTINGS_CACHE_TTL_MS };
+      return rate;
     }
     const taxDocRef = doc(db, SETTINGS_COLLECTION, TAX_DOC_ID);
     const docSnap = await getDoc(taxDocRef);
     if (docSnap.exists()) {
       const data = docSnap.data() as AppSettings;
-      // Default to 0.16 if not set or invalid
-      return typeof data.vatRate === 'number' && data.vatRate >= 0 ? data.vatRate : 0.16;
+      const rate = typeof data.vatRate === 'number' && data.vatRate > 0 ? data.vatRate : DEFAULT_VAT_RATE;
+      cachedVatRate = { value: rate, expiresAt: Date.now() + SETTINGS_CACHE_TTL_MS };
+      return rate;
     }
-    return 0.16; // Default rate
+    cachedVatRate = { value: DEFAULT_VAT_RATE, expiresAt: Date.now() + SETTINGS_CACHE_TTL_MS };
+    return DEFAULT_VAT_RATE;
   } catch (error) {
     console.error("Error fetching VAT rate:", error);
-    return 0.16; // Default rate on error
+    return cachedVatRate?.value ?? DEFAULT_VAT_RATE;
   }
 }
 
@@ -204,6 +230,7 @@ export async function updateVatRate(rate: number): Promise<void> {
   try {
     const taxDocRef = doc(db, SETTINGS_COLLECTION, TAX_DOC_ID);
     await setDoc(taxDocRef, { vatRate: rate }, { merge: true });
+    cachedVatRate = { value: rate, expiresAt: Date.now() + SETTINGS_CACHE_TTL_MS };
   } catch (error) {
     console.error("Error updating VAT rate:", error);
     throw new Error("Failed to update VAT rate.");
@@ -212,25 +239,33 @@ export async function updateVatRate(rate: number): Promise<void> {
 
 /**
  * Gets the current general profit margin from Firestore.
- * @returns The profit margin as a decimal (e.g., 0.30 for 30%), or default 0.0.
+ * @returns The profit margin as a decimal (e.g., 0.25 for 25%), or default 0.25.
  */
 export async function getProfitMargin(): Promise<number> {
+  if (cachedProfitMargin && Date.now() < cachedProfitMargin.expiresAt) {
+    return cachedProfitMargin.value;
+  }
   try {
     if (typeof window === 'undefined') {
       const docs = await fetchFirestoreCollectionRest(SETTINGS_COLLECTION);
       const data = docs[PROFIT_DOC_ID] as any;
-      return typeof data?.profitMargin === 'number' && data.profitMargin >= 0 ? data.profitMargin : 0.0;
+      const margin = typeof data?.profitMargin === 'number' && data.profitMargin > 0 ? data.profitMargin : DEFAULT_PROFIT_MARGIN;
+      cachedProfitMargin = { value: margin, expiresAt: Date.now() + SETTINGS_CACHE_TTL_MS };
+      return margin;
     }
     const profitDocRef = doc(db, SETTINGS_COLLECTION, PROFIT_DOC_ID);
     const docSnap = await getDoc(profitDocRef);
     if (docSnap.exists()) {
       const data = docSnap.data() as any;
-      return typeof data.profitMargin === 'number' && data.profitMargin >= 0 ? data.profitMargin : 0.0;
+      const margin = typeof data.profitMargin === 'number' && data.profitMargin > 0 ? data.profitMargin : DEFAULT_PROFIT_MARGIN;
+      cachedProfitMargin = { value: margin, expiresAt: Date.now() + SETTINGS_CACHE_TTL_MS };
+      return margin;
     }
-    return 0.0; // Ganancia por defecto
+    cachedProfitMargin = { value: DEFAULT_PROFIT_MARGIN, expiresAt: Date.now() + SETTINGS_CACHE_TTL_MS };
+    return DEFAULT_PROFIT_MARGIN;
   } catch (error) {
     console.error("Error fetching profit margin:", error);
-    return 0.0; 
+    return cachedProfitMargin?.value ?? DEFAULT_PROFIT_MARGIN;
   }
 }
 
@@ -242,6 +277,7 @@ export async function updateProfitMargin(margin: number): Promise<void> {
   try {
     const profitDocRef = doc(db, SETTINGS_COLLECTION, PROFIT_DOC_ID);
     await setDoc(profitDocRef, { profitMargin: margin }, { merge: true });
+    cachedProfitMargin = { value: margin, expiresAt: Date.now() + SETTINGS_CACHE_TTL_MS };
   } catch (error) {
     console.error("Error updating profit margin:", error);
     throw new Error("Failed to update profit margin.");

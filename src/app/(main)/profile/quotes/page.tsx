@@ -514,23 +514,25 @@ function CustomerQuotesContent() {
       const tableStartY = Math.max(78, clientY + 8);
       (doc as any).autoTable({
         startY: tableStartY,
-        head: [['#', 'Descripción / Producto', 'Cant.', 'Precio Unit. (s/IVA)', 'Total (s/IVA)']],
+        head: [['#', 'Descripción / Producto', 'Cant.', 'P. Unit. (s/IVA)', 'P. Unit. (c/IVA)', 'Importe (s/IVA)']],
         body: quote.items.map((item, idx) => [
           idx + 1,
           `${item.name}\nModelo / SKU: ${item.sku || item.productId}`,
           item.quantity,
           formatCurrency(item.price),
+          formatCurrency(item.price * (1 + vatRate)),
           formatCurrency(item.price * item.quantity),
         ]),
         theme: 'striped',
         headStyles: { fillColor: [2, 86, 185], textColor: 255, fontStyle: 'bold' },
         styles: { halign: 'center', fontSize: 9, cellPadding: 3 },
         columnStyles: {
-          0: { cellWidth: 12 },
-          1: { halign: 'left', cellWidth: 92 },
-          2: { cellWidth: 18 },
-          3: { halign: 'right', cellWidth: 32 },
-          4: { halign: 'right', cellWidth: 32 },
+          0: { cellWidth: 10 },
+          1: { halign: 'left', cellWidth: 72 },
+          2: { cellWidth: 16 },
+          3: { halign: 'right', cellWidth: 29 },
+          4: { halign: 'right', cellWidth: 29 },
+          5: { halign: 'right', cellWidth: 30 },
         },
       });
 
@@ -1086,11 +1088,12 @@ function CustomerQuotesContent() {
                 <TableHeader>
                   <TableRow className="bg-[#0256b9] hover:bg-[#02499e] border-none">
                     <TableHead className="text-white font-bold min-w-[220px]">Producto / Descripción</TableHead>
-                    <TableHead className="w-[130px] text-white font-bold">Modelo / SKU</TableHead>
-                    <TableHead className="w-[80px] text-white font-bold text-center">Stock</TableHead>
-                    <TableHead className="w-[130px] text-white font-bold text-center">Cantidad</TableHead>
-                    <TableHead className="w-[130px] text-white font-bold text-right">Precio s/IVA</TableHead>
-                    <TableHead className="w-[130px] text-white font-bold text-right">Total s/IVA</TableHead>
+                    <TableHead className="w-[125px] text-white font-bold">Modelo / SKU</TableHead>
+                    <TableHead className="w-[75px] text-white font-bold text-center">Stock</TableHead>
+                    <TableHead className="w-[120px] text-white font-bold text-center">Cantidad</TableHead>
+                    <TableHead className="w-[120px] text-white font-bold text-right">Precio s/IVA</TableHead>
+                    <TableHead className="w-[120px] text-white font-bold text-right">Precio c/IVA</TableHead>
+                    <TableHead className="w-[125px] text-white font-bold text-right">Total s/IVA</TableHead>
                     <TableHead className="w-[50px]"></TableHead>
                   </TableRow>
                 </TableHeader>
@@ -1140,6 +1143,9 @@ function CustomerQuotesContent() {
                         <TableCell className="text-right text-xs sm:text-sm font-medium">
                           {formatCurrency(item.price)}
                         </TableCell>
+                        <TableCell className="text-right text-xs sm:text-sm text-muted-foreground">
+                          {formatCurrency(item.price * (1 + vatRate))}
+                        </TableCell>
                         <TableCell className="text-right text-xs sm:text-sm font-bold">
                           {formatCurrency(item.price * item.quantity)}
                         </TableCell>
@@ -1158,7 +1164,7 @@ function CustomerQuotesContent() {
                     ))
                   ) : (
                     <TableRow>
-                      <TableCell colSpan={7} className="text-center h-28 text-muted-foreground">
+                      <TableCell colSpan={8} className="text-center h-28 text-muted-foreground">
                         <div className="flex flex-col items-center gap-2 py-4">
                           <Package className="h-8 w-8 opacity-30" />
                           <p className="text-sm">Usa el buscador de arriba o importa tu carrito para añadir productos</p>

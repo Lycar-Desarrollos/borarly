@@ -220,12 +220,13 @@ export default function AdminQuotesPage() {
     doc.text(quote.customerName, 130, 58);
     doc.text(quote.customerEmail, 130, 64);
 
-    const tableColumn = ["#", "Producto", "Cant.", "Precio Unit.", "Total"];
+    const tableColumn = ["#", "Producto / Modelo", "Cant.", "P. Unit. (s/IVA)", "P. Unit. (c/IVA)", "Importe (s/IVA)"];
     const tableRows = quote.items.map((item, index) => [
       index + 1,
       item.name + `\nModelo: ${item.sku || item.productId}`,
       item.quantity,
       formatCurrency(item.price),
+      formatCurrency(item.price * 1.16),
       formatCurrency(item.price * item.quantity)
     ]);
 
@@ -235,28 +236,34 @@ export default function AdminQuotesPage() {
       body: tableRows,
       theme: 'striped',
       headStyles: { fillColor: [2, 86, 185] },
-      styles: { halign: 'center' },
+      styles: { halign: 'center', fontSize: 9 },
       columnStyles: {
-        1: { halign: 'left', cellWidth: 80 },
-        3: { halign: 'right' },
-        4: { halign: 'right' }
+        0: { cellWidth: 10 },
+        1: { halign: 'left', cellWidth: 72 },
+        2: { cellWidth: 16 },
+        3: { halign: 'right', cellWidth: 29 },
+        4: { halign: 'right', cellWidth: 29 },
+        5: { halign: 'right', cellWidth: 30 }
       }
     });
 
     const finalY = (doc as any).lastAutoTable.finalY || 140;
     let notesStartY = finalY + 10;
 
-    const totalsX = 140;
+    const totalsX = 148;
     let totalsY = finalY + 10;
-    doc.setFontSize(12);
-    doc.text("Subtotal:", totalsX, totalsY, { align: 'right' });
+    doc.setFontSize(11);
+    doc.text("Subtotal (sin IVA):", totalsX, totalsY, { align: 'right' });
     doc.text(formatCurrency(quote.subtotal), 200, totalsY, { align: 'right' });
 
     const discVal = quote.discountValue || 0;
-    if (discVal > 0) {
-      const discAmt = quote.discountType === 'percentage'
-        ? Math.min(quote.subtotal, quote.subtotal * (discVal / 100))
-        : Math.min(quote.subtotal, discVal);
+    const discAmt = discVal > 0
+      ? (quote.discountType === 'percentage'
+          ? Math.min(quote.subtotal, quote.subtotal * (discVal / 100))
+          : Math.min(quote.subtotal, discVal))
+      : 0;
+
+    if (discAmt > 0) {
       totalsY += 7;
       doc.setTextColor(220, 53, 69);
       doc.text(`Descuento (${quote.discountType === 'percentage' ? `${discVal}%` : 'Fijo'}):`, totalsX, totalsY, { align: 'right' });
@@ -264,22 +271,25 @@ export default function AdminQuotesPage() {
       doc.setTextColor(0, 0, 0);
     }
 
+    const subAfterDisc = Math.max(0, quote.subtotal - discAmt);
+    const effectiveVat = quote.vatAmount > 0 ? quote.vatAmount : subAfterDisc * 0.16;
+    const effectiveTotal = quote.vatAmount > 0 ? quote.totalAmount : subAfterDisc + effectiveVat + (quote.shippingCost || 0);
+
+    totalsY += 7;
+    doc.text("IVA (16%):", totalsX, totalsY, { align: 'right' });
+    doc.text(formatCurrency(effectiveVat), 200, totalsY, { align: 'right' });
+
     if (quote.shippingCost > 0) {
       totalsY += 7;
       doc.text("Envío:", totalsX, totalsY, { align: 'right' });
       doc.text(formatCurrency(quote.shippingCost), 200, totalsY, { align: 'right' });
     }
 
-    if (quote.vatAmount > 0) {
-      totalsY += 7;
-      doc.text("IVA:", totalsX, totalsY, { align: 'right' });
-      doc.text(formatCurrency(quote.vatAmount), 200, totalsY, { align: 'right' });
-    }
-
-    totalsY += 7;
+    totalsY += 8;
+    doc.setFontSize(12);
     doc.setFont('helvetica', 'bold');
-    doc.text("Total (MXN):", totalsX, totalsY, { align: 'right' });
-    doc.text(formatCurrency(quote.totalAmount), 200, totalsY, { align: 'right' });
+    doc.text("Total (MXN, IVA incl.):", totalsX, totalsY, { align: 'right' });
+    doc.text(formatCurrency(effectiveTotal), 200, totalsY, { align: 'right' });
 
     if (quote.notes) {
       doc.setFontSize(10);

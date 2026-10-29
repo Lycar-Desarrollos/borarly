@@ -84,8 +84,10 @@ export async function POST(request: NextRequest) {
 
     // 4. Formatear datos de tabla comparativa
     const tableData = products.slice(0, 5).map(p => {
-      const priceVal = p.price?.finalPrice || p.price?.price || 0;
-      const formattedPrice = new Intl.NumberFormat('es-MX', { style: 'currency', currency: 'MXN' }).format(priceVal * 1.16);
+      const priceVal = typeof p.price === 'number'
+        ? p.price
+        : ((p.price as any)?.finalPrice || (p.price as any)?.price || 0) * 1.16;
+      const formattedPrice = new Intl.NumberFormat('es-MX', { style: 'currency', currency: 'MXN' }).format(priceVal);
       return {
         id: p.id,
         name: p.name || p.title || 'Producto',

@@ -120,7 +120,7 @@ async function safeJson(res: Response) {
 /**
  * Convierte el formato crudo de Syscom a nuestro formato local `Product`
  */
-function mapearProductoSyscom(p: any, exchangeRate: number, vatRate: number, profitMargin: number = 0): Product {
+function mapearProductoSyscom(p: any, exchangeRate: number, vatRate: number = 0.16, profitMargin: number = 0.25): Product {
     // Si img_portada no viene, buscamos en el array de imágenes si existe
     let miImagen = p.img_portada;
     if (!miImagen && p.imagenes && p.imagenes.length > 0) {
@@ -147,11 +147,13 @@ function mapearProductoSyscom(p: any, exchangeRate: number, vatRate: number, pro
     // 1. Costo Base en MXN (después de tipo de cambio)
     const costInMxn = baseMxn;
     
-    // 2. Aplicar Margen de Utilidad (ej. 0.159 para 15.9%)
-    const priceBeforeTax = costInMxn * (1 + profitMargin);
+    // 2. Aplicar Margen de Utilidad (garantizar respaldo de 25% = 0.25 si es 0 o no disponible)
+    const effectiveMargin = typeof profitMargin === 'number' && profitMargin > 0 ? profitMargin : 0.25;
+    const priceBeforeTax = costInMxn * (1 + effectiveMargin);
     
-    // 3. Aplicar IVA (ej. 0.16 para 16%)
-    const finalPrice = priceBeforeTax * (1 + vatRate);
+    // 3. Aplicar IVA (garantizar respaldo de 16% = 0.16)
+    const effectiveVat = typeof vatRate === 'number' && vatRate > 0 ? vatRate : 0.16;
+    const finalPrice = priceBeforeTax * (1 + effectiveVat);
 
     return {
         id: String(p.producto_id), 
@@ -160,7 +162,7 @@ function mapearProductoSyscom(p: any, exchangeRate: number, vatRate: number, pro
         price: parseFloat(finalPrice.toFixed(2)),
         currency: 'MXN',
         costPrice: parseFloat(costInMxn.toFixed(2)),
-        profitMargin: profitMargin,
+        profitMargin: effectiveMargin,
         imageUrls: Array.isArray(p.imagenes) && p.imagenes.length > 0 
             ? p.imagenes.map((img: any) => img.imagen || img.url || miImagen) 
             : [miImagen],

@@ -45,11 +45,11 @@ export async function POST(req: Request) {
     return NextResponse.json({ ok: false, error: 'Datos de pedido incompletos' }, { status: 400 });
   }
 
-  const SMTP_HOST = unquote(process.env.SMTP_HOST);
-  const SMTP_PORT = unquote(process.env.SMTP_PORT);
-  const SMTP_USER = unquote(process.env.SMTP_USER);
+  const SMTP_HOST = unquote(process.env.SMTP_HOST) || 'smtp.hostinger.com';
+  const SMTP_PORT = unquote(process.env.SMTP_PORT) || '465';
+  const SMTP_USER = unquote(process.env.SMTP_USER) || 'ventas@borarly.com';
   const SMTP_PASS = unquote(process.env.SMTP_PASS);
-  const SMTP_FROM = unquote(process.env.SMTP_FROM);
+  const SMTP_FROM = unquote(process.env.SMTP_FROM) || `"Borarly Ventas" <${SMTP_USER}>`;
   const SALES_EMAIL = unquote(process.env.SALES_NOTIFICATION_EMAIL) || 'ventas@borarly.com';
 
   if (!SMTP_HOST || !SMTP_USER || !SMTP_PASS) {

@@ -1,5 +1,5 @@
 [build]
-  command = "npm run build"
+  command = "node scripts/sync-build-env.cjs && npm run build:next"
   publish = ".next"
 
 [build.environment]

@@ -286,9 +286,11 @@ export default function CheckoutPage() {
       await addDoc(collection(db, 'adminNotifications'), adminNotification);
 
       // Notificar la venta a ventas@borarly.com (no bloquea la compra si falla)
-      currentUser.getIdToken().then((token) =>
-        fetch('/api/orders/notify', {
+      try {
+        const token = await currentUser.getIdToken();
+        await fetch('/api/orders/notify', {
           method: 'POST',
+          keepalive: true,
           headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
           body: JSON.stringify({
             orderId: orderDocRef.id,
@@ -309,14 +311,16 @@ export default function CheckoutPage() {
               country: activeAddress.country,
             },
             items: orderItems.map(({ name, sku, quantity, price, imageUrl }) => ({ name, sku, quantity, price, imageUrl })),
-            subtotal: cartSubtotal,
-            vatAmount: finalOrderData.vatAmount,
+            subtotal: parseFloat(netSubtotal.toFixed(2)),
+            vatAmount: parseFloat(vatAmount.toFixed(2)),
             shippingCost,
             total: finalTotal,
             billing: requiresBilling && finalBilling ? finalBilling : null,
           }),
-        })
-      ).catch((e) => console.error('No se pudo enviar el correo de venta', e));
+        });
+      } catch (e) {
+        console.error('No se pudo enviar el correo de venta', e);
+      }
       
       for (const item of orderItems) {
         await updateProductStock(item.productId, item.quantity).catch(e => console.error("No se pudo descontar stock local", e));

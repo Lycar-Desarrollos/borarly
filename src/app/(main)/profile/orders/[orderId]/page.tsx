@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/hooks/use-toast';
-import { fetchUserOrders } from '@/services/orderService';
+import { fetchUserOrders, getOrderFinancials } from '@/services/orderService';
 import type { Order, BillingData } from '@/lib/types';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -247,12 +247,17 @@ export default function OrderDetailPage() {
       <Separator />
 
       {/* TOTALES */}
-      <div className="space-y-1.5 text-sm max-w-xs ml-auto">
-        <div className="flex justify-between text-muted-foreground"><span>Subtotal</span><span>{formatCurrency(order.subtotal)}</span></div>
-        <div className="flex justify-between text-muted-foreground"><span>Envío</span><span>{formatCurrency(order.shippingCost)}</span></div>
-        <div className="flex justify-between text-muted-foreground"><span>IVA (16%)</span><span>{formatCurrency(order.vatAmount)}</span></div>
-        <div className="flex justify-between font-black text-base pt-2 border-t"><span>Total</span><span>{formatCurrency(order.totalAmount)}</span></div>
-      </div>
+      {(() => {
+        const fin = getOrderFinancials(order);
+        return (
+          <div className="space-y-1.5 text-sm max-w-xs ml-auto">
+            <div className="flex justify-between text-muted-foreground"><span>Subtotal (sin IVA)</span><span>{formatCurrency(fin.subtotalSinIva)}</span></div>
+            <div className="flex justify-between text-muted-foreground"><span>IVA (16%)</span><span>{formatCurrency(fin.vatAmount)}</span></div>
+            <div className="flex justify-between text-muted-foreground"><span>Envío</span><span>{fin.shippingCost > 0 ? formatCurrency(fin.shippingCost) : 'Gratis'}</span></div>
+            <div className="flex justify-between font-black text-base pt-2 border-t"><span>Total (MXN)</span><span>{formatCurrency(fin.totalAmount)}</span></div>
+          </div>
+        );
+      })()}
 
       {/* INSTRUCCIONES DE PAGO — solo si está pendiente */}
       {order.status === 'pending' && (
