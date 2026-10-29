@@ -286,7 +286,7 @@ export async function getCategories(includeSubcategories = true): Promise<Catego
        if (override) {
          return {
            ...cat,
-           featuredImageUrl: override.featuredImageUrl || cat.featuredImageUrl,
+           featuredImageUrl: (override.featuredImageUrl && !override.featuredImageUrl.includes('images.unsplash.com') && !override.featuredImageUrl.includes('placehold.co')) ? override.featuredImageUrl : cat.featuredImageUrl,
            isFeatured: override.isFeatured !== undefined ? override.isFeatured : cat.isFeatured,
            description: override.description || cat.description,
            isVisible: override.isVisible !== undefined ? override.isVisible : true,

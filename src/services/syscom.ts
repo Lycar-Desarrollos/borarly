@@ -589,7 +589,7 @@ export async function getRelacionadosSyscom(productoId: string): Promise<Product
 }
 
 function buildFallbackL1Categories(): Category[] {
-    const FALLBACK_IMG = 'https://images.unsplash.com/photo-1518770660439-4636190af475?q=80&w=800&auto=format&fit=crop';
+    const FALLBACK_IMG = '/images/categories/general.jpg';
     return FALLBACK_L1_RAW.map(c => ({
         id: String(c.id),
         name: c.nombre,
@@ -631,7 +631,7 @@ export async function getCategoriasSyscom(includeSubcategories = true): Promise<
         const results: Category[] = [];
 
         // Map for Premium Category Images (dynamic, based on category name instead of ID)
-        const FALLBACK_IMG = 'https://images.unsplash.com/photo-1518770660439-4636190af475?q=80&w=800&auto=format&fit=crop';
+        const FALLBACK_IMG = '/images/categories/general.jpg';
 
         // Mapeamos nivel 1 - FILTRAMOS MARKETING AQUÍ TAMBIÉN
         for (const c of categoriasCrudas) {
@@ -833,16 +833,20 @@ export function getMLCategoryName(nombre: string): string {
  */
 export function getCategoryImageByName(nombre: string): string {
     const n = nombre.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
-    
-    if (n.includes('video') || n.includes('camara') || n.includes('vigilancia')) return 'https://images.unsplash.com/photo-1557597774-9d273605dfa9?q=80&w=800&auto=format&fit=crop';
-    if (n.includes('acceso') || n.includes('biometrico')) return 'https://images.unsplash.com/photo-1558002038-1055907df827?q=80&w=800&auto=format&fit=crop';
-    if (n.includes('red') || n.includes('networking') || n.includes('switch')) return 'https://images.unsplash.com/photo-1544197150-b99a580bb7a8?q=80&w=800&auto=format&fit=crop';
-    if (n.includes('radio') || n.includes('comunicacion')) return 'https://images.unsplash.com/photo-1493246507139-91e8fad9978e?q=80&w=800&auto=format&fit=crop';
-    if (n.includes('cable') || n.includes('fibra') || n.includes('estructurado')) return 'https://images.unsplash.com/photo-1498084393753-b411b2d25b34?q=80&w=800&auto=format&fit=crop';
-    if (n.includes('energia') || n.includes('solar') || n.includes('ups')) return 'https://images.unsplash.com/photo-1473341304170-971dccb5ac1e?q=80&w=800&auto=format&fit=crop';
-    if (n.includes('fuego') || n.includes('incendio') || n.includes('humo')) return 'https://images.unsplash.com/photo-1582139329536-e7284fece509?q=80&w=800&auto=format&fit=crop';
-    if (n.includes('intrusion') || n.includes('alarma')) return 'https://images.unsplash.com/photo-1558002038-1055907df827?q=80&w=800&auto=format&fit=crop';
-    
-    return 'https://images.unsplash.com/photo-1518770660439-4636190af475?q=80&w=800&auto=format&fit=crop'; // Fallback tech
-}
+    const words = n.split(/[^a-z0-9]+/).filter(Boolean);
+    const has = (...keys: string[]) => keys.some(k => n.includes(k));
+    const base = '/images/categories';
 
+    if (has('video', 'camara', 'vigilancia', 'cctv')) return `${base}/videovigilancia.jpg`;
+    if (has('radio')) return `${base}/radiocomunicacion.jpg`;
+    if (has('gps', 'telematica', 'vehicul', 'rastreo')) return `${base}/gps.jpg`;
+    if (has('acceso', 'biometric', 'cerradura')) return `${base}/acceso.jpg`;
+    if (has('fuego', 'incendio', 'humo')) return `${base}/fuego.jpg`;
+    if (has('automatizacion', 'intrusion', 'alarma', 'domotica')) return `${base}/automatizacion.jpg`;
+    if (has('cable', 'fibra', 'estructurado')) return `${base}/cableado.jpg`;
+    if (has('energia', 'solar', 'ups', 'climatizacion')) return `${base}/energia.jpg`;
+    if (words.includes('redes') || words.includes('red') || has('networking', 'switch', 'wifi')) return `${base}/redes.jpg`;
+    if (has('audio', 'sonido', 'bocina')) return `${base}/audio.jpg`;
+
+    return `${base}/general.jpg`; // Fallback tecnología
+}
