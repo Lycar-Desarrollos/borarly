@@ -10,7 +10,6 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { useRef, useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { getCategoryImageByName } from '@/services/syscom';
 
 interface FeaturedCategoriesSectionProps {
   categories: Category[];
@@ -100,12 +99,10 @@ export function FeaturedCategoriesSection({ categories }: FeaturedCategoriesSect
             className="w-full flex space-x-4 pb-4 overflow-x-auto no-scrollbar scroll-smooth"
           >
             {categories.map((category) => {
-              const rawImg = category.featuredImageUrl || '';
-              const isValidCustom = rawImg && !rawImg.includes('images.unsplash.com') && !rawImg.includes('placehold.co');
-              const imageUrl = isValidCustom ? rawImg : getCategoryImageByName(category.name || category.alias || '');
+              const imageUrl = category.featuredImageUrl && category.featuredImageUrl.trim() !== "" ? category.featuredImageUrl : `https://placehold.co/300x200.png`;
               const nameParts = category.name?.toLowerCase().split(' ') || [];
               const hintText = nameParts.length > 1 ? nameParts.slice(0, 2).join(' ') : nameParts[0] || 'category';
-              const aiHint = !isValidCustom ? hintText : undefined;
+              const aiHint = (!category.featuredImageUrl || category.featuredImageUrl.includes('placehold.co')) ? hintText : undefined;
 
               return (
                 <Link key={category.id} href={`/?category=${encodeURIComponent(category.id)}`} className="block w-48 md:w-56 shrink-0 group">
@@ -116,10 +113,10 @@ export function FeaturedCategoriesSection({ categories }: FeaturedCategoriesSect
                           alt={category.alias || category.name}
                           fill
                           sizes="(max-width: 768px) 192px, 224px"
-                          className="object-cover transition-transform duration-300 group-hover:scale-105"
+                          className="object-contain transition-transform duration-300 group-hover:scale-105 p-3"
                           loading="lazy"
                           decoding="async"
-                          unoptimized={!imageUrl.startsWith('/')}
+                          unoptimized={true}
                           {...(aiHint && { "data-ai-hint": aiHint })}
                         />
                       </div>

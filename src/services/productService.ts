@@ -260,6 +260,82 @@ export async function getRelatedProductsForProduct(product: Product): Promise<Pr
 }
 
 
+// Respaldo de las configuraciones guardadas en Firestore (categories) para cuando se agota la cuota diaria (HTTP 429)
+const DEFAULT_CATEGORY_OVERRIDES: Record<string, Partial<Category>> = {
+  '22': {
+    featuredImageUrl: 'https://ftp3.syscom.mx/cdn-cgi/image/format=webp,width=300,height=300/usuarios/fotos/BancoFotografiasSyscom/HANWHATECHWINWISENET/ANOL7022R/ANOL7022R-p.PNG',
+    isFeatured: true,
+    isVisible: true,
+    showInNavbar: true,
+  },
+  '25': {
+    featuredImageUrl: 'https://ftp3.syscom.mx/cdn-cgi/image/format=webp,width=300,height=300/usuarios/fotos/BancoFotografiasSyscom/KENWOOD/NX1200NK/NX1200NK-p.PNG',
+    isFeatured: true,
+    isVisible: true,
+    showInNavbar: true,
+  },
+  '26': {
+    featuredImageUrl: 'https://ftp3.syscom.mx/cdn-cgi/image/format=webp,width=300,height=300/usuarios/fotos/BancoFotografiasSyscom/RUIJIE/RGES209GCP/RGES209GCP-p.PNG',
+    isFeatured: true,
+    isVisible: true,
+    showInNavbar: true,
+  },
+  '27': {
+    featuredImageUrl: 'https://ftp3.syscom.mx/cdn-cgi/image/format=webp,width=300,height=300/usuarios/fotos/BancoFotografiasSyscom/EPCOM/XMRDASHCAMADPLUS/XMRDASHCAMADPLUS-p.PNG',
+    isFeatured: false,
+    isVisible: false,
+    showInNavbar: true,
+  },
+  '30': {
+    featuredImageUrl: 'https://ftp3.syscom.mx/cdn-cgi/image/format=webp,width=300,height=300/usuarios/fotos/BancoFotografiasSyscom/CYBERPOWER/OLS3000RT2UA/OLS3000RT2UA-p.PNG',
+    isFeatured: true,
+    isVisible: true,
+    showInNavbar: true,
+  },
+  '32': {
+    featuredImageUrl: 'https://ftp3.syscom.mx/cdn-cgi/image/format=webp,width=300,height=300/usuarios/fotos/BancoFotografiasSyscom/AKUBELA/RT61D1US/RT61D1US-p.PNG',
+    isFeatured: true,
+    isVisible: true,
+    showInNavbar: true,
+  },
+  '37': {
+    featuredImageUrl: 'https://ftp3.syscom.mx/cdn-cgi/image/format=webp,width=300,height=300/usuarios/fotos/BancoFotografiasSyscom/SAFRANMORPHO/293678628/293678628-p.PNG',
+    isFeatured: true,
+    isVisible: true,
+    showInNavbar: true,
+  },
+  '38': {
+    featuredImageUrl: 'https://ftp3.syscom.mx/cdn-cgi/image/format=webp,width=300,height=300/usuarios/fotos/BancoFotografiasSyscom/NOTIFIER/NFS320/NFS320-p.PNG',
+    isFeatured: true,
+    isVisible: true,
+    showInNavbar: true,
+  },
+  '65811': {
+    featuredImageUrl: 'https://ftp3.syscom.mx/cdn-cgi/image/format=webp,width=300,height=300/usuarios/fotos/BancoFotografiasSyscom/SIEMON/9T7L4E10/9T7L4E10-p.PNG',
+    isFeatured: true,
+    isVisible: true,
+    showInNavbar: true,
+  },
+  '66523': {
+    featuredImageUrl: 'https://ftp3.syscom.mx/cdn-cgi/image/format=avif,fit=pad,width=220,height=220,dpr=2,quality=95,background=transparent/usuarios/fotos/BancoFotografiasSyscom/BOSEPROFESSIONAL/S1PROPLUS/S1PROPLUS-p.PNG',
+    isFeatured: true,
+    isVisible: true,
+    showInNavbar: true,
+  },
+  '66630': {
+    featuredImageUrl: 'https://ftp3.syscom.mx/cdn-cgi/image/format=avif,fit=pad,width=220,height=220,dpr=2,quality=95,background=transparent/usuarios/fotos/BancoFotografiasSyscom/DOBOT/CR5A/CR5A-p.PNG',
+    isFeatured: true,
+    isVisible: true,
+    showInNavbar: true,
+  },
+  '422': {
+    featuredImageUrl: 'https://ftp3.syscom.mx/cdn-cgi/image/format=webp,width=300,height=300/usuarios/fotos/BancoFotografiasSyscom/HANWHATECHWINWISENET/ANOL7022R/ANOL7022R-p.PNG',
+    isFeatured: false,
+    isVisible: true,
+    showInNavbar: true,
+  },
+};
+
 export async function getCategories(includeSubcategories = true): Promise<Category[]> {
   try {
      const syscomCategories = await getCategoriasSyscom(includeSubcategories);
@@ -280,13 +356,15 @@ export async function getCategories(includeSubcategories = true): Promise<Catego
        console.warn("Could not load category overrides from Firestore, using Syscom defaults:", e);
      }
  
-     // Mezclar Syscom con configuraciones locales
+     // Mezclar Syscom con configuraciones locales (con respaldo de DEFAULT_CATEGORY_OVERRIDES si Firestore da 429)
      return syscomCategories.map(cat => {
-       const override = localOverrides[cat.id];
+       const baseOverride = DEFAULT_CATEGORY_OVERRIDES[cat.id];
+       const liveOverride = localOverrides[cat.id];
+       const override = (baseOverride || liveOverride) ? { ...baseOverride, ...liveOverride } : undefined;
        if (override) {
          return {
            ...cat,
-           featuredImageUrl: (override.featuredImageUrl && !override.featuredImageUrl.includes('images.unsplash.com') && !override.featuredImageUrl.includes('placehold.co')) ? override.featuredImageUrl : cat.featuredImageUrl,
+           featuredImageUrl: override.featuredImageUrl || cat.featuredImageUrl,
            isFeatured: override.isFeatured !== undefined ? override.isFeatured : cat.isFeatured,
            description: override.description || cat.description,
            isVisible: override.isVisible !== undefined ? override.isVisible : true,

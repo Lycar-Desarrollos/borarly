@@ -20,16 +20,16 @@ const FALLBACK_SYSCOM_TOKEN = 'eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJzY29wZXMi
 
 const FALLBACK_L1_RAW: { id: string; nombre: string }[] = [
   { id: '22', nombre: 'Videovigilancia' },
-  { id: '26', nombre: 'Redes e IT' },
-  { id: '37', nombre: 'Control de Acceso' },
   { id: '25', nombre: 'Radiocomunicación' },
+  { id: '26', nombre: 'Redes e IT' },
+  { id: '27', nombre: 'GPS, Telemática y Equipamiento Vehicular' },
   { id: '30', nombre: 'Energía y Climatización' },
   { id: '32', nombre: 'Automatización e Intrusión' },
+  { id: '37', nombre: 'Control de Acceso' },
   { id: '38', nombre: 'Detección de Fuego' },
+  { id: '42', nombre: 'Herramientas, Ferretería y Material Eléctrico' },
   { id: '65811', nombre: 'Cableado Estructurado' },
   { id: '66523', nombre: 'Audio y Video Profesional' },
-  { id: '27', nombre: 'GPS, Telemática y Equipamiento Vehicular' },
-  { id: '42', nombre: 'Herramientas, Ferretería y Material Eléctrico' },
   { id: '66630', nombre: 'Industria / BMS / Robots' },
   { id: '67040', nombre: 'Retail y Punto de Venta' },
 ];
@@ -835,18 +835,40 @@ export function getCategoryImageByName(nombre: string): string {
     const n = nombre.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
     const words = n.split(/[^a-z0-9]+/).filter(Boolean);
     const has = (...keys: string[]) => keys.some(k => n.includes(k));
-    const base = '/images/categories';
 
-    if (has('video', 'camara', 'vigilancia', 'cctv')) return `${base}/videovigilancia.jpg`;
-    if (has('radio')) return `${base}/radiocomunicacion.jpg`;
-    if (has('gps', 'telematica', 'vehicul', 'rastreo')) return `${base}/gps.jpg`;
-    if (has('acceso', 'biometric', 'cerradura')) return `${base}/acceso.jpg`;
-    if (has('fuego', 'incendio', 'humo')) return `${base}/fuego.jpg`;
-    if (has('automatizacion', 'intrusion', 'alarma', 'domotica')) return `${base}/automatizacion.jpg`;
-    if (has('cable', 'fibra', 'estructurado')) return `${base}/cableado.jpg`;
-    if (has('energia', 'solar', 'ups', 'climatizacion')) return `${base}/energia.jpg`;
-    if (words.includes('redes') || words.includes('red') || has('networking', 'switch', 'wifi')) return `${base}/redes.jpg`;
-    if (has('audio', 'sonido', 'bocina')) return `${base}/audio.jpg`;
+    if (has('video', 'camara', 'vigilancia', 'cctv') && !has('audio')) {
+        return 'https://ftp3.syscom.mx/cdn-cgi/image/format=webp,width=300,height=300/usuarios/fotos/BancoFotografiasSyscom/HANWHATECHWINWISENET/ANOL7022R/ANOL7022R-p.PNG';
+    }
+    if (has('radio')) {
+        return 'https://ftp3.syscom.mx/cdn-cgi/image/format=webp,width=300,height=300/usuarios/fotos/BancoFotografiasSyscom/KENWOOD/NX1200NK/NX1200NK-p.PNG';
+    }
+    if (words.includes('redes') || words.includes('red') || has('networking', 'switch', 'wifi')) {
+        return 'https://ftp3.syscom.mx/cdn-cgi/image/format=webp,width=300,height=300/usuarios/fotos/BancoFotografiasSyscom/RUIJIE/RGES209GCP/RGES209GCP-p.PNG';
+    }
+    if (has('gps', 'telematica', 'vehicul', 'rastreo')) {
+        return 'https://ftp3.syscom.mx/cdn-cgi/image/format=webp,width=300,height=300/usuarios/fotos/BancoFotografiasSyscom/EPCOM/XMRDASHCAMADPLUS/XMRDASHCAMADPLUS-p.PNG';
+    }
+    if (has('energia', 'solar', 'ups', 'climatizacion')) {
+        return 'https://ftp3.syscom.mx/cdn-cgi/image/format=webp,width=300,height=300/usuarios/fotos/BancoFotografiasSyscom/CYBERPOWER/OLS3000RT2UA/OLS3000RT2UA-p.PNG';
+    }
+    if (has('automatizacion', 'intrusion', 'alarma', 'domotica')) {
+        return 'https://ftp3.syscom.mx/cdn-cgi/image/format=webp,width=300,height=300/usuarios/fotos/BancoFotografiasSyscom/AKUBELA/RT61D1US/RT61D1US-p.PNG';
+    }
+    if (has('acceso', 'biometric', 'cerradura')) {
+        return 'https://ftp3.syscom.mx/cdn-cgi/image/format=webp,width=300,height=300/usuarios/fotos/BancoFotografiasSyscom/SAFRANMORPHO/293678628/293678628-p.PNG';
+    }
+    if (has('fuego', 'incendio', 'humo')) {
+        return 'https://ftp3.syscom.mx/cdn-cgi/image/format=webp,width=300,height=300/usuarios/fotos/BancoFotografiasSyscom/NOTIFIER/NFS320/NFS320-p.PNG';
+    }
+    if (has('cable', 'fibra', 'estructurado')) {
+        return 'https://ftp3.syscom.mx/cdn-cgi/image/format=webp,width=300,height=300/usuarios/fotos/BancoFotografiasSyscom/SIEMON/9T7L4E10/9T7L4E10-p.PNG';
+    }
+    if (has('audio', 'sonido', 'bocina')) {
+        return 'https://ftp3.syscom.mx/cdn-cgi/image/format=avif,fit=pad,width=220,height=220,dpr=2,quality=95,background=transparent/usuarios/fotos/BancoFotografiasSyscom/BOSEPROFESSIONAL/S1PROPLUS/S1PROPLUS-p.PNG';
+    }
+    if (has('industria', 'bms', 'robot')) {
+        return 'https://ftp3.syscom.mx/cdn-cgi/image/format=avif,fit=pad,width=220,height=220,dpr=2,quality=95,background=transparent/usuarios/fotos/BancoFotografiasSyscom/DOBOT/CR5A/CR5A-p.PNG';
+    }
 
-    return `${base}/general.jpg`; // Fallback tecnología
+    return 'https://images.unsplash.com/photo-1518770660439-4636190af475?q=80&w=800&auto=format&fit=crop';
 }
