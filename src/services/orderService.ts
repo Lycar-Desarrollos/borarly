@@ -252,12 +252,15 @@ export async function createOrderFromQuote(quote: Quote): Promise<Order> {
 
     // Notificar conversión de cotización a pedido en ventas@borarly.com
     try {
-      const token = await auth.currentUser?.getIdToken();
-      if (token && typeof window !== 'undefined') {
+      const token = await auth.currentUser?.getIdToken().catch(() => '');
+      if (typeof window !== 'undefined') {
         await fetch('/api/orders/notify', {
           method: 'POST',
           keepalive: true,
-          headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+          headers: {
+            'Content-Type': 'application/json',
+            ...(token ? { Authorization: `Bearer ${token}` } : {}),
+          },
           body: JSON.stringify({
             orderId: docRef.id,
             reference: paymentReference,

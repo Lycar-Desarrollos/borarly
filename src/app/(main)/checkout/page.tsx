@@ -287,11 +287,14 @@ export default function CheckoutPage() {
 
       // Notificar la venta a ventas@borarly.com (no bloquea la compra si falla)
       try {
-        const token = await currentUser.getIdToken();
+        const token = await currentUser.getIdToken().catch(() => '');
         await fetch('/api/orders/notify', {
           method: 'POST',
           keepalive: true,
-          headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+          headers: {
+            'Content-Type': 'application/json',
+            ...(token ? { Authorization: `Bearer ${token}` } : {}),
+          },
           body: JSON.stringify({
             orderId: orderDocRef.id,
             reference: transactionId,

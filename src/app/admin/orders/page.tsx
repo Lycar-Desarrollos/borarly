@@ -523,15 +523,14 @@ export default function AdminOrdersPage() {
   const handleSendOrderEmail = async (order: Order) => {
     setIsSendingEmail(true);
     try {
-      const token = await auth.currentUser?.getIdToken();
-      if (!token) {
-        toast({ title: 'Sesión requerida', description: 'Inicia sesión nuevamente para enviar el correo.', variant: 'destructive' });
-        return;
-      }
+      const token = await auth.currentUser?.getIdToken().catch(() => '');
       const fin = getOrderFinancials(order);
       const res = await fetch('/api/orders/notify', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+        headers: {
+          'Content-Type': 'application/json',
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
         body: JSON.stringify({
           orderId: order.id,
           reference: order.paymentReference || order.id.substring(0, 8).toUpperCase(),
