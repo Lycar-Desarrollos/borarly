@@ -869,6 +869,12 @@ export function getCategoryImageByName(nombre: string): string {
     if (has('industria', 'bms', 'robot')) {
         return 'https://ftp3.syscom.mx/cdn-cgi/image/format=avif,fit=pad,width=220,height=220,dpr=2,quality=95,background=transparent/usuarios/fotos/BancoFotografiasSyscom/DOBOT/CR5A/CR5A-p.PNG';
     }
+    if (has('herramienta', 'ferreteria', 'electric')) {
+        return 'https://ftp3.syscom.mx/usuarios/fotos/BancoFotografiasSyscom/AI/UPSCALE/171334/portada_0S400.PNG';
+    }
+    if (has('retail', 'punto de venta', 'pos', 'kiosco')) {
+        return 'https://ftp3.syscom.mx/usuarios/fotos/BancoFotografiasSyscom/SUNMI/D3PRO/portada_0S400.PNG';
+    }
 
-    return 'https://images.unsplash.com/photo-1518770660439-4636190af475?q=80&w=800&auto=format&fit=crop';
+    return 'https://ftp3.syscom.mx/cdn-cgi/image/format=webp,width=300,height=300/usuarios/fotos/BancoFotografiasSyscom/RUIJIE/RGES209GCP/RGES209GCP-p.PNG';
 }

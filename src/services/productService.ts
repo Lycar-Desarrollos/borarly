@@ -310,6 +310,12 @@ const DEFAULT_CATEGORY_OVERRIDES: Record<string, Partial<Category>> = {
     isVisible: true,
     showInNavbar: true,
   },
+  '42': {
+    featuredImageUrl: 'https://ftp3.syscom.mx/usuarios/fotos/BancoFotografiasSyscom/AI/UPSCALE/171334/portada_0S400.PNG',
+    isFeatured: true,
+    isVisible: true,
+    showInNavbar: true,
+  },
   '65811': {
     featuredImageUrl: 'https://ftp3.syscom.mx/cdn-cgi/image/format=webp,width=300,height=300/usuarios/fotos/BancoFotografiasSyscom/SIEMON/9T7L4E10/9T7L4E10-p.PNG',
     isFeatured: true,
@@ -324,6 +330,12 @@ const DEFAULT_CATEGORY_OVERRIDES: Record<string, Partial<Category>> = {
   },
   '66630': {
     featuredImageUrl: 'https://ftp3.syscom.mx/cdn-cgi/image/format=avif,fit=pad,width=220,height=220,dpr=2,quality=95,background=transparent/usuarios/fotos/BancoFotografiasSyscom/DOBOT/CR5A/CR5A-p.PNG',
+    isFeatured: true,
+    isVisible: true,
+    showInNavbar: true,
+  },
+  '67040': {
+    featuredImageUrl: 'https://ftp3.syscom.mx/usuarios/fotos/BancoFotografiasSyscom/SUNMI/D3PRO/portada_0S400.PNG',
     isFeatured: true,
     isVisible: true,
     showInNavbar: true,
@@ -362,9 +374,15 @@ export async function getCategories(includeSubcategories = true): Promise<Catego
        const liveOverride = localOverrides[cat.id];
        const override = (baseOverride || liveOverride) ? { ...baseOverride, ...liveOverride } : undefined;
        if (override) {
+         const validOverrideImg =
+           override.featuredImageUrl &&
+           !override.featuredImageUrl.includes('images.unsplash.com') &&
+           !override.featuredImageUrl.includes('placehold.co')
+             ? override.featuredImageUrl
+             : undefined;
          return {
            ...cat,
-           featuredImageUrl: override.featuredImageUrl || cat.featuredImageUrl,
+           featuredImageUrl: validOverrideImg || baseOverride?.featuredImageUrl || cat.featuredImageUrl,
            isFeatured: override.isFeatured !== undefined ? override.isFeatured : cat.isFeatured,
            description: override.description || cat.description,
            isVisible: override.isVisible !== undefined ? override.isVisible : true,
