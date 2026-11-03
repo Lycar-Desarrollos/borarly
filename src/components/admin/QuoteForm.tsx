@@ -21,8 +21,7 @@ import { Loader2, Trash2, PlusCircle, CalendarIcon, Search, FileDown, DollarSign
 import { cn } from "@/lib/utils";
 import { format } from "date-fns";
 import { es } from 'date-fns/locale';
-import jsPDF from 'jspdf';
-import 'jspdf-autotable';
+import { generateQuotePdf } from '@/lib/quotePdf';
 import { getVatRate } from '@/services/settingsService';
 import { getBankDetails, type BankDetails } from '@/services/settingsService';
 import { Switch } from '@/components/ui/switch';
@@ -297,106 +296,33 @@ export function QuoteForm({ quote: initialQuote }: { quote?: Quote }) {
   const handleDownloadPdf = async () => {
     if (!initialQuote) return;
     toast({ title: 'Generando PDF...', description: 'Por favor espera.' });
-    const doc = new jsPDF();
     const pdfLogoUrl = await getQuoteLogoUrl();
     let logoBase64: string | null = null;
     if (pdfLogoUrl) logoBase64 = await getImageBase64(pdfLogoUrl);
     if (!logoBase64) logoBase64 = await getImageBase64('/logo.png');
 
-    if (logoBase64) {
-      try { doc.addImage(logoBase64, 'PNG', 14, 12, 48, 12); } catch { /* skip */ }
-    } else {
-      doc.setFontSize(16); doc.setFont('helvetica', 'bold');
-      doc.text(bankDetails.companyName, 14, 20);
-    }
-
-    doc.setFontSize(20); doc.setFont('helvetica', 'bold');
-    doc.text('COTIZACIÓN', 200, 20, { align: 'right' });
-    doc.setFontSize(10); doc.setFont('helvetica', 'normal');
-    doc.text(`Número: ${initialQuote.quoteNumber}`, 200, 26, { align: 'right' });
-    doc.text(`Fecha: ${format(new Date(initialQuote.createdAt), 'dd/MM/yyyy')}`, 200, 31, { align: 'right' });
-    doc.text(`Vence: ${format(new Date(initialQuote.expiresAt), 'dd/MM/yyyy')}`, 200, 36, { align: 'right' });
-
-    doc.setLineWidth(0.5); doc.line(14, 45, 200, 45);
-    doc.setFontSize(11); doc.setFont('helvetica', 'bold');
-    doc.text('De parte de:', 14, 52); doc.setFont('helvetica', 'normal');
-    doc.text(bankDetails.companyName, 14, 58);
-    doc.text(bankDetails.email, 14, 64);
-    doc.text(companyPhone.trim() || bankDetails.phone, 14, 70);
-    doc.setFont('helvetica', 'bold');
-    doc.text('Dirigido a:', 130, 52); doc.setFont('helvetica', 'normal');
-    doc.text(customerName, 130, 58);
-    doc.text(customerEmail, 130, 64);
-
-    (doc as any).autoTable({
-      startY: 80,
-      head: [['#', 'Producto / Modelo', 'Cant.', 'P. Unit. (s/IVA)', 'P. Unit. (c/IVA)', 'Importe (s/IVA)']],
-      body: items.map((item, i) => [
-        i + 1,
-        item.name + `\nModelo: ${item.sku || item.productId}`,
-        item.quantity,
-        formatCurrency(item.price),
-        formatCurrency(item.price * (1 + (includeVat ? vatRate : 0))),
-        formatCurrency(item.price * item.quantity),
-      ]),
-      theme: 'striped',
-      headStyles: { fillColor: [2, 86, 185] },
-      styles: { halign: 'center', fontSize: 9 },
-      columnStyles: {
-        0: { cellWidth: 10 },
-        1: { halign: 'left', cellWidth: 72 },
-        2: { cellWidth: 16 },
-        3: { halign: 'right', cellWidth: 29 },
-        4: { halign: 'right', cellWidth: 29 },
-        5: { halign: 'right', cellWidth: 30 },
+    const doc = generateQuotePdf({
+      data: {
+        quoteNumber: initialQuote.quoteNumber,
+        createdAt: initialQuote.createdAt,
+        expiresAt: initialQuote.expiresAt,
+        customerName,
+        customerEmail,
+        items,
+        subtotal,
+        discountAmount,
+        discountLabel: `Descuento (${discountType === 'percentage' ? `${discountValue}%` : 'Fijo'})`,
+        shippingCost,
+        vatAmount: includeVat ? vatAmount : 0,
+        vatRate,
+        totalAmount,
+        notes,
+        showBankDetails,
       },
+      bankDetails,
+      companyPhone: companyPhone.trim(),
+      logoBase64,
     });
-
-    const finalY = (doc as any).lastAutoTable.finalY || 140;
-    let notesY = finalY + 10;
-    const totalsX = 148;
-    let totalsY = finalY + 10;
-
-    doc.setFontSize(11);
-    doc.text('Subtotal (sin IVA):', totalsX, totalsY, { align: 'right' });
-    doc.text(formatCurrency(subtotal), 200, totalsY, { align: 'right' });
-    if (discountAmount > 0) {
-      totalsY += 7;
-      doc.setTextColor(220, 53, 69);
-      doc.text(`Descuento (${discountType === 'percentage' ? `${discountValue}%` : 'Fijo'}):`, totalsX, totalsY, { align: 'right' });
-      doc.text(`-${formatCurrency(discountAmount)}`, 200, totalsY, { align: 'right' });
-      doc.setTextColor(0, 0, 0);
-    }
-    if (includeVat) {
-      totalsY += 7;
-      doc.text(`IVA (${(vatRate * 100).toFixed(0)}%):`, totalsX, totalsY, { align: 'right' });
-      doc.text(formatCurrency(vatAmount), 200, totalsY, { align: 'right' });
-    }
-    if (shippingCost > 0) {
-      totalsY += 7;
-      doc.text('Envío:', totalsX, totalsY, { align: 'right' });
-      doc.text(formatCurrency(shippingCost), 200, totalsY, { align: 'right' });
-    }
-    totalsY += 8; doc.setFontSize(12); doc.setFont('helvetica', 'bold');
-    doc.text('Total (MXN, IVA incl.):', totalsX, totalsY, { align: 'right' });
-    doc.text(formatCurrency(totalAmount), 200, totalsY, { align: 'right' });
-
-    if (notes) {
-      doc.setFontSize(10); doc.setFont('helvetica', 'bold');
-      doc.text('Notas y Términos:', 14, notesY); doc.setFont('helvetica', 'normal');
-      const split = doc.splitTextToSize(notes, 80);
-      doc.text(split, 14, notesY + 6);
-      notesY += split.length * 5 + 10;
-    }
-    if (showBankDetails) {
-      doc.setFontSize(10); doc.setFont('helvetica', 'bold');
-      doc.text('Datos de Pago:', 14, notesY); doc.setFont('helvetica', 'normal');
-      doc.text(`Beneficiario: ${bankDetails.beneficiary}`, 14, notesY + 6);
-      doc.text(`Cuenta CLABE: ${bankDetails.clabe}`, 14, notesY + 12);
-      doc.text(`Banco: ${bankDetails.bank}`, 14, notesY + 18);
-    }
-    doc.setFontSize(9); doc.setTextColor(150);
-    doc.text('Gracias por su preferencia.', 105, 285, { align: 'center' });
     doc.save(`Cotizacion_${initialQuote.quoteNumber}_${customerName.replace(/ /g, '_')}.pdf`);
     toast({ title: 'PDF Descargado' });
   };

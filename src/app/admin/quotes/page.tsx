@@ -31,8 +31,7 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { useRouter } from 'next/navigation';
-import jsPDF from 'jspdf';
-import 'jspdf-autotable';
+import { generateQuotePdf } from '@/lib/quotePdf';
 import { format } from 'date-fns';
 
 function getImageBase64(url: string): Promise<string | null> {
@@ -168,93 +167,10 @@ export default function AdminQuotesPage() {
     setIsDownloadingPdf(quote.id);
     toast({ title: "Generando PDF...", description: "Por favor, espera un momento." });
 
-    const doc = new jsPDF();
-
-    let logoBase64: string | null = null;
     const logoUrlToUse = await getQuoteLogoUrl();
-
-    if (logoUrlToUse) {
-      logoBase64 = await getImageBase64(logoUrlToUse);
-    }
-    if (!logoBase64) {
-      logoBase64 = await getImageBase64('/logo.png');
-    }
-
-    if (logoBase64) {
-      try {
-        doc.addImage(logoBase64, 'PNG', 14, 12, 48, 12);
-      } catch {
-        doc.setFontSize(16);
-        doc.setFont('helvetica', 'bold');
-        doc.text(bankDetails.companyName, 14, 20);
-      }
-    } else {
-      doc.setFontSize(16);
-      doc.setFont('helvetica', 'bold');
-      doc.text(bankDetails.companyName, 14, 20);
-    }
-
-    doc.setFontSize(20);
-    doc.setFont('helvetica', 'bold');
-    doc.text("COTIZACIÓN", 200, 20, { align: 'right' });
-    doc.setFontSize(10);
-    doc.setFont('helvetica', 'normal');
-    doc.text(`Número: ${quote.quoteNumber}`, 200, 26, { align: 'right' });
-    doc.text(`Fecha: ${format(new Date(quote.createdAt), "dd/MM/yyyy")}`, 200, 31, { align: 'right' });
-    doc.text(`Vence: ${format(new Date(quote.expiresAt), "dd/MM/yyyy")}`, 200, 36, { align: 'right' });
-
-    doc.setLineWidth(0.5);
-    doc.line(14, 45, 200, 45);
-
-    doc.setFontSize(11);
-    doc.setFont('helvetica', 'bold');
-    doc.text("De parte de:", 14, 52);
-    doc.setFont('helvetica', 'normal');
-    doc.text(bankDetails.companyName, 14, 58);
-    doc.text(bankDetails.email, 14, 64);
-    doc.text(quote.companyPhone || bankDetails.phone, 14, 70);
-
-    doc.setFont('helvetica', 'bold');
-    doc.text("Dirigido a:", 130, 52);
-    doc.setFont('helvetica', 'normal');
-    doc.text(quote.customerName, 130, 58);
-    doc.text(quote.customerEmail, 130, 64);
-
-    const tableColumn = ["#", "Producto / Modelo", "Cant.", "P. Unit. (s/IVA)", "P. Unit. (c/IVA)", "Importe (s/IVA)"];
-    const tableRows = quote.items.map((item, index) => [
-      index + 1,
-      item.name + `\nModelo: ${item.sku || item.productId}`,
-      item.quantity,
-      formatCurrency(item.price),
-      formatCurrency(item.price * 1.16),
-      formatCurrency(item.price * item.quantity)
-    ]);
-
-    (doc as any).autoTable({
-      startY: 80,
-      head: [tableColumn],
-      body: tableRows,
-      theme: 'striped',
-      headStyles: { fillColor: [2, 86, 185] },
-      styles: { halign: 'center', fontSize: 9 },
-      columnStyles: {
-        0: { cellWidth: 10 },
-        1: { halign: 'left', cellWidth: 72 },
-        2: { cellWidth: 16 },
-        3: { halign: 'right', cellWidth: 29 },
-        4: { halign: 'right', cellWidth: 29 },
-        5: { halign: 'right', cellWidth: 30 }
-      }
-    });
-
-    const finalY = (doc as any).lastAutoTable.finalY || 140;
-    let notesStartY = finalY + 10;
-
-    const totalsX = 148;
-    let totalsY = finalY + 10;
-    doc.setFontSize(11);
-    doc.text("Subtotal (sin IVA):", totalsX, totalsY, { align: 'right' });
-    doc.text(formatCurrency(quote.subtotal), 200, totalsY, { align: 'right' });
+    let logoBase64: string | null = null;
+    if (logoUrlToUse) logoBase64 = await getImageBase64(logoUrlToUse);
+    if (!logoBase64) logoBase64 = await getImageBase64('/logo.png');
 
     const discVal = quote.discountValue || 0;
     const discAmt = discVal > 0
@@ -262,58 +178,23 @@ export default function AdminQuotesPage() {
           ? Math.min(quote.subtotal, quote.subtotal * (discVal / 100))
           : Math.min(quote.subtotal, discVal))
       : 0;
-
-    if (discAmt > 0) {
-      totalsY += 7;
-      doc.setTextColor(220, 53, 69);
-      doc.text(`Descuento (${quote.discountType === 'percentage' ? `${discVal}%` : 'Fijo'}):`, totalsX, totalsY, { align: 'right' });
-      doc.text(`-${formatCurrency(discAmt)}`, 200, totalsY, { align: 'right' });
-      doc.setTextColor(0, 0, 0);
-    }
-
     const subAfterDisc = Math.max(0, quote.subtotal - discAmt);
     const effectiveVat = quote.vatAmount > 0 ? quote.vatAmount : subAfterDisc * 0.16;
     const effectiveTotal = quote.vatAmount > 0 ? quote.totalAmount : subAfterDisc + effectiveVat + (quote.shippingCost || 0);
 
-    totalsY += 7;
-    doc.text("IVA (16%):", totalsX, totalsY, { align: 'right' });
-    doc.text(formatCurrency(effectiveVat), 200, totalsY, { align: 'right' });
-
-    if (quote.shippingCost > 0) {
-      totalsY += 7;
-      doc.text("Envío:", totalsX, totalsY, { align: 'right' });
-      doc.text(formatCurrency(quote.shippingCost), 200, totalsY, { align: 'right' });
-    }
-
-    totalsY += 8;
-    doc.setFontSize(12);
-    doc.setFont('helvetica', 'bold');
-    doc.text("Total (MXN, IVA incl.):", totalsX, totalsY, { align: 'right' });
-    doc.text(formatCurrency(effectiveTotal), 200, totalsY, { align: 'right' });
-
-    if (quote.notes) {
-      doc.setFontSize(10);
-      doc.setFont('helvetica', 'bold');
-      doc.text("Notas y Términos:", 14, notesStartY);
-      doc.setFont('helvetica', 'normal');
-      const splitNotes = doc.splitTextToSize(quote.notes, 80);
-      doc.text(splitNotes, 14, notesStartY + 6);
-      notesStartY += (splitNotes.length * 5) + 5;
-    }
-
-    if (quote.showBankDetails !== false) {
-      doc.setFontSize(10);
-      doc.setFont('helvetica', 'bold');
-      doc.text("Datos de Pago:", 14, notesStartY);
-      doc.setFont('helvetica', 'normal');
-      doc.text(`Beneficiario: ${bankDetails.beneficiary}`, 14, notesStartY + 6);
-      doc.text(`Cuenta CLABE: ${bankDetails.clabe}`, 14, notesStartY + 12);
-      doc.text(`Banco: ${bankDetails.bank}`, 14, notesStartY + 18);
-    }
-
-    doc.setFontSize(9);
-    doc.setTextColor(150);
-    doc.text("Gracias por su preferencia.", 105, 285, { align: 'center' });
+    const doc = generateQuotePdf({
+      data: {
+        ...quote,
+        vatAmount: effectiveVat,
+        vatRate: 0.16,
+        totalAmount: effectiveTotal,
+        discountAmount: discAmt,
+        discountLabel: `Descuento (${quote.discountType === 'percentage' ? `${discVal}%` : 'Fijo'})`,
+      },
+      bankDetails,
+      companyPhone: quote.companyPhone,
+      logoBase64,
+    });
 
     doc.save(`Cotizacion_${quote.quoteNumber}_${quote.customerName.replace(/ /g, '_')}.pdf`);
     toast({ title: "PDF Descargado", description: `La cotización ${quote.quoteNumber} ha sido descargada.` });

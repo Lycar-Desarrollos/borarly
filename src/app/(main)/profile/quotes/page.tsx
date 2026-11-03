@@ -62,8 +62,7 @@ import {
 } from 'lucide-react';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
-import jsPDF from 'jspdf';
-import 'jspdf-autotable';
+import { generateQuotePdf } from '@/lib/quotePdf';
 
 // Helper: fetch image as Base64 for PDF
 function getImageBase64(url: string): Promise<string | null> {
@@ -428,192 +427,28 @@ function CustomerQuotesContent() {
     toast({ title: 'Generando Cotización PDF...', description: 'Incluyendo sello y membrete oficial de BORARLY.' });
 
     try {
-      const doc = new jsPDF();
-
-      // 1. Load Official Borarly Logo (with guaranteed fallback to /logo.png)
       const configuredLogoUrl = await getQuoteLogoUrl();
       let logoBase64: string | null = null;
-      if (configuredLogoUrl) {
-        logoBase64 = await getImageBase64(configuredLogoUrl);
-      }
-      if (!logoBase64) {
-        logoBase64 = await getImageBase64('/logo.png');
-      }
+      if (configuredLogoUrl) logoBase64 = await getImageBase64(configuredLogoUrl);
+      if (!logoBase64) logoBase64 = await getImageBase64('/logo.png');
 
-      if (logoBase64) {
-        try {
-          doc.addImage(logoBase64, 'PNG', 14, 12, 48, 12);
-        } catch {
-          doc.setFontSize(18);
-          doc.setFont('helvetica', 'bold');
-          doc.setTextColor(2, 86, 185);
-          doc.text(bankDetails.companyName || 'BORARLY', 14, 20);
-          doc.setTextColor(0, 0, 0);
-        }
-      } else {
-        doc.setFontSize(18);
-        doc.setFont('helvetica', 'bold');
-        doc.setTextColor(2, 86, 185);
-        doc.text(bankDetails.companyName || 'BORARLY', 14, 20);
-        doc.setTextColor(0, 0, 0);
-      }
-
-      // 2. Document Header (Right)
-      doc.setFontSize(20);
-      doc.setFont('helvetica', 'bold');
-      doc.setTextColor(15, 23, 42);
-      doc.text('COTIZACIÓN', 200, 19, { align: 'right' });
-
-      doc.setFontSize(10);
-      doc.setFont('helvetica', 'bold');
-      doc.setTextColor(2, 86, 185);
-      doc.text(`Folio: ${quote.quoteNumber}`, 200, 25, { align: 'right' });
-
-      doc.setFont('helvetica', 'normal');
-      doc.setTextColor(71, 85, 105);
-      doc.text(`Fecha: ${format(new Date(quote.createdAt), 'dd/MM/yyyy')}`, 200, 30, { align: 'right' });
-      doc.text(`Vigencia: ${format(new Date(quote.expiresAt), 'dd/MM/yyyy')}`, 200, 35, { align: 'right' });
-      doc.setTextColor(0, 0, 0);
-
-      // Divider
-      doc.setDrawColor(2, 86, 185);
-      doc.setLineWidth(0.6);
-      doc.line(14, 42, 200, 42);
-
-      // 3. Emitter & Recipient Blocks
-      doc.setFontSize(10);
-      doc.setFont('helvetica', 'bold');
-      doc.text('EMITIDO POR:', 14, 50);
-      doc.setFont('helvetica', 'normal');
-      doc.text(bankDetails.companyName || 'BORARLY', 14, 55.5);
-      doc.text(`Correo: ${bankDetails.email}`, 14, 60.5);
-      doc.text(`Tel / WhatsApp: ${bankDetails.phone}`, 14, 65.5);
-      doc.text('Sitio web: www.borarly.com', 14, 70.5);
-
-      doc.setFont('helvetica', 'bold');
-      doc.text('COTIZADO A:', 120, 50);
-      doc.setFont('helvetica', 'normal');
-      let clientY = 55.5;
-      doc.text(`Atención: ${quote.customerName}`, 120, clientY);
-      if (quote.customerCompany) {
-        clientY += 5;
-        doc.text(`Empresa: ${quote.customerCompany}`, 120, clientY);
-      }
-      if (quote.customerRfc) {
-        clientY += 5;
-        doc.text(`RFC: ${quote.customerRfc}`, 120, clientY);
-      }
-      clientY += 5;
-      doc.text(`Email: ${quote.customerEmail}`, 120, clientY);
-      if (quote.customerPhone) {
-        clientY += 5;
-        doc.text(`Tel: ${quote.customerPhone}`, 120, clientY);
-      }
-
-      // 4. Items Table
-      const tableStartY = Math.max(78, clientY + 8);
-      (doc as any).autoTable({
-        startY: tableStartY,
-        head: [['#', 'Descripción / Producto', 'Cant.', 'P. Unit. (s/IVA)', 'P. Unit. (c/IVA)', 'Importe (s/IVA)']],
-        body: quote.items.map((item, idx) => [
-          idx + 1,
-          `${item.name}\nModelo / SKU: ${item.sku || item.productId}`,
-          item.quantity,
-          formatCurrency(item.price),
-          formatCurrency(item.price * (1 + vatRate)),
-          formatCurrency(item.price * item.quantity),
-        ]),
-        theme: 'striped',
-        headStyles: { fillColor: [2, 86, 185], textColor: 255, fontStyle: 'bold' },
-        styles: { halign: 'center', fontSize: 9, cellPadding: 3 },
-        columnStyles: {
-          0: { cellWidth: 10 },
-          1: { halign: 'left', cellWidth: 72 },
-          2: { cellWidth: 16 },
-          3: { halign: 'right', cellWidth: 29 },
-          4: { halign: 'right', cellWidth: 29 },
-          5: { halign: 'right', cellWidth: 30 },
-        },
-      });
-
-      const finalY = (doc as any).lastAutoTable.finalY || 140;
-      let notesY = finalY + 10;
-      const totalsX = 148;
-      let totalsY = finalY + 10;
-
-      // 5. Financial Totals
-      doc.setFontSize(10);
-      doc.setFont('helvetica', 'normal');
-      doc.text('Subtotal (s/IVA):', totalsX, totalsY, { align: 'right' });
-      doc.text(formatCurrency(quote.subtotal), 200, totalsY, { align: 'right' });
-
-      if (quote.discountValue && quote.discountValue > 0) {
-        const discAmt =
-          quote.discountType === 'percentage'
+      const discAmt =
+        quote.discountValue && quote.discountValue > 0
+          ? quote.discountType === 'percentage'
             ? Math.min(quote.subtotal, quote.subtotal * (quote.discountValue / 100))
-            : Math.min(quote.subtotal, quote.discountValue);
-        totalsY += 6;
-        doc.setTextColor(220, 53, 69);
-        doc.text(
-          `Descuento (${quote.discountType === 'percentage' ? `${quote.discountValue}%` : 'Fijo'}):`,
-          totalsX,
-          totalsY,
-          { align: 'right' }
-        );
-        doc.text(`-${formatCurrency(discAmt)}`, 200, totalsY, { align: 'right' });
-        doc.setTextColor(0, 0, 0);
-      }
+            : Math.min(quote.subtotal, quote.discountValue)
+          : 0;
 
-      totalsY += 6;
-      doc.text('Envío Asegurado:', totalsX, totalsY, { align: 'right' });
-      doc.text(quote.shippingCost > 0 ? formatCurrency(quote.shippingCost) : '¡GRATIS!', 200, totalsY, {
-        align: 'right',
+      const doc = generateQuotePdf({
+        data: {
+          ...quote,
+          vatRate,
+          discountAmount: discAmt,
+          discountLabel: `Descuento (${quote.discountType === 'percentage' ? `${quote.discountValue}%` : 'Fijo'})`,
+        },
+        bankDetails,
+        logoBase64,
       });
-
-      if (quote.vatAmount > 0) {
-        totalsY += 6;
-        doc.text('IVA (16%):', totalsX, totalsY, { align: 'right' });
-        doc.text(formatCurrency(quote.vatAmount), 200, totalsY, { align: 'right' });
-      }
-
-      totalsY += 8;
-      doc.setFontSize(12);
-      doc.setFont('helvetica', 'bold');
-      doc.setTextColor(2, 86, 185);
-      doc.text('Total Neto (MXN):', totalsX, totalsY, { align: 'right' });
-      doc.text(formatCurrency(quote.totalAmount), 200, totalsY, { align: 'right' });
-      doc.setTextColor(0, 0, 0);
-
-      // 6. Notes & Bank Details
-      if (quote.notes) {
-        doc.setFontSize(9.5);
-        doc.setFont('helvetica', 'bold');
-        doc.text('Notas y Condiciones Comerciales:', 14, notesY);
-        doc.setFont('helvetica', 'normal');
-        const splitNotes = doc.splitTextToSize(quote.notes, 90);
-        doc.text(splitNotes, 14, notesY + 5);
-        notesY += splitNotes.length * 4.5 + 8;
-      }
-
-      if (quote.showBankDetails !== false) {
-        doc.setFontSize(9.5);
-        doc.setFont('helvetica', 'bold');
-        doc.text('Datos Bancarios para Pago (SPEI / Transferencia):', 14, notesY);
-        doc.setFont('helvetica', 'normal');
-        doc.text(`Beneficiario: ${bankDetails.beneficiary}`, 14, notesY + 5);
-        doc.text(`Banco: ${bankDetails.bank}`, 14, notesY + 10);
-        doc.text(`CLABE Interbancaria: ${bankDetails.clabe}`, 14, notesY + 15);
-      }
-
-      // Footer
-      doc.setFontSize(8.5);
-      doc.setTextColor(130);
-      doc.text(
-        'Documento oficial generado en www.borarly.com · Equipos 100% nuevos con garantía de fábrica y facturación CFDI 4.0.',
-        105,
-        285,
-        { align: 'center' }
-      );
 
       const safeName = (quote.customerCompany || quote.customerName || 'Cliente').replace(/[^a-zA-Z0-9_-]/g, '_');
       doc.save(`Cotizacion_${quote.quoteNumber}_${safeName}.pdf`);
