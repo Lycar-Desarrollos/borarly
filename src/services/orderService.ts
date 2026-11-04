@@ -184,7 +184,7 @@ export async function createOrderFromQuote(quote: Quote): Promise<Order> {
     throw new Error('No se proporcionó una cotización para crear el pedido.');
   }
 
-  const userId = quote.userId || quote.customerEmail; 
+  const userId = quote.userId || quote.customerEmail || 'guest-quote'; 
 
   // En las cotizaciones, item.price se almacena SIN IVA.
   // Detectamos si item.price ya tiene IVA o si está sin IVA comparando con quote.subtotal y quote.totalAmount.
@@ -232,7 +232,7 @@ export async function createOrderFromQuote(quote: Quote): Promise<Order> {
       zip: '00000',
       country: 'México',
       phone: quote.customerPhone || 'Pendiente',
-      contactEmail: quote.customerEmail,
+      contactEmail: quote.customerEmail || '',
     },
     paymentDetails: {
       method: 'spei',

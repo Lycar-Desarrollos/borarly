@@ -15,7 +15,7 @@ export interface QuotePdfData {
   createdAt: string;
   expiresAt: string;
   customerName: string;
-  customerEmail: string;
+  customerEmail?: string;
   customerCompany?: string;
   customerRfc?: string;
   customerPhone?: string;
@@ -145,15 +145,17 @@ export function generateQuotePdf({ data, bankDetails, companyPhone, logoBase64 }
   const clientSub: string[] = [];
   if (d.customerCompany && d.customerName) clientSub.push(`Atención: ${d.customerName}`);
   if (d.customerRfc) clientSub.push(`RFC: ${d.customerRfc}`);
-  clientSub.push(d.customerEmail);
-  if (d.customerPhone) clientSub.push(`Tel. ${d.customerPhone}`);
+  if (d.customerEmail?.trim()) clientSub.push(d.customerEmail.trim());
+  if (d.customerPhone?.trim()) clientSub.push(`Tel. ${d.customerPhone.trim()}`);
 
-  const contactSub: string[] = [`Cel. ${companyPhone?.trim() || bankDetails.phone}`];
+  const contactPhone = companyPhone?.trim() || bankDetails.phone?.trim();
+  const contactSub: string[] = [];
+  if (contactPhone) contactSub.push(`Cel. ${contactPhone}`);
   if (bankDetails.email) contactSub.push(bankDetails.email);
 
   const boxTop = 51;
   const boxW = (CONTENT_W - 6) / 2;
-  const lines = Math.max(clientSub.length, contactSub.length);
+  const lines = Math.max(1, clientSub.length, contactSub.length);
   const boxH = 15 + lines * 4.8;
 
   const drawCard = (x: number, label: string, title: string, subs: string[]) => {

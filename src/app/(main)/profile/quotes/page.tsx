@@ -466,11 +466,11 @@ function CustomerQuotesContent() {
     e.preventDefault();
     if (!currentUser) return;
 
-    if (!customerName.trim() || !customerEmail.trim() || items.length === 0) {
+    if (!customerName.trim() || items.length === 0) {
       toast({
         variant: 'destructive',
         title: 'Datos incompletos',
-        description: 'Verifica tu nombre, correo electrónico y añade al menos un producto a la cotización.',
+        description: 'Verifica tu nombre y añade al menos un producto a la cotización.',
       });
       return;
     }
@@ -718,14 +718,13 @@ function CustomerQuotesContent() {
                   </div>
                   <div>
                     <Label htmlFor="customerEmail" className="text-xs">
-                      Correo Electrónico *
+                      Correo Electrónico (Opcional)
                     </Label>
                     <Input
                       id="customerEmail"
                       type="email"
                       value={customerEmail}
                       onChange={e => setCustomerEmail(e.target.value)}
-                      required
                       placeholder="correo@empresa.com"
                       className="h-9 text-sm mt-1"
                     />

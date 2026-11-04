@@ -293,7 +293,11 @@ export default function AdminQuotesPage() {
                     </TableCell>
                     <TableCell>
                       <div className="font-medium">{quote.customerName}</div>
-                      <div className="text-xs text-muted-foreground">{quote.customerEmail}</div>
+                      {(quote.customerEmail || quote.customerPhone) && (
+                        <div className="text-xs text-muted-foreground">
+                          {[quote.customerEmail, quote.customerPhone].filter(Boolean).join(' · ')}
+                        </div>
+                      )}
                     </TableCell>
                     <TableCell className="text-sm">{formatDate(quote.createdAt)}</TableCell>
                     <TableCell className="text-sm">{formatDate(quote.expiresAt)}</TableCell>

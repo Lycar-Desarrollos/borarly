@@ -81,6 +81,7 @@ export function QuoteForm({ quote: initialQuote }: { quote?: Quote }) {
   // ── Client Info ──────────────────────────────
   const [customerName, setCustomerName] = useState('');
   const [customerEmail, setCustomerEmail] = useState('');
+  const [customerPhone, setCustomerPhone] = useState('');
   const [companyPhone, setCompanyPhone] = useState('+52 1 999 904 0931');
   const [status, setStatus] = useState<QuoteStatus>('draft');
   const [notes, setNotes] = useState('');
@@ -128,7 +129,8 @@ export function QuoteForm({ quote: initialQuote }: { quote?: Quote }) {
   useEffect(() => {
     if (initialQuote) {
       setCustomerName(initialQuote.customerName);
-      setCustomerEmail(initialQuote.customerEmail);
+      setCustomerEmail(initialQuote.customerEmail || '');
+      setCustomerPhone(initialQuote.customerPhone || '');
       if (initialQuote.companyPhone) {
         setCompanyPhone(initialQuote.companyPhone);
       }
@@ -246,14 +248,15 @@ export function QuoteForm({ quote: initialQuote }: { quote?: Quote }) {
   // ── Save Quote ────────────────────────────────
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
-    if (!customerName || !customerEmail || !expiresAt || items.length === 0) {
-      toast({ variant: 'destructive', title: 'Información Faltante', description: 'Completa los datos del cliente, añade al menos un artículo y elige fecha de vencimiento.' });
+    if (!customerName.trim() || !expiresAt || items.length === 0) {
+      toast({ variant: 'destructive', title: 'Información Faltante', description: 'Ingresa el nombre del cliente, añade al menos un artículo y elige fecha de vencimiento.' });
       return;
     }
     setIsSubmitting(true);
     const quoteData = {
-      customerName,
-      customerEmail,
+      customerName: customerName.trim(),
+      customerEmail: customerEmail.trim(),
+      customerPhone: customerPhone.trim() || undefined,
       companyPhone: companyPhone.trim() || bankDetails.phone,
       items,
       subtotal,
@@ -308,8 +311,9 @@ export function QuoteForm({ quote: initialQuote }: { quote?: Quote }) {
         quoteNumber: initialQuote.quoteNumber,
         createdAt: initialQuote.createdAt,
         expiresAt: initialQuote.expiresAt,
-        customerName,
-        customerEmail,
+        customerName: customerName.trim(),
+        customerEmail: customerEmail.trim(),
+        customerPhone: customerPhone.trim() || undefined,
         items,
         subtotal,
         discountAmount,
@@ -377,23 +381,35 @@ export function QuoteForm({ quote: initialQuote }: { quote?: Quote }) {
           <CardContent className="space-y-4">
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
-                <Label htmlFor="customerName">Nombre del Cliente</Label>
+                <Label htmlFor="customerName">Nombre del Cliente *</Label>
                 <Input id="customerName" value={customerName} onChange={e => setCustomerName(e.target.value)} required placeholder="Ej: Empresa ABC S.A." />
               </div>
               <div>
-                <Label htmlFor="customerEmail">Email del Cliente</Label>
-                <Input id="customerEmail" type="email" value={customerEmail} onChange={e => setCustomerEmail(e.target.value)} required placeholder="correo@empresa.com" />
+                <Label htmlFor="customerEmail">Email del Cliente (Opcional)</Label>
+                <Input id="customerEmail" type="email" value={customerEmail} onChange={e => setCustomerEmail(e.target.value)} placeholder="correo@empresa.com" />
               </div>
             </div>
-            <div>
-              <Label htmlFor="companyPhone">Celular de Contacto (De parte de en PDF)</Label>
-              <Input
-                id="companyPhone"
-                type="tel"
-                value={companyPhone}
-                onChange={e => setCompanyPhone(e.target.value)}
-                placeholder="+52 1 999 904 0931"
-              />
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div>
+                <Label htmlFor="customerPhone">Teléfono del Cliente (Opcional)</Label>
+                <Input
+                  id="customerPhone"
+                  type="tel"
+                  value={customerPhone}
+                  onChange={e => setCustomerPhone(e.target.value)}
+                  placeholder="Ej: 999 000 0000"
+                />
+              </div>
+              <div>
+                <Label htmlFor="companyPhone">Celular de Contacto BORARLY (Opcional)</Label>
+                <Input
+                  id="companyPhone"
+                  type="tel"
+                  value={companyPhone}
+                  onChange={e => setCompanyPhone(e.target.value)}
+                  placeholder="+52 1 999 904 0931"
+                />
+              </div>
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
