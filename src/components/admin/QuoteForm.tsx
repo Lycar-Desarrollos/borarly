@@ -270,8 +270,10 @@ export function QuoteForm({ quote: initialQuote }: { quote?: Quote }) {
       }
       router.push('/admin/quotes');
       router.refresh();
-    } catch {
-      toast({ variant: 'destructive', title: 'Error', description: 'No se pudo guardar la cotización.' });
+    } catch (error: any) {
+      console.error('Error saving quote:', error);
+      const code = error?.code ? ` (${error.code})` : '';
+      toast({ variant: 'destructive', title: 'Error', description: `No se pudo guardar la cotización${code}.` });
     } finally {
       setIsSubmitting(false);
     }
