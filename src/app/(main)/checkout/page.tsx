@@ -955,167 +955,173 @@ export default function CheckoutPage() {
                     <Button variant="outline" size="sm" onClick={() => setCurrentStep(1)} className="text-xs bg-background border-border">Modificar</Button>
                 </div>
 
-                <Card className="shadow-[0_8px_30px_rgb(0,0,0,0.04)] border-0 overflow-hidden ring-1 ring-blue-500/50 shadow-blue-500/10">
-                <div className="px-6 py-4 border-b border-border/50 flex items-center justify-between bg-blue-50/50 dark:bg-blue-900/30">
-                    <CardTitle className="text-xl flex items-center gap-3">
-                        <span className="bg-blue-600 text-white w-7 h-7 rounded-full flex items-center justify-center text-sm font-bold">2</span> 
-                        Pago Seguro
-                    </CardTitle>
-                    <div className="flex items-center gap-2 text-muted-foreground opacity-80">
-                        {OPENPAY_IS_SANDBOX && (
-                          <span className="text-[10px] font-bold uppercase px-2.5 py-0.5 rounded-full bg-amber-500/15 text-amber-600 dark:text-amber-400 border border-amber-500/30">
-                            Sandbox Openpay Activo
-                          </span>
-                        )}
-                        <CreditCard className="w-5 h-5"/>
+                <Card className="shadow-2xl border border-border bg-card/80 backdrop-blur-2xl overflow-hidden">
+                <CardHeader className="border-b border-border/50 bg-muted/40 backdrop-blur-md rounded-t-xl px-6 py-5">
+                    <div className="flex items-center justify-between">
+                        <CardTitle className="text-2xl font-bold flex items-center gap-3 text-foreground">
+                            <span className="bg-primary text-white w-7 h-7 rounded-full flex items-center justify-center text-sm font-bold shadow-sm">2</span> 
+                            Método de Pago
+                        </CardTitle>
+                        <div className="flex items-center gap-2 text-xs font-semibold text-green-600 bg-green-500/10 px-3 py-1 rounded-full border border-green-500/20">
+                            <ShieldCheck className="w-4 h-4 text-green-500" />
+                            <span>Pago 100% Protegido</span>
+                        </div>
                     </div>
-                </div>
-                <CardContent className="p-6 bg-card rounded-b-xl border-t border-blue-100 dark:border-blue-900/50">
-                  <div className="mb-6 text-center">
-                     <p className="text-xs font-bold text-slate-400 uppercase tracking-[0.2em] flex justify-center items-center gap-1.5"><Lock className="w-3.5 h-3.5"/> Selector de Método de Pago</p>
-                  </div>
-
-                  {/* Payment Method Selector */}
-                  <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-8">
+                </CardHeader>
+                <CardContent className="p-6 space-y-6">
+                  {/* Selector de Método de Pago con estética unificada al Resumen */}
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
                       {/* TARJETA OPENPAY BBVA */}
                       <button
                         type="button"
                         onClick={() => setPaymentMethod('openpay_card')}
-                        className={`flex flex-col items-center justify-center p-4 rounded-xl border-2 transition-all ${paymentMethod === 'openpay_card' ? 'border-blue-600 bg-blue-50/80 dark:bg-blue-950/40 shadow-md scale-[1.03]' : 'border-border bg-background hover:bg-muted/50'}`}>
-                          <CreditCard className={`w-7 h-7 mb-1.5 ${paymentMethod === 'openpay_card' ? 'text-blue-600 dark:text-blue-400' : 'text-muted-foreground'}`} />
-                          <span className={`text-xs sm:text-sm font-bold text-center leading-tight ${paymentMethod === 'openpay_card' ? 'text-foreground' : 'text-muted-foreground'}`}>Tarjeta Crédito / Débito</span>
-                          <span className="text-[10px] text-blue-600 dark:text-blue-400 font-semibold mt-1">Openpay BBVA</span>
+                        className={`group relative flex flex-col items-center justify-between p-4 rounded-xl border transition-all duration-200 ${
+                          paymentMethod === 'openpay_card'
+                            ? 'border-primary bg-gradient-to-tr from-primary/10 to-transparent shadow-sm ring-1 ring-primary/30'
+                            : 'border-border/60 bg-background/60 hover:border-primary/30 hover:bg-muted/30'
+                        }`}>
+                          {paymentMethod === 'openpay_card' && (
+                            <span className="absolute top-2 right-2 w-2 h-2 rounded-full bg-primary" />
+                          )}
+                          <div className="h-8 flex items-center justify-center gap-1.5 mb-2">
+                            {/* Visa & Mastercard Mini Real Logos */}
+                            <svg className="h-5 w-auto" viewBox="0 0 48 32" fill="none" aria-label="Visa">
+                              <rect width="48" height="32" rx="4" fill="#1434CB"/>
+                              <path d="M19.5 21.5L21.6 10.5H25L22.9 21.5H19.5ZM34.9 10.8C34.2 10.5 33.1 10.2 31.7 10.2C28.2 10.2 25.7 12 25.7 14.5C25.7 16.4 27.4 17.4 28.7 18C30 18.6 30.5 19 30.5 19.6C30.5 20.5 29.4 20.9 28.3 20.9C26.9 20.9 26.1 20.7 24.9 20.2L24.4 20L23.9 23C24.8 23.4 26.4 23.7 28 23.7C31.7 23.7 34.1 21.9 34.1 19.2C34.1 17.7 33.2 16.5 31.1 15.6C29.9 15 29.1 14.6 29.1 14C29.1 13.4 29.8 12.8 31.2 12.8C32.4 12.8 33.3 13 34 13.3L34.4 13.5L34.9 10.8ZM43.5 10.5H40.8C39.9 10.5 39.3 10.8 38.9 11.7L33.6 21.5H37.3L38 19.5H42.5L42.9 21.5H46.2L43.5 10.5ZM39.1 17C39.4 16.2 40.6 13.1 40.6 13.1C40.6 13.1 40.9 12.3 41.1 11.8L41.4 13L42.3 17H39.1ZM16.6 10.5L13.1 18L12.7 16.1C12.1 14 10.1 11.8 7.9 10.7L11.1 21.5H14.8L20.3 10.5H16.6Z" fill="white"/>
+                              <path d="M10 10.5H4.3L4.2 10.8C8.6 11.9 11.5 14.6 12.7 16.1L11.5 11.7C11.3 10.8 10.7 10.5 10 10.5Z" fill="#F9A533"/>
+                            </svg>
+                            <svg className="h-5 w-auto" viewBox="0 0 48 32" fill="none" aria-label="Mastercard">
+                              <rect width="48" height="32" rx="4" fill="#1E293B"/>
+                              <circle cx="19" cy="16" r="8.5" fill="#EB001B"/>
+                              <circle cx="29" cy="16" r="8.5" fill="#F79E1B"/>
+                              <path d="M24 9.36A8.48 8.48 0 0 0 20.5 16c0 2.75 1.38 5.19 3.5 6.64A8.48 8.48 0 0 0 27.5 16c0-2.75-1.38-5.19-3.5-6.64Z" fill="#FF5F00"/>
+                            </svg>
+                          </div>
+                          <span className={`text-xs sm:text-sm font-bold text-center leading-tight ${paymentMethod === 'openpay_card' ? 'text-foreground' : 'text-muted-foreground'}`}>Tarjeta Bancaria</span>
+                          <span className="text-[10px] text-primary font-semibold mt-1">Crédito o Débito</span>
                       </button>
 
-                      {/* SPEI */}
+                      {/* SPEI BBVA */}
                       <button
                         type="button"
                         onClick={() => setPaymentMethod('spei')}
-                        className={`flex flex-col items-center justify-center p-4 rounded-xl border-2 transition-all ${paymentMethod === 'spei' ? 'border-primary bg-primary/5 shadow-md scale-[1.03]' : 'border-border bg-background hover:bg-muted/50'}`}>
-                          <Building className={`w-7 h-7 mb-1.5 ${paymentMethod === 'spei' ? 'text-primary' : 'text-muted-foreground'}`} />
+                        className={`group relative flex flex-col items-center justify-between p-4 rounded-xl border transition-all duration-200 ${
+                          paymentMethod === 'spei'
+                            ? 'border-primary bg-gradient-to-tr from-primary/10 to-transparent shadow-sm ring-1 ring-primary/30'
+                            : 'border-border/60 bg-background/60 hover:border-primary/30 hover:bg-muted/30'
+                        }`}>
+                          {paymentMethod === 'spei' && (
+                            <span className="absolute top-2 right-2 w-2 h-2 rounded-full bg-primary" />
+                          )}
+                          <div className="h-8 flex items-center justify-center mb-2">
+                            <div className="px-2.5 py-1 rounded-md bg-[#004481] text-white font-black text-[11px] tracking-widest flex items-center gap-1 shadow-xs">
+                              <span>SPEI</span>
+                              <span className="w-1.5 h-1.5 rounded-full bg-sky-400" />
+                            </div>
+                          </div>
                           <span className={`text-xs sm:text-sm font-bold text-center leading-tight ${paymentMethod === 'spei' ? 'text-foreground' : 'text-muted-foreground'}`}>Transferencia SPEI</span>
-                          <span className="text-[10px] text-muted-foreground mt-1 opacity-80">Directo BBVA</span>
+                          <span className="text-[10px] text-muted-foreground mt-1">Interbancario BBVA</span>
                       </button>
 
                       {/* EFECTIVO EN TIENDAS (PAYNET OPENPAY) */}
                       <button
                         type="button"
                         onClick={() => setPaymentMethod('oxxo')}
-                        className={`flex flex-col items-center justify-center p-4 rounded-xl border-2 transition-all ${paymentMethod === 'oxxo' ? 'border-orange-500 bg-orange-50 dark:bg-orange-950/30 shadow-md scale-[1.03]' : 'border-border bg-background hover:bg-muted/50'}`}>
-                          <Store className={`w-7 h-7 mb-1.5 ${paymentMethod === 'oxxo' ? 'text-orange-500' : 'text-muted-foreground'}`} />
-                          <span className={`text-xs sm:text-sm font-bold text-center leading-tight ${paymentMethod === 'oxxo' ? 'text-orange-700 dark:text-orange-400' : 'text-muted-foreground'}`}>Efectivo en Tiendas</span>
-                          <span className="text-[10px] text-muted-foreground mt-1 opacity-80">Paynet / OXXO</span>
+                        className={`group relative flex flex-col items-center justify-between p-4 rounded-xl border transition-all duration-200 ${
+                          paymentMethod === 'oxxo'
+                            ? 'border-primary bg-gradient-to-tr from-primary/10 to-transparent shadow-sm ring-1 ring-primary/30'
+                            : 'border-border/60 bg-background/60 hover:border-primary/30 hover:bg-muted/30'
+                        }`}>
+                          {paymentMethod === 'oxxo' && (
+                            <span className="absolute top-2 right-2 w-2 h-2 rounded-full bg-primary" />
+                          )}
+                          <div className="h-8 flex items-center justify-center mb-2">
+                            <div className="px-2.5 py-1 rounded-md bg-slate-800 text-white font-bold text-[11px] tracking-wide flex items-center gap-1.5 shadow-xs">
+                              <Store className="w-3.5 h-3.5 text-sky-400" />
+                              <span>Paynet</span>
+                            </div>
+                          </div>
+                          <span className={`text-xs sm:text-sm font-bold text-center leading-tight ${paymentMethod === 'oxxo' ? 'text-foreground' : 'text-muted-foreground'}`}>Depósito Efectivo</span>
+                          <span className="text-[10px] text-muted-foreground mt-1">Walmart, 7-Eleven, Farmacias</span>
                       </button>
 
                       {/* PAYPAL */}
                       <button
                         type="button"
                         onClick={() => setPaymentMethod('paypal')}
-                        className={`flex flex-col items-center justify-center p-4 rounded-xl border-2 transition-all ${paymentMethod === 'paypal' ? 'border-[#0070ba] bg-blue-50 dark:bg-blue-950/30 shadow-md scale-[1.03]' : 'border-border bg-background hover:bg-muted/50'}`}>
-                          <svg className={`w-7 h-7 mb-1.5 opacity-80 ${paymentMethod === 'paypal' ? 'text-[#0070ba]' : 'text-muted-foreground'}`} viewBox="0 0 24 24" fill="currentColor">
-                              <path d="M7.076 21.337H2.47a.641.641 0 0 1-.633-.74L4.944.901C5.026.382 5.474 0 5.998 0h7.46c2.57 0 4.578.543 5.69 1.81 1.01 1.15 1.304 2.42 1.012 4.287-.023.143-.047.288-.077.437-.983 5.05-4.349 6.797-8.647 6.797h-2.19c-.524 0-.968.382-1.05.9l-1.12 7.106zM6.92 13.33H11.53c4.156 0 6.643-1.637 7.412-5.597.55-2.82.016-4.63-2.024-5.69-1.076-.56-2.613-.778-4.576-.778H7.31L5.346 13.33h1.574z"/>
-                              <path d="M21.2 7.03c-.244-1.272-1.066-2.22-2.316-2.8a5.2 5.2 0 0 0-1.42 5.163c-.878 4.49-4.103 6.012-7.838 6.012H7.28a.507.507 0 0 0-.498.411L5.372 24.87a.64.64 0 0 0 .633.74H10.15c.524 0 .968-.382 1.05-.9l.758-4.805a.507.507 0 0 1 .498-.412h1.61c3.842 0 6.847-1.575 7.632-5.6.363-1.854.26-3.79-.5-6.862z"/>
-                          </svg>
-                          <span className={`text-xs sm:text-sm font-bold text-center leading-tight ${paymentMethod === 'paypal' ? 'text-[#0070ba] dark:text-[#3b82f6]' : 'text-muted-foreground'}`}>PayPal</span>
-                          <span className="text-[10px] text-muted-foreground mt-1 opacity-80">Internacional</span>
+                        className={`group relative flex flex-col items-center justify-between p-4 rounded-xl border transition-all duration-200 ${
+                          paymentMethod === 'paypal'
+                            ? 'border-primary bg-gradient-to-tr from-primary/10 to-transparent shadow-sm ring-1 ring-primary/30'
+                            : 'border-border/60 bg-background/60 hover:border-primary/30 hover:bg-muted/30'
+                        }`}>
+                          {paymentMethod === 'paypal' && (
+                            <span className="absolute top-2 right-2 w-2 h-2 rounded-full bg-primary" />
+                          )}
+                          <div className="h-8 flex items-center justify-center mb-2">
+                            <svg className="h-6 w-auto" viewBox="0 0 24 24" fill="none" aria-label="PayPal">
+                              <path d="M7.076 21.337H2.47a.641.641 0 0 1-.633-.74L4.944.901C5.026.382 5.474 0 5.998 0h7.46c2.57 0 4.578.543 5.69 1.81 1.01 1.15 1.304 2.42 1.012 4.287-.023.143-.047.288-.077.437-.983 5.05-4.349 6.797-8.647 6.797h-2.19c-.524 0-.968.382-1.05.9l-1.12 7.106z" fill="#003087"/>
+                              <path d="M21.2 7.03c-.244-1.272-1.066-2.22-2.316-2.8a5.2 5.2 0 0 0-1.42 5.163c-.878 4.49-4.103 6.012-7.838 6.012H7.28a.507.507 0 0 0-.498.411L5.372 24.87a.64.64 0 0 0 .633.74H10.15c.524 0 .968-.382 1.05-.9l.758-4.805a.507.507 0 0 1 .498-.412h1.61c3.842 0 6.847-1.575 7.632-5.6.363-1.854.26-3.79-.5-6.862z" fill="#0070E0"/>
+                            </svg>
+                          </div>
+                          <span className={`text-xs sm:text-sm font-bold text-center leading-tight ${paymentMethod === 'paypal' ? 'text-foreground' : 'text-muted-foreground'}`}>PayPal</span>
+                          <span className="text-[10px] text-muted-foreground mt-1">Cuenta Protegida</span>
                       </button>
                   </div>
 
-                  <Separator className="my-6 bg-blue-100 dark:bg-blue-900/50" />
+                  <Separator className="bg-border/60" />
 
                   {/* FLUJO TARJETA CRÉDITO / DÉBITO (OPENPAY BBVA) */}
                   {paymentMethod === 'openpay_card' && (
                     <form id="openpay-payment-form" onSubmit={handleOpenpayCardPayment} className="space-y-5 animate-in fade-in duration-300">
                       <input type="hidden" name="deviceIdHiddenFieldName" value={deviceSessionId} />
 
-                      {/* Encabezado de marcas aceptadas */}
-                      <div className="flex flex-wrap items-center justify-between gap-3 bg-muted/30 p-3.5 rounded-xl border border-border/60">
-                        <div>
-                          <p className="text-xs font-bold uppercase tracking-wider text-foreground">Tarjetas de Crédito y Débito</p>
-                          <p className="text-[11px] text-muted-foreground">Visa, Mastercard, American Express, Carnet (BBVA, Banamex, Santander, Banorte, HSBC)</p>
+                      {/* Barra institucional de tarjetas participantes con logotipos vectoriales reales */}
+                      <div className="flex flex-wrap items-center justify-between gap-3 bg-gradient-to-tr from-primary/5 to-transparent p-4 rounded-xl border border-primary/15">
+                        <div className="space-y-0.5">
+                          <p className="text-xs font-bold uppercase tracking-wider text-primary">Procesamiento Bancario Directo</p>
+                          <p className="text-xs text-muted-foreground">Aceptamos todas las tarjetas de crédito y débito nacionales e internacionales</p>
                         </div>
-                        <div className="flex items-center gap-1.5 text-xs font-bold">
-                          <span className="px-2 py-1 rounded bg-blue-900 text-white tracking-wider">VISA</span>
-                          <span className="px-2 py-1 rounded bg-orange-600 text-white tracking-wider">MC</span>
-                          <span className="px-2 py-1 rounded bg-sky-600 text-white tracking-wider">AMEX</span>
+                        <div className="flex items-center gap-2">
+                          {/* VISA SVG */}
+                          <svg className="h-7 w-auto rounded shadow-2xs border border-slate-200/80" viewBox="0 0 48 32" fill="none" aria-label="Visa">
+                            <rect width="48" height="32" rx="4" fill="#ffffff"/>
+                            <path d="M19.5 21.5L21.6 10.5H25L22.9 21.5H19.5ZM34.9 10.8C34.2 10.5 33.1 10.2 31.7 10.2C28.2 10.2 25.7 12 25.7 14.5C25.7 16.4 27.4 17.4 28.7 18C30 18.6 30.5 19 30.5 19.6C30.5 20.5 29.4 20.9 28.3 20.9C26.9 20.9 26.1 20.7 24.9 20.2L24.4 20L23.9 23C24.8 23.4 26.4 23.7 28 23.7C31.7 23.7 34.1 21.9 34.1 19.2C34.1 17.7 33.2 16.5 31.1 15.6C29.9 15 29.1 14.6 29.1 14C29.1 13.4 29.8 12.8 31.2 12.8C32.4 12.8 33.3 13 34 13.3L34.4 13.5L34.9 10.8ZM43.5 10.5H40.8C39.9 10.5 39.3 10.8 38.9 11.7L33.6 21.5H37.3L38 19.5H42.5L42.9 21.5H46.2L43.5 10.5ZM39.1 17C39.4 16.2 40.6 13.1 40.6 13.1C40.6 13.1 40.9 12.3 41.1 11.8L41.4 13L42.3 17H39.1ZM16.6 10.5L13.1 18L12.7 16.1C12.1 14 10.1 11.8 7.9 10.7L11.1 21.5H14.8L20.3 10.5H16.6Z" fill="#1434CB"/>
+                            <path d="M10 10.5H4.3L4.2 10.8C8.6 11.9 11.5 14.6 12.7 16.1L11.5 11.7C11.3 10.8 10.7 10.5 10 10.5Z" fill="#F9A533"/>
+                          </svg>
+                          {/* MASTERCARD SVG */}
+                          <svg className="h-7 w-auto rounded shadow-2xs border border-slate-200/80" viewBox="0 0 48 32" fill="none" aria-label="Mastercard">
+                            <rect width="48" height="32" rx="4" fill="#ffffff"/>
+                            <circle cx="19" cy="16" r="8.5" fill="#EB001B"/>
+                            <circle cx="29" cy="16" r="8.5" fill="#F79E1B"/>
+                            <path d="M24 9.36A8.48 8.48 0 0 0 20.5 16c0 2.75 1.38 5.19 3.5 6.64A8.48 8.48 0 0 0 27.5 16c0-2.75-1.38-5.19-3.5-6.64Z" fill="#FF5F00"/>
+                          </svg>
+                          {/* AMERICAN EXPRESS SVG */}
+                          <svg className="h-7 w-auto rounded shadow-2xs border border-slate-200/80" viewBox="0 0 48 32" fill="none" aria-label="American Express">
+                            <rect width="48" height="32" rx="4" fill="#006FCF"/>
+                            <path d="M9.5 19.5L12.8 12.5H16.2L19.5 19.5H17.1L16.4 17.9H12.6L11.9 19.5H9.5ZM13.3 16.2H15.7L14.5 13.5L13.3 16.2ZM20.5 19.5V12.5H23.8L25.5 16.6L27.2 12.5H30.5V19.5H28.4V14.6L26.4 19.5H24.6L22.6 14.6V19.5H20.5ZM32 19.5V12.5H38.5V14.2H34.1V15.2H38.3V16.8H34.1V17.8H38.5V19.5H32Z" fill="white"/>
+                          </svg>
                         </div>
                       </div>
 
-                      {/* Botones rápidos de prueba en modo Sandbox para Certificación */}
-                      {OPENPAY_IS_SANDBOX && (
-                        <div className="p-3 rounded-xl bg-amber-500/10 border border-amber-500/30 space-y-2">
-                          <p className="text-xs font-bold text-amber-700 dark:text-amber-300">
-                            Modo Pruebas (Certificación Sandbox Openpay) — Autocompletar tarjeta de prueba:
-                          </p>
-                          <div className="flex flex-wrap gap-2">
-                            <Button
-                              type="button"
-                              variant="outline"
-                              size="sm"
-                              className="h-7 text-xs border-green-500/40 text-green-700 dark:text-green-400"
-                              onClick={() => {
-                                setCardHolderName(`${getFinalAddress().firstName || 'Juan'} ${getFinalAddress().lastName || 'Perez'}`.trim());
-                                setCardNumber('4111 1111 1111 1111');
-                                setCardExpMonth('12');
-                                setCardExpYear('28');
-                                setCardCvv('123');
-                              }}
-                            >
-                              ✓ Tarjeta Aprobada (Visa)
-                            </Button>
-                            <Button
-                              type="button"
-                              variant="outline"
-                              size="sm"
-                              className="h-7 text-xs border-red-500/40 text-red-700 dark:text-red-400"
-                              onClick={() => {
-                                setCardHolderName(`${getFinalAddress().firstName || 'Juan'} ${getFinalAddress().lastName || 'Perez'}`.trim());
-                                setCardNumber('4222 2222 2222 2220');
-                                setCardExpMonth('12');
-                                setCardExpYear('28');
-                                setCardCvv('123');
-                              }}
-                            >
-                              ✕ Tarjeta Declinada (3001)
-                            </Button>
-                            <Button
-                              type="button"
-                              variant="outline"
-                              size="sm"
-                              className="h-7 text-xs border-orange-500/40 text-orange-700 dark:text-orange-400"
-                              onClick={() => {
-                                setCardHolderName(`${getFinalAddress().firstName || 'Juan'} ${getFinalAddress().lastName || 'Perez'}`.trim());
-                                setCardNumber('4444 4444 4444 4448');
-                                setCardExpMonth('12');
-                                setCardExpYear('28');
-                                setCardCvv('123');
-                              }}
-                            >
-                              ✕ Sin Fondos (3003)
-                            </Button>
-                          </div>
-                        </div>
-                      )}
-
                       <div className="space-y-4">
                         <div className="space-y-1.5">
-                          <Label htmlFor="op-holder" className="text-xs font-semibold">Nombre del titular (como aparece en la tarjeta) *</Label>
+                          <Label htmlFor="op-holder" className="text-xs font-semibold text-muted-foreground">Nombre del titular (como aparece en la tarjeta)</Label>
                           <Input
                             id="op-holder"
                             data-openpay-card="holder_name"
-                            placeholder="Ej. JUAN PEREZ LOPEZ"
+                            placeholder="NOMBRE Y APELLIDO"
                             value={cardHolderName}
                             onChange={e => setCardHolderName(e.target.value.toUpperCase())}
                             autoComplete="cc-name"
                             required
-                            className="bg-background uppercase font-medium"
+                            className="h-11 bg-background/80 border-border/70 focus:border-primary uppercase font-medium tracking-wide"
                           />
                         </div>
 
                         <div className="space-y-1.5">
-                          <Label htmlFor="op-number" className="text-xs font-semibold">Número de tarjeta *</Label>
+                          <Label htmlFor="op-number" className="text-xs font-semibold text-muted-foreground">Número de tarjeta</Label>
                           <div className="relative">
-                            <CreditCard className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-primary" />
+                            <CreditCard className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-primary" />
                             <Input
                               id="op-number"
                               data-openpay-card="card_number"
@@ -1130,14 +1136,29 @@ export default function CheckoutPage() {
                               }}
                               autoComplete="cc-number"
                               required
-                              className="pl-10 bg-background font-mono tracking-wider text-base"
+                              className="h-11 pl-10 pr-16 bg-background/80 border-border/70 focus:border-primary font-mono tracking-wider text-base"
                             />
+                            {/* Detección visual de marca en tiempo real */}
+                            <div className="absolute right-3 top-1/2 -translate-y-1/2 flex items-center">
+                              {cardNumber.startsWith('4') ? (
+                                <span className="text-[11px] font-black italic text-[#1434CB] bg-blue-50 px-2 py-0.5 rounded border border-blue-200">VISA</span>
+                              ) : /^(5[1-5]|2[2-7])/.test(cardNumber.replace(/\s/g, '')) ? (
+                                <div className="flex items-center -space-x-1.5">
+                                  <span className="w-3.5 h-3.5 rounded-full bg-[#EB001B] inline-block" />
+                                  <span className="w-3.5 h-3.5 rounded-full bg-[#F79E1B] inline-block opacity-90" />
+                                </div>
+                              ) : /^3[47]/.test(cardNumber.replace(/\s/g, '')) ? (
+                                <span className="text-[10px] font-black text-white bg-[#006FCF] px-1.5 py-0.5 rounded">AMEX</span>
+                              ) : (
+                                <Lock className="w-4 h-4 text-muted-foreground/50" />
+                              )}
+                            </div>
                           </div>
                         </div>
 
                         <div className="grid grid-cols-3 gap-3">
                           <div className="space-y-1.5">
-                            <Label htmlFor="op-month" className="text-xs font-semibold">Mes (MM) *</Label>
+                            <Label htmlFor="op-month" className="text-xs font-semibold text-muted-foreground">Mes (MM)</Label>
                             <Input
                               id="op-month"
                               data-openpay-card="expiration_month"
@@ -1148,11 +1169,11 @@ export default function CheckoutPage() {
                               onChange={e => setCardExpMonth(e.target.value.replace(/\D/g, '').slice(0, 2))}
                               autoComplete="cc-exp-month"
                               required
-                              className="bg-background font-mono text-center"
+                              className="h-11 bg-background/80 border-border/70 focus:border-primary font-mono text-center"
                             />
                           </div>
                           <div className="space-y-1.5">
-                            <Label htmlFor="op-year" className="text-xs font-semibold">Año (AA) *</Label>
+                            <Label htmlFor="op-year" className="text-xs font-semibold text-muted-foreground">Año (AA)</Label>
                             <Input
                               id="op-year"
                               data-openpay-card="expiration_year"
@@ -1163,24 +1184,27 @@ export default function CheckoutPage() {
                               onChange={e => setCardExpYear(e.target.value.replace(/\D/g, '').slice(0, 2))}
                               autoComplete="cc-exp-year"
                               required
-                              className="bg-background font-mono text-center"
+                              className="h-11 bg-background/80 border-border/70 focus:border-primary font-mono text-center"
                             />
                           </div>
                           <div className="space-y-1.5">
-                            <Label htmlFor="op-cvv" className="text-xs font-semibold">CVV2 *</Label>
-                            <Input
-                              id="op-cvv"
-                              data-openpay-card="cvv2"
-                              type="password"
-                              placeholder="123"
-                              inputMode="numeric"
-                              maxLength={4}
-                              value={cardCvv}
-                              onChange={e => setCardCvv(e.target.value.replace(/\D/g, '').slice(0, 4))}
-                              autoComplete="cc-csc"
-                              required
-                              className="bg-background font-mono text-center"
-                            />
+                            <Label htmlFor="op-cvv" className="text-xs font-semibold text-muted-foreground">Código CVV</Label>
+                            <div className="relative">
+                              <Input
+                                id="op-cvv"
+                                data-openpay-card="cvv2"
+                                type="password"
+                                placeholder="•••"
+                                inputMode="numeric"
+                                maxLength={4}
+                                value={cardCvv}
+                                onChange={e => setCardCvv(e.target.value.replace(/\D/g, '').slice(0, 4))}
+                                autoComplete="cc-csc"
+                                required
+                                className="h-11 bg-background/80 border-border/70 focus:border-primary font-mono text-center pr-8"
+                              />
+                              <ShieldCheck className="absolute right-2.5 top-1/2 -translate-y-1/2 w-4 h-4 text-green-500/80 pointer-events-none" />
+                            </div>
                           </div>
                         </div>
                       </div>
@@ -1188,31 +1212,32 @@ export default function CheckoutPage() {
                       <Button
                         type="submit"
                         disabled={isProcessingOpenpayCard}
-                        className="w-full h-14 font-black text-lg shadow-xl bg-blue-600 hover:bg-blue-700 text-white rounded-xl transition-all"
+                        className="w-full py-6 font-bold text-lg shadow-xl rounded-xl transition-all duration-300"
                       >
                         {isProcessingOpenpayCard ? (
                           <>
                             <Loader2 className="w-5 h-5 animate-spin mr-2" />
-                            Procesando cargo seguro con Openpay...
+                            Verificando y autorizando con tu banco...
                           </>
                         ) : (
                           <>
                             <Lock className="w-5 h-5 mr-2" />
-                            Pagar {formatCurrency(finalTotal!)} MXN
+                            Pagar {formatCurrency(finalTotal!)}
                           </>
                         )}
                       </Button>
 
-                      {/* Sellos Oficiales requeridos para la Certificación de Openpay */}
+                      {/* Sellos Oficiales de Respaldo Bancario Openpay BBVA */}
                       <div className="pt-4 border-t border-border/50 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-muted-foreground">
-                        <div className="flex items-center gap-2">
-                          <span className="text-[11px]">Transacciones realizadas vía:</span>
-                          <span className="font-black tracking-tight text-sm text-[#004481] dark:text-blue-400">
-                            Openpay <span className="font-semibold text-xs opacity-80">by BBVA</span>
-                          </span>
+                        <div className="flex items-center gap-2.5">
+                          <span className="text-[11px] text-muted-foreground/80">Transacciones realizadas vía:</span>
+                          <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-slate-100 dark:bg-slate-800 border border-border/60">
+                            <span className="font-black tracking-tight text-xs text-[#004481] dark:text-sky-400">openpay</span>
+                            <span className="text-[10px] font-bold text-[#004481]/80 dark:text-sky-300 border-l border-slate-300 dark:border-slate-600 pl-1.5">Grupo BBVA</span>
+                          </div>
                         </div>
-                        <div className="flex items-center gap-2 text-[11px]">
-                          <ShieldCheck className="w-4 h-4 text-green-600 shrink-0" />
+                        <div className="flex items-center gap-1.5 text-[11px] text-muted-foreground/90">
+                          <ShieldCheck className="w-4 h-4 text-green-500 shrink-0" />
                           <span>Tus pagos se realizan de forma segura con encriptación de 256 bits</span>
                         </div>
                       </div>
