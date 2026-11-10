@@ -10,10 +10,10 @@ const nextConfig: NextConfig = {
     SMTP_PASS: process.env.SMTP_PASS || '',
     SMTP_FROM: process.env.SMTP_FROM || 'Borarly Ventas <ventas@borarly.com>',
     SALES_NOTIFICATION_EMAIL: process.env.SALES_NOTIFICATION_EMAIL || 'ventas@borarly.com',
-    NEXT_PUBLIC_OPENPAY_MERCHANT_ID: process.env.NEXT_PUBLIC_OPENPAY_MERCHANT_ID || 'mqwzickxeqyblzdh5lia',
-    NEXT_PUBLIC_OPENPAY_PUBLIC_KEY: process.env.NEXT_PUBLIC_OPENPAY_PUBLIC_KEY || 'pk_fde31e1a057446baa56eb885cdad6076',
+    NEXT_PUBLIC_OPENPAY_MERCHANT_ID: process.env.NEXT_PUBLIC_OPENPAY_MERCHANT_ID || '',
+    NEXT_PUBLIC_OPENPAY_PUBLIC_KEY: process.env.NEXT_PUBLIC_OPENPAY_PUBLIC_KEY || '',
     NEXT_PUBLIC_OPENPAY_SANDBOX: process.env.NEXT_PUBLIC_OPENPAY_SANDBOX || 'true',
-    OPENPAY_PRIVATE_KEY: process.env.OPENPAY_PRIVATE_KEY || ['sk', '973496ec0b1c4e01b28acf4103054338'].join('_'),
+    OPENPAY_PRIVATE_KEY: process.env.OPENPAY_PRIVATE_KEY || '',
   },
   typescript: {
     ignoreBuildErrors: true,

@@ -4,16 +4,16 @@
  */
 
 export const OPENPAY_MERCHANT_ID =
-  process.env.NEXT_PUBLIC_OPENPAY_MERCHANT_ID || 'mqwzickxeqyblzdh5lia';
+  process.env.NEXT_PUBLIC_OPENPAY_MERCHANT_ID || '';
 
 export const OPENPAY_PUBLIC_KEY =
-  process.env.NEXT_PUBLIC_OPENPAY_PUBLIC_KEY || 'pk_fde31e1a057446baa56eb885cdad6076';
+  process.env.NEXT_PUBLIC_OPENPAY_PUBLIC_KEY || '';
 
 export const OPENPAY_IS_SANDBOX =
   (process.env.NEXT_PUBLIC_OPENPAY_SANDBOX ?? 'true').toLowerCase() !== 'false';
 
 export function getOpenpayPrivateKey(): string {
-  return process.env.OPENPAY_PRIVATE_KEY || ['sk', '973496ec0b1c4e01b28acf4103054338'].join('_');
+  return process.env.OPENPAY_PRIVATE_KEY || '';
 }
 
 export function getOpenpayBaseUrl(): string {
