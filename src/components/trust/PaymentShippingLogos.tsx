@@ -3,7 +3,7 @@ import { cn } from '@/lib/utils';
 
 /* Logotipos dibujados en HTML/SVG (sin imágenes externas): ligeros, nítidos y sin peticiones extra. */
 
-function Chip({ children, className, label }: { children: React.ReactNode; className?: string; label: string }) {
+export function Chip({ children, className, label }: { children: React.ReactNode; className?: string; label: string }) {
   return (
     <span
       role="img"
@@ -19,26 +19,68 @@ function Chip({ children, className, label }: { children: React.ReactNode; class
   );
 }
 
+export const SpeiChip = (
+  <Chip label="SPEI">
+    <span className="text-[15px] font-black italic tracking-tight text-[#1b2a6b]">
+      SPEI<sup className="text-[7px] text-[#e4002b]">®</sup>
+    </span>
+  </Chip>
+);
+
+export const OxxoChip = (
+  <Chip label="OXXO" className="bg-[#e4002b] border-[#e4002b]">
+    <span className="rounded-sm bg-[#ffd200] px-1 text-[12px] font-black tracking-tight text-[#e4002b]">OXXO</span>
+  </Chip>
+);
+
+export const MonexChip = (
+  <Chip label="Monex">
+    <span className="text-[14px] font-bold tracking-tight text-[#0a6ebd]">
+      m<span className="text-[#41b6e6]">o</span>nex
+    </span>
+  </Chip>
+);
+
+export const BbvaChip = (
+  <Chip label="BBVA">
+    <span className="text-[14px] font-semibold tracking-[0.12em] text-[#072146]">BBVA</span>
+  </Chip>
+);
+
+export const VisaChip = (
+  <Chip label="Visa">
+    <span className="text-[16px] font-black italic tracking-tight text-[#1a1f71]">VISA</span>
+  </Chip>
+);
+
+export const MastercardChip = (
+  <Chip label="Mastercard">
+    <svg viewBox="0 0 38 24" className="h-5 w-auto" aria-hidden="true">
+      <circle cx="14" cy="12" r="9" fill="#eb001b" />
+      <circle cx="24" cy="12" r="9" fill="#f79e1b" />
+      <path d="M19 4.7a9 9 0 0 1 0 14.6 9 9 0 0 1 0-14.6z" fill="#ff5f00" />
+    </svg>
+  </Chip>
+);
+
+export const AmexChip = (
+  <Chip label="American Express" className="bg-[#2e77bc] border-[#2e77bc]">
+    <span className="text-center text-[8px] font-black leading-[9px] tracking-tight text-white">
+      AMERICAN
+      <br />
+      EXPRESS
+    </span>
+  </Chip>
+);
+
 const PAYMENT_LOGOS = [
-  { key: 'spei', el: <Chip label="SPEI"><span className="text-[15px] font-black italic tracking-tight text-[#1b2a6b]">SPEI<sup className="text-[7px] text-[#e4002b]">®</sup></span></Chip> },
-  { key: 'oxxo', el: <Chip label="OXXO" className="bg-[#e4002b] border-[#e4002b]"><span className="rounded-sm bg-[#ffd200] px-1 text-[12px] font-black tracking-tight text-[#e4002b]">OXXO</span></Chip> },
-  { key: 'monex', el: <Chip label="Monex"><span className="text-[14px] font-bold tracking-tight text-[#0a6ebd]">m<span className="text-[#41b6e6]">o</span>nex</span></Chip> },
-  { key: 'bbva', el: <Chip label="BBVA"><span className="text-[14px] font-semibold tracking-[0.12em] text-[#072146]">BBVA</span></Chip> },
-  { key: 'visa', el: <Chip label="Visa"><span className="text-[16px] font-black italic tracking-tight text-[#1a1f71]">VISA</span></Chip> },
-  {
-    key: 'mastercard',
-    el: (
-      <Chip label="Mastercard">
-        <svg viewBox="0 0 38 24" className="h-5 w-auto" aria-hidden="true">
-          <circle cx="14" cy="12" r="9" fill="#eb001b" />
-          <circle cx="24" cy="12" r="9" fill="#f79e1b" />
-          <path d="M19 4.7a9 9 0 0 1 0 14.6 9 9 0 0 1 0-14.6z" fill="#ff5f00" />
-        </svg>
-      </Chip>
-    ),
-  },
-  { key: 'amex', el: <Chip label="American Express" className="bg-[#2e77bc] border-[#2e77bc]"><span className="text-center text-[8px] font-black leading-[9px] tracking-tight text-white">AMERICAN<br />EXPRESS</span></Chip> },
-  { key: 'paypal', el: <Chip label="PayPal"><span className="text-[14px] font-black italic tracking-tight text-[#003087]">Pay<span className="text-[#009cde]">Pal</span></span></Chip> },
+  { key: 'spei', el: SpeiChip },
+  { key: 'oxxo', el: OxxoChip },
+  { key: 'monex', el: MonexChip },
+  { key: 'bbva', el: BbvaChip },
+  { key: 'visa', el: VisaChip },
+  { key: 'mastercard', el: MastercardChip },
+  { key: 'amex', el: AmexChip },
 ];
 
 const SHIPPING_LOGOS = [

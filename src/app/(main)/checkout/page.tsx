@@ -18,9 +18,16 @@ import Link from 'next/link';
 import Script from 'next/script';
 import { updateProductStock } from '@/services/productService';
 import { getShippingSettings, getProfitMargin, getVatRate } from '@/services/settingsService';
-import { PayPalScriptProvider, PayPalButtons } from '@paypal/react-paypal-js';
 import { Switch } from '@/components/ui/switch';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import {
+  SpeiChip,
+  OxxoChip,
+  BbvaChip,
+  VisaChip,
+  MastercardChip,
+  AmexChip,
+} from '@/components/trust/PaymentShippingLogos';
 import {
   OPENPAY_MERCHANT_ID,
   OPENPAY_PUBLIC_KEY,
@@ -53,7 +60,7 @@ export default function CheckoutPage() {
   const [contactEmail, setContactEmail] = useState('');
   
   // Nivel logístico de checkout
-  const [paymentMethod, setPaymentMethod] = useState<'openpay_card' | 'spei' | 'oxxo' | 'paypal'>('openpay_card');
+  const [paymentMethod, setPaymentMethod] = useState<'openpay_card' | 'spei' | 'oxxo'>('openpay_card');
   const [isProcessingManualPayment, setIsProcessingManualPayment] = useState(false);
 
   // Openpay Card & Antifraud State
@@ -617,7 +624,7 @@ export default function CheckoutPage() {
   };
   
   if (currentStep === 3) {
-      const isCardOrPaypalPaid = paymentMethod === 'paypal' || paymentMethod === 'openpay_card';
+      const isCardOrPaypalPaid = paymentMethod === 'openpay_card';
       return (
           <div className="max-w-2xl mx-auto text-center py-16 space-y-6">
               <div className={`w-24 h-24 rounded-full flex items-center justify-center mx-auto shadow-inner ${isCardOrPaypalPaid ? 'bg-green-100 text-green-500' : 'bg-primary/20 text-primary'}`}>
@@ -969,8 +976,8 @@ export default function CheckoutPage() {
                     </div>
                 </CardHeader>
                 <CardContent className="p-6 space-y-6">
-                  {/* Selector de Método de Pago con estética unificada al Resumen */}
-                  <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                  {/* Selector de Método de Pago con los mismos chips oficiales de la tienda */}
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                       {/* TARJETA OPENPAY BBVA */}
                       <button
                         type="button"
@@ -981,21 +988,11 @@ export default function CheckoutPage() {
                             : 'border-border/60 bg-background/60 hover:border-primary/30 hover:bg-muted/30'
                         }`}>
                           {paymentMethod === 'openpay_card' && (
-                            <span className="absolute top-2 right-2 w-2 h-2 rounded-full bg-primary" />
+                            <span className="absolute top-2.5 right-2.5 w-2 h-2 rounded-full bg-primary" />
                           )}
-                          <div className="h-8 flex items-center justify-center gap-1.5 mb-2">
-                            {/* Visa & Mastercard Mini Real Logos */}
-                            <svg className="h-5 w-auto" viewBox="0 0 48 32" fill="none" aria-label="Visa">
-                              <rect width="48" height="32" rx="4" fill="#1434CB"/>
-                              <path d="M19.5 21.5L21.6 10.5H25L22.9 21.5H19.5ZM34.9 10.8C34.2 10.5 33.1 10.2 31.7 10.2C28.2 10.2 25.7 12 25.7 14.5C25.7 16.4 27.4 17.4 28.7 18C30 18.6 30.5 19 30.5 19.6C30.5 20.5 29.4 20.9 28.3 20.9C26.9 20.9 26.1 20.7 24.9 20.2L24.4 20L23.9 23C24.8 23.4 26.4 23.7 28 23.7C31.7 23.7 34.1 21.9 34.1 19.2C34.1 17.7 33.2 16.5 31.1 15.6C29.9 15 29.1 14.6 29.1 14C29.1 13.4 29.8 12.8 31.2 12.8C32.4 12.8 33.3 13 34 13.3L34.4 13.5L34.9 10.8ZM43.5 10.5H40.8C39.9 10.5 39.3 10.8 38.9 11.7L33.6 21.5H37.3L38 19.5H42.5L42.9 21.5H46.2L43.5 10.5ZM39.1 17C39.4 16.2 40.6 13.1 40.6 13.1C40.6 13.1 40.9 12.3 41.1 11.8L41.4 13L42.3 17H39.1ZM16.6 10.5L13.1 18L12.7 16.1C12.1 14 10.1 11.8 7.9 10.7L11.1 21.5H14.8L20.3 10.5H16.6Z" fill="white"/>
-                              <path d="M10 10.5H4.3L4.2 10.8C8.6 11.9 11.5 14.6 12.7 16.1L11.5 11.7C11.3 10.8 10.7 10.5 10 10.5Z" fill="#F9A533"/>
-                            </svg>
-                            <svg className="h-5 w-auto" viewBox="0 0 48 32" fill="none" aria-label="Mastercard">
-                              <rect width="48" height="32" rx="4" fill="#1E293B"/>
-                              <circle cx="19" cy="16" r="8.5" fill="#EB001B"/>
-                              <circle cx="29" cy="16" r="8.5" fill="#F79E1B"/>
-                              <path d="M24 9.36A8.48 8.48 0 0 0 20.5 16c0 2.75 1.38 5.19 3.5 6.64A8.48 8.48 0 0 0 27.5 16c0-2.75-1.38-5.19-3.5-6.64Z" fill="#FF5F00"/>
-                            </svg>
+                          <div className="min-h-8 flex items-center justify-center gap-1.5 mb-2.5">
+                            {VisaChip}
+                            {MastercardChip}
                           </div>
                           <span className={`text-xs sm:text-sm font-bold text-center leading-tight ${paymentMethod === 'openpay_card' ? 'text-foreground' : 'text-muted-foreground'}`}>Tarjeta Bancaria</span>
                           <span className="text-[10px] text-primary font-semibold mt-1">Crédito o Débito</span>
@@ -1011,19 +1008,17 @@ export default function CheckoutPage() {
                             : 'border-border/60 bg-background/60 hover:border-primary/30 hover:bg-muted/30'
                         }`}>
                           {paymentMethod === 'spei' && (
-                            <span className="absolute top-2 right-2 w-2 h-2 rounded-full bg-primary" />
+                            <span className="absolute top-2.5 right-2.5 w-2 h-2 rounded-full bg-primary" />
                           )}
-                          <div className="h-8 flex items-center justify-center mb-2">
-                            <div className="px-2.5 py-1 rounded-md bg-[#004481] text-white font-black text-[11px] tracking-widest flex items-center gap-1 shadow-xs">
-                              <span>SPEI</span>
-                              <span className="w-1.5 h-1.5 rounded-full bg-sky-400" />
-                            </div>
+                          <div className="min-h-8 flex items-center justify-center gap-1.5 mb-2.5">
+                            {SpeiChip}
+                            {BbvaChip}
                           </div>
                           <span className={`text-xs sm:text-sm font-bold text-center leading-tight ${paymentMethod === 'spei' ? 'text-foreground' : 'text-muted-foreground'}`}>Transferencia SPEI</span>
                           <span className="text-[10px] text-muted-foreground mt-1">Interbancario BBVA</span>
                       </button>
 
-                      {/* EFECTIVO EN TIENDAS (PAYNET OPENPAY) */}
+                      {/* EFECTIVO EN TIENDAS (PAYNET / OXXO) */}
                       <button
                         type="button"
                         onClick={() => setPaymentMethod('oxxo')}
@@ -1033,38 +1028,13 @@ export default function CheckoutPage() {
                             : 'border-border/60 bg-background/60 hover:border-primary/30 hover:bg-muted/30'
                         }`}>
                           {paymentMethod === 'oxxo' && (
-                            <span className="absolute top-2 right-2 w-2 h-2 rounded-full bg-primary" />
+                            <span className="absolute top-2.5 right-2.5 w-2 h-2 rounded-full bg-primary" />
                           )}
-                          <div className="h-8 flex items-center justify-center mb-2">
-                            <div className="px-2.5 py-1 rounded-md bg-slate-800 text-white font-bold text-[11px] tracking-wide flex items-center gap-1.5 shadow-xs">
-                              <Store className="w-3.5 h-3.5 text-sky-400" />
-                              <span>Paynet</span>
-                            </div>
+                          <div className="min-h-8 flex items-center justify-center gap-1.5 mb-2.5">
+                            {OxxoChip}
                           </div>
                           <span className={`text-xs sm:text-sm font-bold text-center leading-tight ${paymentMethod === 'oxxo' ? 'text-foreground' : 'text-muted-foreground'}`}>Depósito Efectivo</span>
-                          <span className="text-[10px] text-muted-foreground mt-1">Walmart, 7-Eleven, Farmacias</span>
-                      </button>
-
-                      {/* PAYPAL */}
-                      <button
-                        type="button"
-                        onClick={() => setPaymentMethod('paypal')}
-                        className={`group relative flex flex-col items-center justify-between p-4 rounded-xl border transition-all duration-200 ${
-                          paymentMethod === 'paypal'
-                            ? 'border-primary bg-gradient-to-tr from-primary/10 to-transparent shadow-sm ring-1 ring-primary/30'
-                            : 'border-border/60 bg-background/60 hover:border-primary/30 hover:bg-muted/30'
-                        }`}>
-                          {paymentMethod === 'paypal' && (
-                            <span className="absolute top-2 right-2 w-2 h-2 rounded-full bg-primary" />
-                          )}
-                          <div className="h-8 flex items-center justify-center mb-2">
-                            <svg className="h-6 w-auto" viewBox="0 0 24 24" fill="none" aria-label="PayPal">
-                              <path d="M7.076 21.337H2.47a.641.641 0 0 1-.633-.74L4.944.901C5.026.382 5.474 0 5.998 0h7.46c2.57 0 4.578.543 5.69 1.81 1.01 1.15 1.304 2.42 1.012 4.287-.023.143-.047.288-.077.437-.983 5.05-4.349 6.797-8.647 6.797h-2.19c-.524 0-.968.382-1.05.9l-1.12 7.106z" fill="#003087"/>
-                              <path d="M21.2 7.03c-.244-1.272-1.066-2.22-2.316-2.8a5.2 5.2 0 0 0-1.42 5.163c-.878 4.49-4.103 6.012-7.838 6.012H7.28a.507.507 0 0 0-.498.411L5.372 24.87a.64.64 0 0 0 .633.74H10.15c.524 0 .968-.382 1.05-.9l.758-4.805a.507.507 0 0 1 .498-.412h1.61c3.842 0 6.847-1.575 7.632-5.6.363-1.854.26-3.79-.5-6.862z" fill="#0070E0"/>
-                            </svg>
-                          </div>
-                          <span className={`text-xs sm:text-sm font-bold text-center leading-tight ${paymentMethod === 'paypal' ? 'text-foreground' : 'text-muted-foreground'}`}>PayPal</span>
-                          <span className="text-[10px] text-muted-foreground mt-1">Cuenta Protegida</span>
+                          <span className="text-[10px] text-muted-foreground mt-1">OXXO y Red Paynet</span>
                       </button>
                   </div>
 
@@ -1075,31 +1045,17 @@ export default function CheckoutPage() {
                     <form id="openpay-payment-form" onSubmit={handleOpenpayCardPayment} className="space-y-5 animate-in fade-in duration-300">
                       <input type="hidden" name="deviceIdHiddenFieldName" value={deviceSessionId} />
 
-                      {/* Barra institucional de tarjetas participantes con logotipos vectoriales reales */}
+                      {/* Barra institucional con los mismos Chips oficiales del Carrito */}
                       <div className="flex flex-wrap items-center justify-between gap-3 bg-gradient-to-tr from-primary/5 to-transparent p-4 rounded-xl border border-primary/15">
                         <div className="space-y-0.5">
                           <p className="text-xs font-bold uppercase tracking-wider text-primary">Procesamiento Bancario Directo</p>
                           <p className="text-xs text-muted-foreground">Aceptamos todas las tarjetas de crédito y débito nacionales e internacionales</p>
                         </div>
-                        <div className="flex items-center gap-2">
-                          {/* VISA SVG */}
-                          <svg className="h-7 w-auto rounded shadow-2xs border border-slate-200/80" viewBox="0 0 48 32" fill="none" aria-label="Visa">
-                            <rect width="48" height="32" rx="4" fill="#ffffff"/>
-                            <path d="M19.5 21.5L21.6 10.5H25L22.9 21.5H19.5ZM34.9 10.8C34.2 10.5 33.1 10.2 31.7 10.2C28.2 10.2 25.7 12 25.7 14.5C25.7 16.4 27.4 17.4 28.7 18C30 18.6 30.5 19 30.5 19.6C30.5 20.5 29.4 20.9 28.3 20.9C26.9 20.9 26.1 20.7 24.9 20.2L24.4 20L23.9 23C24.8 23.4 26.4 23.7 28 23.7C31.7 23.7 34.1 21.9 34.1 19.2C34.1 17.7 33.2 16.5 31.1 15.6C29.9 15 29.1 14.6 29.1 14C29.1 13.4 29.8 12.8 31.2 12.8C32.4 12.8 33.3 13 34 13.3L34.4 13.5L34.9 10.8ZM43.5 10.5H40.8C39.9 10.5 39.3 10.8 38.9 11.7L33.6 21.5H37.3L38 19.5H42.5L42.9 21.5H46.2L43.5 10.5ZM39.1 17C39.4 16.2 40.6 13.1 40.6 13.1C40.6 13.1 40.9 12.3 41.1 11.8L41.4 13L42.3 17H39.1ZM16.6 10.5L13.1 18L12.7 16.1C12.1 14 10.1 11.8 7.9 10.7L11.1 21.5H14.8L20.3 10.5H16.6Z" fill="#1434CB"/>
-                            <path d="M10 10.5H4.3L4.2 10.8C8.6 11.9 11.5 14.6 12.7 16.1L11.5 11.7C11.3 10.8 10.7 10.5 10 10.5Z" fill="#F9A533"/>
-                          </svg>
-                          {/* MASTERCARD SVG */}
-                          <svg className="h-7 w-auto rounded shadow-2xs border border-slate-200/80" viewBox="0 0 48 32" fill="none" aria-label="Mastercard">
-                            <rect width="48" height="32" rx="4" fill="#ffffff"/>
-                            <circle cx="19" cy="16" r="8.5" fill="#EB001B"/>
-                            <circle cx="29" cy="16" r="8.5" fill="#F79E1B"/>
-                            <path d="M24 9.36A8.48 8.48 0 0 0 20.5 16c0 2.75 1.38 5.19 3.5 6.64A8.48 8.48 0 0 0 27.5 16c0-2.75-1.38-5.19-3.5-6.64Z" fill="#FF5F00"/>
-                          </svg>
-                          {/* AMERICAN EXPRESS SVG */}
-                          <svg className="h-7 w-auto rounded shadow-2xs border border-slate-200/80" viewBox="0 0 48 32" fill="none" aria-label="American Express">
-                            <rect width="48" height="32" rx="4" fill="#006FCF"/>
-                            <path d="M9.5 19.5L12.8 12.5H16.2L19.5 19.5H17.1L16.4 17.9H12.6L11.9 19.5H9.5ZM13.3 16.2H15.7L14.5 13.5L13.3 16.2ZM20.5 19.5V12.5H23.8L25.5 16.6L27.2 12.5H30.5V19.5H28.4V14.6L26.4 19.5H24.6L22.6 14.6V19.5H20.5ZM32 19.5V12.5H38.5V14.2H34.1V15.2H38.3V16.8H34.1V17.8H38.5V19.5H32Z" fill="white"/>
-                          </svg>
+                        <div className="flex flex-wrap items-center gap-1.5">
+                          {BbvaChip}
+                          {VisaChip}
+                          {MastercardChip}
+                          {AmexChip}
                         </div>
                       </div>
 
@@ -1272,86 +1228,6 @@ export default function CheckoutPage() {
                               : 'Generar Orden y Ver Ficha SPEI'}
                          </Button>
                      </div>
-                  )}
-
-                  {/* FLUJO PAYPAL */}
-                  {paymentMethod === 'paypal' && (
-                    <div className="max-w-xl mx-auto py-2 animate-in fade-in duration-500">
-                      <PayPalScriptProvider 
-                        options={{ 
-                            clientId: process.env.NEXT_PUBLIC_PAYPAL_CLIENT_ID || "",
-                            currency: "MXN",
-                            intent: "capture", // Cobro inmediato
-                            locale: "es_MX"
-                        }}>
-                        <PayPalButtons 
-                            style={{ layout: "vertical", shape: "rect", color: "blue", label: "pay", disableMaxWidth: true }}
-                            createOrder={async (data, actions) => {
-                                try {
-                                    const finalAddr = getFinalAddress();
-                                    const payerPayload = {
-                                        firstName: finalAddr.firstName,
-                                        lastName: finalAddr.lastName,
-                                        street: finalAddr.street,
-                                        city: finalAddr.city,
-                                        state: finalAddr.state,
-                                        zip: finalAddr.zip,
-                                        contactEmail: contactEmail
-                                    };
-                                    
-                                    const finalBill = getFinalBilling();
-
-                                    const response = await fetch('/api/orders', {
-                                        method: 'POST',
-                                        headers: { 'Content-Type': 'application/json' },
-                                        body: JSON.stringify({ 
-                                            cart: cartItems, 
-                                            shippingCost: shippingCost,
-                                            payerDetails: payerPayload, // INYECCIÓN ZERO-FRICTION
-                                            requiresBilling,
-                                            billingDetails: finalBill
-                                        }),
-                                    });
-                                    
-                                    const orderData = await response.json();
-                                    
-                                    if (orderData.id) {
-                                        return orderData.id;
-                                    } else {
-                                        const errorDetail = orderData?.details?.[0];
-                                        const errorMessage = errorDetail ? `${errorDetail.issue} ${errorDetail.description}` : JSON.stringify(orderData);
-                                        throw new Error(errorMessage);
-                                    }
-                                } catch (error) {
-                                    console.error(error);
-                                    toast({ title: "Error Cifrado", description: "No pudimos conectar con la pasarela bancaria.", variant: "destructive" });
-                                    throw error;
-                                }
-                            }}
-                            onApprove={async (data, actions) => {
-                                try {
-                                    const response = await fetch(`/api/orders/${data.orderID}/capture`, {
-                                        method: 'POST',
-                                        headers: { 'Content-Type': 'application/json' }
-                                    });
-                                    
-                                    const captureData = await response.json();
-                                    
-                                    if (captureData.status === "COMPLETED" || captureData.purchase_units) {
-                                        const transactionId = captureData.purchase_units[0].payments.captures[0].id;
-                                        toast({ title: "Fondos Procesados", description: "Verificando firmas digitales de tu pago...", duration: 5000 });
-                                        await saveOrderToFirebase(transactionId, 'paypal');
-                                    } else {
-                                      throw new Error("El estado de captura bancaria fue inesperado.");
-                                    }
-                                } catch (error) {
-                                    console.error(error);
-                                    toast({ title: "Operación Restringida", description: "Tu banco rechazó la operación o hubo un corte temporal.", variant: "destructive" });
-                                }
-                            }}
-                        />
-                      </PayPalScriptProvider>
-                    </div>
                   )}
                 </CardContent>
                 </Card>
