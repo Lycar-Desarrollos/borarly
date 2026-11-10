@@ -27,6 +27,7 @@ import {
   VisaChip,
   MastercardChip,
   AmexChip,
+  OpenpayChip,
 } from '@/components/trust/PaymentShippingLogos';
 import {
   OPENPAY_MERCHANT_ID,
@@ -1185,12 +1186,10 @@ export default function CheckoutPage() {
 
                       {/* Sellos Oficiales de Respaldo Bancario Openpay BBVA */}
                       <div className="pt-4 border-t border-border/50 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-muted-foreground">
-                        <div className="flex items-center gap-2.5">
+                        <div className="flex items-center gap-2">
                           <span className="text-[11px] text-muted-foreground/80">Transacciones realizadas vía:</span>
-                          <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-slate-100 dark:bg-slate-800 border border-border/60">
-                            <span className="font-black tracking-tight text-xs text-[#004481] dark:text-sky-400">openpay</span>
-                            <span className="text-[10px] font-bold text-[#004481]/80 dark:text-sky-300 border-l border-slate-300 dark:border-slate-600 pl-1.5">Grupo BBVA</span>
-                          </div>
+                          {OpenpayChip}
+                          {BbvaChip}
                         </div>
                         <div className="flex items-center gap-1.5 text-[11px] text-muted-foreground/90">
                           <ShieldCheck className="w-4 h-4 text-green-500 shrink-0" />
