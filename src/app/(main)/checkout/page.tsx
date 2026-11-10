@@ -10,16 +10,23 @@ import { Separator } from '@/components/ui/separator';
 import { useRouter } from 'next/navigation';
 import { useToast } from '@/hooks/use-toast';
 import { useState, useEffect, useCallback, useMemo } from 'react';
-import { Loader2, Mail, Phone, Truck, CheckCircle2, ArrowLeft, ShieldCheck, Lock, CreditCard, MapPin, Plus, Edit, Building, Clock } from 'lucide-react';
+import { Loader2, Mail, Phone, Truck, CheckCircle2, ArrowLeft, ShieldCheck, Lock, CreditCard, MapPin, Plus, Edit, Building, Clock, FileDown, Store } from 'lucide-react';
 import { addDoc, collection, doc, Timestamp, updateDoc, arrayUnion } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import type { Order, OrderItem, UserAddress, BillingData } from '@/lib/types';
 import Link from 'next/link';
+import Script from 'next/script';
 import { updateProductStock } from '@/services/productService';
 import { getShippingSettings, getProfitMargin, getVatRate } from '@/services/settingsService';
 import { PayPalScriptProvider, PayPalButtons } from '@paypal/react-paypal-js';
 import { Switch } from '@/components/ui/switch';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import {
+  OPENPAY_MERCHANT_ID,
+  OPENPAY_PUBLIC_KEY,
+  OPENPAY_IS_SANDBOX,
+  translateOpenpayError,
+} from '@/lib/openpay';
 
 export default function CheckoutPage() {
   const { cartItems, cartSubtotal, clearCart } = useCart();
@@ -46,8 +53,24 @@ export default function CheckoutPage() {
   const [contactEmail, setContactEmail] = useState('');
   
   // Nivel logístico de checkout
-  const [paymentMethod, setPaymentMethod] = useState<'spei' | 'oxxo' | 'paypal'>('spei');
+  const [paymentMethod, setPaymentMethod] = useState<'openpay_card' | 'spei' | 'oxxo' | 'paypal'>('openpay_card');
   const [isProcessingManualPayment, setIsProcessingManualPayment] = useState(false);
+
+  // Openpay Card & Antifraud State
+  const [openpayScriptLoaded, setOpenpayScriptLoaded] = useState(false);
+  const [openpayDataScriptLoaded, setOpenpayDataScriptLoaded] = useState(false);
+  const [deviceSessionId, setDeviceSessionId] = useState('');
+  const [cardHolderName, setCardHolderName] = useState('');
+  const [cardNumber, setCardNumber] = useState('');
+  const [cardExpMonth, setCardExpMonth] = useState('');
+  const [cardExpYear, setCardExpYear] = useState('');
+  const [cardCvv, setCardCvv] = useState('');
+  const [isProcessingOpenpayCard, setIsProcessingOpenpayCard] = useState(false);
+  const [paynetVoucher, setPaynetVoucher] = useState<{
+    reference: string;
+    barcodeUrl: string;
+    pdfUrl: string;
+  } | null>(null);
 
   // Billing Logic
   const [requiresBilling, setRequiresBilling] = useState(false);
@@ -129,7 +152,7 @@ export default function CheckoutPage() {
   const shippingCost = useMemo(() => {
     if (loadingSettings || cartItems.length === 0) return null;
     const { cost, freeShippingThreshold } = shippingSettings;
-    if (freeShippingThreshold !== null && freeShippingThreshold > 0 && cartSubtotal >= freeShippingThreshold) {
+    if (typeof freeShippingThreshold === 'number' && freeShippingThreshold > 0 && cartSubtotal >= freeShippingThreshold) {
       return 0; // Envío gratis detectado
     }
     return cost;
@@ -201,8 +224,29 @@ export default function CheckoutPage() {
       return newBillingForm;
   }
   
+  // Inicializar Openpay.js + Antifraude (device_session_id)
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    const win = window as any;
+    if (win.OpenPay && openpayScriptLoaded && openpayDataScriptLoaded && !deviceSessionId) {
+      try {
+        win.OpenPay.setId(OPENPAY_MERCHANT_ID);
+        win.OpenPay.setApiKey(OPENPAY_PUBLIC_KEY);
+        win.OpenPay.setSandboxMode(OPENPAY_IS_SANDBOX);
+        const sessionId = win.OpenPay.deviceData.setup();
+        if (sessionId) setDeviceSessionId(sessionId);
+      } catch (err) {
+        console.error('Error configurando Openpay deviceData:', err);
+      }
+    }
+  }, [openpayScriptLoaded, openpayDataScriptLoaded, deviceSessionId]);
+
   // Guardar datos en Firebase tras captura exitosa o pedido manual
-  const saveOrderToFirebase = async (transactionId: string, method: 'paypal' | 'spei' | 'oxxo' = 'paypal') => {
+  const saveOrderToFirebase = async (
+    transactionId: string,
+    method: 'openpay_card' | 'paypal' | 'spei' | 'oxxo' = 'openpay_card',
+    extraInstructions?: string
+  ) => {
     if (!currentUser || cartItems.length === 0 || shippingCost === null || finalTotal === null) return;
     
     let activeAddress = getFinalAddress();
@@ -241,6 +285,14 @@ export default function CheckoutPage() {
       imageUrl: (item.imageUrls && item.imageUrls.length > 0) ? item.imageUrls[0] : "https://placehold.co/100x100.png",
     }));
 
+    const isPaidImmediately = method === 'paypal' || method === 'openpay_card';
+    const defaultInstructions =
+      method === 'openpay_card'
+        ? `Pagado con Tarjeta vía Openpay BBVA. Autorización / ID: ${transactionId}`
+        : method === 'paypal'
+        ? `Pagado vía PayPal. ID Transacción: ${transactionId}`
+        : extraInstructions || `Pendiente de cobro en ${method.toUpperCase()}`;
+
     const finalOrderData: Omit<Order, 'id'> = {
       userId: currentUser.uid, 
       items: orderItems, 
@@ -248,7 +300,7 @@ export default function CheckoutPage() {
       vatAmount: (cartSubtotal / 1.16) * 0.16,
       shippingCost: shippingCost,
       totalAmount: finalTotal,
-      status: method === 'paypal' ? 'paid' : 'pending', 
+      status: isPaidImmediately ? 'paid' : 'pending', 
       createdAt: new Date().toISOString(), 
       updatedAt: new Date().toISOString(),
       shippingAddress: { 
@@ -258,7 +310,8 @@ export default function CheckoutPage() {
       paymentReference: transactionId,
       paymentDetails: {  
         method: method,
-        instructions: method === 'paypal' ? `Pagado vía PayPal. ID Transacción: ${transactionId}` : `Pendiente de cobro en ${method.toUpperCase()}`
+        transactionId: transactionId,
+        instructions: defaultInstructions,
       },
     };
 
@@ -279,8 +332,8 @@ export default function CheckoutPage() {
       const ordersCollectionRef = collection(db, 'orders');
       const firestoreOrderData = {
         ...finalOrderData,
-        createdAt: Timestamp.fromDate(new Date(finalOrderData.createdAt)),
-        updatedAt: Timestamp.fromDate(new Date(finalOrderData.updatedAt)),
+        createdAt: Timestamp.fromDate(new Date(finalOrderData.createdAt || Date.now())),
+        updatedAt: Timestamp.fromDate(new Date(finalOrderData.updatedAt || Date.now())),
       };
       const orderDocRef = await addDoc(ordersCollectionRef, firestoreOrderData);
       await addDoc(collection(db, 'adminNotifications'), adminNotification);
@@ -338,25 +391,265 @@ export default function CheckoutPage() {
     }
   };
 
+  // Verificar retorno de 3D Secure (?openpay_3ds=1&id=tr_...)
+  useEffect(() => {
+    if (typeof window === 'undefined' || !currentUser || loadingSettings || finalTotal === null) return;
+    const params = new URLSearchParams(window.location.search);
+    const is3dsReturn = params.get('openpay_3ds');
+    const trId = params.get('id');
+    if (!is3dsReturn || !trId) return;
+
+    // Limpiar la URL para no reprocesar al recargar
+    window.history.replaceState({}, '', '/checkout');
+
+    (async () => {
+      setIsProcessingOpenpayCard(true);
+      setPaymentMethod('openpay_card');
+      setCurrentStep(2);
+      try {
+        const res = await fetch(`/api/openpay/verify?id=${encodeURIComponent(trId)}`);
+        const data = await res.json();
+        if (data.ok && data.completed) {
+          toast({
+            title: '¡Autenticación 3D Secure Exitosa!',
+            description: `Cargo autorizado por tu banco (${data.authorization || trId}).`,
+          });
+          await saveOrderToFirebase(data.authorization || trId, 'openpay_card');
+        } else {
+          toast({
+            variant: 'destructive',
+            title: 'Pago no completado en 3D Secure',
+            description: data.errorMessage || data.error || 'El banco no autorizó la transacción.',
+          });
+        }
+      } catch {
+        toast({
+          variant: 'destructive',
+          title: 'Error de verificación',
+          description: 'No se pudo verificar el estado del cargo con Openpay.',
+        });
+      } finally {
+        setIsProcessingOpenpayCard(false);
+      }
+    })();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [currentUser, loadingSettings, finalTotal]);
+
+  const handleOpenpayCardPayment = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!finalTotal) return;
+
+    const win = typeof window !== 'undefined' ? (window as any) : null;
+    if (!win?.OpenPay) {
+      toast({
+        variant: 'destructive',
+        title: 'Cargando pasarela...',
+        description: 'Espera un segundo mientras se inicializa el módulo seguro de Openpay.',
+      });
+      return;
+    }
+
+    const cleanCardNum = cardNumber.replace(/\s+/g, '');
+    const cleanMonth = cardExpMonth.trim().padStart(2, '0');
+    const cleanYear = cardExpYear.trim().slice(-2);
+    const cleanCvv = cardCvv.trim();
+
+    if (!cardHolderName.trim()) {
+      toast({ variant: 'destructive', title: 'Falta el titular', description: 'Ingresa el nombre del titular tal como aparece en la tarjeta.' });
+      return;
+    }
+    if (!win.OpenPay.card.validateCardNumber(cleanCardNum)) {
+      toast({ variant: 'destructive', title: 'Tarjeta inválida', description: 'Verifica los dígitos del número de tarjeta.' });
+      return;
+    }
+    if (!win.OpenPay.card.validateExpiry(cleanMonth, cleanYear)) {
+      toast({ variant: 'destructive', title: 'Fecha de vencimiento inválida', description: 'Verifica el mes (MM) y año (AA) de expiración.' });
+      return;
+    }
+    if (!win.OpenPay.card.validateCVC(cleanCvv, cleanCardNum)) {
+      toast({ variant: 'destructive', title: 'CVV inválido', description: 'Verifica el código de seguridad de tu tarjeta.' });
+      return;
+    }
+
+    setIsProcessingOpenpayCard(true);
+
+    try {
+      win.OpenPay.setId(OPENPAY_MERCHANT_ID);
+      win.OpenPay.setApiKey(OPENPAY_PUBLIC_KEY);
+      win.OpenPay.setSandboxMode(OPENPAY_IS_SANDBOX);
+
+      const activeSessionId = deviceSessionId || win.OpenPay.deviceData?.setup?.() || `sess_${Date.now()}`;
+      if (!deviceSessionId && activeSessionId) setDeviceSessionId(activeSessionId);
+
+      const finalAddr = getFinalAddress();
+
+      // Tokenizar tarjeta directamente con Openpay.js (PCI-DSS: nunca toca nuestro servidor)
+      const tokenId: string = await new Promise((resolve, reject) => {
+        win.OpenPay.token.create(
+          {
+            card_number: cleanCardNum,
+            holder_name: cardHolderName.trim(),
+            expiration_year: cleanYear,
+            expiration_month: cleanMonth,
+            cvv2: cleanCvv,
+            address: {
+              city: finalAddr.city || 'Mérida',
+              country_code: 'MX',
+              postal_code: finalAddr.zip || '97000',
+              line1: finalAddr.street || 'Domicilio conocido',
+              state: finalAddr.state || 'Yucatán',
+            },
+          },
+          (response: any) => resolve(response?.data?.id),
+          (error: any) => reject(error)
+        );
+      });
+
+      const orderRef = `BOR-${Date.now().toString().slice(-8)}`;
+      const returnUrl = `${window.location.origin}/checkout?openpay_3ds=1`;
+
+      const chargeRes = await fetch('/api/openpay/charge', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          method: 'card',
+          source_id: tokenId,
+          device_session_id: activeSessionId,
+          amount: finalTotal,
+          description: `Pedido Borarly ${orderRef} (${cartItems.length} art.)`,
+          order_id: orderRef,
+          use_3d_secure: true,
+          redirect_url: returnUrl,
+          customer: {
+            name: finalAddr.firstName || cardHolderName.trim(),
+            last_name: finalAddr.lastName || 'Cliente',
+            phone_number: finalAddr.phone || '9999040931',
+            email: contactEmail || currentUser?.email || 'ventas@borarly.com',
+          },
+        }),
+      });
+
+      const chargeData = await chargeRes.json();
+
+      if (!chargeRes.ok || !chargeData.ok) {
+        toast({
+          variant: 'destructive',
+          title: 'Cargo rechazado',
+          description: chargeData.error || 'El banco no autorizó la operación.',
+        });
+        setIsProcessingOpenpayCard(false);
+        return;
+      }
+
+      // Si el cargo requiere redirección a 3D Secure del banco
+      if (chargeData.status === 'charge_pending' && chargeData.redirectUrl) {
+        toast({
+          title: 'Redirigiendo a 3D Secure de tu banco...',
+          description: 'Confirma tu compra en la ventana de seguridad de tu banco.',
+        });
+        window.location.href = chargeData.redirectUrl;
+        return;
+      }
+
+      // Cargo aprobado directamente
+      toast({
+        title: '¡Pago Aprobado!',
+        description: `Autorización bancaria: ${chargeData.authorization || chargeData.transactionId}`,
+      });
+      await saveOrderToFirebase(chargeData.authorization || chargeData.transactionId, 'openpay_card');
+    } catch (err: any) {
+      const code = err?.data?.error_code;
+      const desc = err?.data?.description || err?.message;
+      toast({
+        variant: 'destructive',
+        title: 'No se pudo procesar la tarjeta',
+        description: translateOpenpayError(code, desc),
+      });
+    } finally {
+      setIsProcessingOpenpayCard(false);
+    }
+  };
+
   const handleManualCheckout = async () => {
     setIsProcessingManualPayment(true);
-    // Generar Referencia
-    const reference = `${paymentMethod.toUpperCase()}-${Math.floor(10000000 + Math.random() * 90000000)}`;
-    await saveOrderToFirebase(reference, paymentMethod);
-    setIsProcessingManualPayment(false);
+    try {
+      if (paymentMethod === 'oxxo' && finalTotal) {
+        const finalAddr = getFinalAddress();
+        const orderRef = `PAYNET-${Date.now().toString().slice(-8)}`;
+        const res = await fetch('/api/openpay/charge', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            method: 'store',
+            amount: finalTotal,
+            description: `Pedido Borarly ${orderRef}`,
+            order_id: orderRef,
+            customer: {
+              name: finalAddr.firstName || 'Cliente',
+              last_name: finalAddr.lastName || 'Borarly',
+              phone_number: finalAddr.phone || '9999040931',
+              email: contactEmail || currentUser?.email || 'ventas@borarly.com',
+            },
+          }),
+        });
+        const data = await res.json();
+        if (res.ok && data.ok && data.reference) {
+          setPaynetVoucher({
+            reference: data.reference,
+            barcodeUrl: data.barcodeUrl,
+            pdfUrl: data.paynetPdfUrl,
+          });
+          await saveOrderToFirebase(
+            data.reference,
+            'oxxo',
+            `Ficha Paynet Openpay: ${data.reference} · Recibo PDF: ${data.paynetPdfUrl}`
+          );
+          return;
+        }
+      }
+
+      // Flujo SPEI Directo (o fallback)
+      const reference = `${paymentMethod.toUpperCase()}-${Math.floor(10000000 + Math.random() * 90000000)}`;
+      await saveOrderToFirebase(reference, paymentMethod === 'openpay_card' ? 'spei' : paymentMethod);
+    } finally {
+      setIsProcessingManualPayment(false);
+    }
   };
   
   if (currentStep === 3) {
+      const isCardOrPaypalPaid = paymentMethod === 'paypal' || paymentMethod === 'openpay_card';
       return (
           <div className="max-w-2xl mx-auto text-center py-16 space-y-6">
-              <div className={`w-24 h-24 rounded-full flex items-center justify-center mx-auto shadow-inner ${paymentMethod === 'paypal' ? 'bg-green-100 text-green-500' : 'bg-primary/20 text-primary'}`}>
-                 {paymentMethod === 'paypal' ? <CheckCircle2 className="h-14 w-14" /> : <Clock className="h-14 w-14" />}
+              <div className={`w-24 h-24 rounded-full flex items-center justify-center mx-auto shadow-inner ${isCardOrPaypalPaid ? 'bg-green-100 text-green-500' : 'bg-primary/20 text-primary'}`}>
+                 {isCardOrPaypalPaid ? <CheckCircle2 className="h-14 w-14" /> : <Clock className="h-14 w-14" />}
               </div>
-              <h1 className="text-4xl font-black tracking-tight text-foreground">{paymentMethod === 'paypal' ? '¡Pago Completado!' : '¡Pedido Generado!'}</h1>
-              <p className="text-lg text-muted-foreground">{paymentMethod === 'paypal' ? 'Tu orden ha sido procesada de manera segura por la pasarela bancaria.' : 'Tu pedido ha sido creado y está en espera de pago. Sigue las instrucciones en tu historial para depositar y activarlo.'}</p>
-              <div className="bg-gradient-to-br from-primary/5 to-primary/10 rounded-xl p-8 my-6 border border-primary/20 shadow-sm backdrop-blur-sm">
-                  <p className="text-sm font-semibold text-muted-foreground uppercase tracking-widest mb-2">Código de Autorización</p>
-                  <p className="font-mono text-3xl text-primary font-bold">{orderReference}</p>
+              <h1 className="text-4xl font-black tracking-tight text-foreground">{isCardOrPaypalPaid ? '¡Pago Completado!' : '¡Pedido Generado!'}</h1>
+              <p className="text-lg text-muted-foreground">
+                {isCardOrPaypalPaid
+                  ? 'Tu orden ha sido procesada y autorizada de manera segura por la pasarela bancaria Openpay BBVA.'
+                  : paynetVoucher
+                  ? 'Presenta esta referencia o descarga tu ficha oficial Paynet para pagar en efectivo en tiendas afiliadas.'
+                  : 'Tu pedido ha sido creado y está en espera de pago. Sigue las instrucciones en tu historial para depositar y activarlo.'}
+              </p>
+              <div className="bg-gradient-to-br from-primary/5 to-primary/10 rounded-xl p-8 my-6 border border-primary/20 shadow-sm backdrop-blur-sm space-y-4">
+                  <p className="text-sm font-semibold text-muted-foreground uppercase tracking-widest mb-2">
+                    {paynetVoucher ? 'Referencia Oficial Paynet (Openpay)' : 'Código de Autorización / Referencia'}
+                  </p>
+                  <p className="font-mono text-2xl sm:text-3xl text-primary font-bold break-all">{orderReference}</p>
+                  {paynetVoucher?.barcodeUrl && (
+                    <div className="bg-white p-4 rounded-xl inline-block shadow border">
+                      <img src={paynetVoucher.barcodeUrl} alt="Código de barras Paynet" className="mx-auto h-16 object-contain" />
+                    </div>
+                  )}
+                  {paynetVoucher?.pdfUrl && (
+                    <div className="pt-2">
+                      <Button asChild variant="default" className="gap-2 rounded-full">
+                        <a href={paynetVoucher.pdfUrl} target="_blank" rel="noopener noreferrer">
+                          <FileDown className="w-4 h-4" /> Descargar Recibo Oficial de Pago (PDF)
+                        </a>
+                      </Button>
+                    </div>
+                  )}
               </div>
               <p className="text-muted-foreground">Te hemos enviado un recibo a <span className="font-medium text-foreground">{contactEmail}</span>.</p>
               <div className="pt-6">
@@ -637,6 +930,17 @@ export default function CheckoutPage() {
             {/* PASO 2: PAGO SEGURO (SOLO VISIBLE EN PASO 2) */}
             {currentStep === 2 && (
             <div className="space-y-6 animate-in fade-in slide-in-from-right-4 duration-500">
+                {/* Librerías Oficiales Openpay.js + Sistema Antifraude */}
+                <Script
+                  src="https://js.openpay.mx/openpay.v1.min.js"
+                  strategy="afterInteractive"
+                  onLoad={() => setOpenpayScriptLoaded(true)}
+                />
+                <Script
+                  src="https://js.openpay.mx/openpay-data.v1.min.js"
+                  strategy="afterInteractive"
+                  onLoad={() => setOpenpayDataScriptLoaded(true)}
+                />
                 
                 {/* MINI RESUMEN DE LA DIRECCIÓN ELEGIDA */}
                 <div className="flex items-center justify-between bg-primary/5 border border-primary/20 rounded-xl p-4 shadow-sm">
@@ -657,7 +961,12 @@ export default function CheckoutPage() {
                         <span className="bg-blue-600 text-white w-7 h-7 rounded-full flex items-center justify-center text-sm font-bold">2</span> 
                         Pago Seguro
                     </CardTitle>
-                    <div className="flex items-center gap-2 text-muted-foreground opacity-50">
+                    <div className="flex items-center gap-2 text-muted-foreground opacity-80">
+                        {OPENPAY_IS_SANDBOX && (
+                          <span className="text-[10px] font-bold uppercase px-2.5 py-0.5 rounded-full bg-amber-500/15 text-amber-600 dark:text-amber-400 border border-amber-500/30">
+                            Sandbox Openpay Activo
+                          </span>
+                        )}
                         <CreditCard className="w-5 h-5"/>
                     </div>
                 </div>
@@ -667,46 +976,263 @@ export default function CheckoutPage() {
                   </div>
 
                   {/* Payment Method Selector */}
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-8">
+                      {/* TARJETA OPENPAY BBVA */}
+                      <button
+                        type="button"
+                        onClick={() => setPaymentMethod('openpay_card')}
+                        className={`flex flex-col items-center justify-center p-4 rounded-xl border-2 transition-all ${paymentMethod === 'openpay_card' ? 'border-blue-600 bg-blue-50/80 dark:bg-blue-950/40 shadow-md scale-[1.03]' : 'border-border bg-background hover:bg-muted/50'}`}>
+                          <CreditCard className={`w-7 h-7 mb-1.5 ${paymentMethod === 'openpay_card' ? 'text-blue-600 dark:text-blue-400' : 'text-muted-foreground'}`} />
+                          <span className={`text-xs sm:text-sm font-bold text-center leading-tight ${paymentMethod === 'openpay_card' ? 'text-foreground' : 'text-muted-foreground'}`}>Tarjeta Crédito / Débito</span>
+                          <span className="text-[10px] text-blue-600 dark:text-blue-400 font-semibold mt-1">Openpay BBVA</span>
+                      </button>
+
                       {/* SPEI */}
-                      <button 
+                      <button
+                        type="button"
                         onClick={() => setPaymentMethod('spei')}
-                        className={`flex flex-col items-center justify-center p-4 rounded-xl border-2 transition-all ${paymentMethod === 'spei' ? 'border-primary bg-primary/5 shadow-md scale-105' : 'border-border bg-background hover:bg-muted/50'}`}>
-                          <Building className={`w-8 h-8 mb-2 ${paymentMethod === 'spei' ? 'text-primary' : 'text-muted-foreground'}`} />
-                          <span className={`text-sm font-bold ${paymentMethod === 'spei' ? 'text-foreground' : 'text-muted-foreground'}`}>Transferencia SPEI</span>
-                          <span className="text-[10px] text-muted-foreground uppercasemt-1 opacity-70">Recomendado</span>
+                        className={`flex flex-col items-center justify-center p-4 rounded-xl border-2 transition-all ${paymentMethod === 'spei' ? 'border-primary bg-primary/5 shadow-md scale-[1.03]' : 'border-border bg-background hover:bg-muted/50'}`}>
+                          <Building className={`w-7 h-7 mb-1.5 ${paymentMethod === 'spei' ? 'text-primary' : 'text-muted-foreground'}`} />
+                          <span className={`text-xs sm:text-sm font-bold text-center leading-tight ${paymentMethod === 'spei' ? 'text-foreground' : 'text-muted-foreground'}`}>Transferencia SPEI</span>
+                          <span className="text-[10px] text-muted-foreground mt-1 opacity-80">Directo BBVA</span>
                       </button>
 
-                      {/* OXXO */}
-                      <button 
+                      {/* EFECTIVO EN TIENDAS (PAYNET OPENPAY) */}
+                      <button
+                        type="button"
                         onClick={() => setPaymentMethod('oxxo')}
-                        className={`flex flex-col items-center justify-center p-4 rounded-xl border-2 transition-all ${paymentMethod === 'oxxo' ? 'border-orange-500 bg-orange-50 dark:bg-orange-950/30 shadow-md scale-105' : 'border-border bg-background hover:bg-muted/50'}`}>
-                          <CreditCard className={`w-8 h-8 mb-2 ${paymentMethod === 'oxxo' ? 'text-orange-500' : 'text-muted-foreground'}`} />
-                          <span className={`text-sm font-bold ${paymentMethod === 'oxxo' ? 'text-orange-700 dark:text-orange-400' : 'text-muted-foreground'}`}>Depósito OXXO</span>
+                        className={`flex flex-col items-center justify-center p-4 rounded-xl border-2 transition-all ${paymentMethod === 'oxxo' ? 'border-orange-500 bg-orange-50 dark:bg-orange-950/30 shadow-md scale-[1.03]' : 'border-border bg-background hover:bg-muted/50'}`}>
+                          <Store className={`w-7 h-7 mb-1.5 ${paymentMethod === 'oxxo' ? 'text-orange-500' : 'text-muted-foreground'}`} />
+                          <span className={`text-xs sm:text-sm font-bold text-center leading-tight ${paymentMethod === 'oxxo' ? 'text-orange-700 dark:text-orange-400' : 'text-muted-foreground'}`}>Efectivo en Tiendas</span>
+                          <span className="text-[10px] text-muted-foreground mt-1 opacity-80">Paynet / OXXO</span>
                       </button>
 
-                      {/* PAYPAL / TARJETAS */}
-                      <button 
+                      {/* PAYPAL */}
+                      <button
+                        type="button"
                         onClick={() => setPaymentMethod('paypal')}
-                        className={`flex flex-col items-center justify-center p-4 rounded-xl border-2 transition-all ${paymentMethod === 'paypal' ? 'border-[#0070ba] bg-blue-50 dark:bg-blue-950/30 shadow-md scale-105' : 'border-border bg-background hover:bg-muted/50'}`}>
-                          <svg className={`w-8 h-8 mb-2 opacity-80 ${paymentMethod === 'paypal' ? 'text-[#0070ba]' : 'text-muted-foreground'}`} viewBox="0 0 24 24" fill="currentColor">
+                        className={`flex flex-col items-center justify-center p-4 rounded-xl border-2 transition-all ${paymentMethod === 'paypal' ? 'border-[#0070ba] bg-blue-50 dark:bg-blue-950/30 shadow-md scale-[1.03]' : 'border-border bg-background hover:bg-muted/50'}`}>
+                          <svg className={`w-7 h-7 mb-1.5 opacity-80 ${paymentMethod === 'paypal' ? 'text-[#0070ba]' : 'text-muted-foreground'}`} viewBox="0 0 24 24" fill="currentColor">
                               <path d="M7.076 21.337H2.47a.641.641 0 0 1-.633-.74L4.944.901C5.026.382 5.474 0 5.998 0h7.46c2.57 0 4.578.543 5.69 1.81 1.01 1.15 1.304 2.42 1.012 4.287-.023.143-.047.288-.077.437-.983 5.05-4.349 6.797-8.647 6.797h-2.19c-.524 0-.968.382-1.05.9l-1.12 7.106zM6.92 13.33H11.53c4.156 0 6.643-1.637 7.412-5.597.55-2.82.016-4.63-2.024-5.69-1.076-.56-2.613-.778-4.576-.778H7.31L5.346 13.33h1.574z"/>
                               <path d="M21.2 7.03c-.244-1.272-1.066-2.22-2.316-2.8a5.2 5.2 0 0 0-1.42 5.163c-.878 4.49-4.103 6.012-7.838 6.012H7.28a.507.507 0 0 0-.498.411L5.372 24.87a.64.64 0 0 0 .633.74H10.15c.524 0 .968-.382 1.05-.9l.758-4.805a.507.507 0 0 1 .498-.412h1.61c3.842 0 6.847-1.575 7.632-5.6.363-1.854.26-3.79-.5-6.862z"/>
                           </svg>
-                          <span className={`text-sm font-bold ${paymentMethod === 'paypal' ? 'text-[#0070ba] dark:text-[#3b82f6]' : 'text-muted-foreground'}`}>PayPal o Tarjeta</span>
+                          <span className={`text-xs sm:text-sm font-bold text-center leading-tight ${paymentMethod === 'paypal' ? 'text-[#0070ba] dark:text-[#3b82f6]' : 'text-muted-foreground'}`}>PayPal</span>
+                          <span className="text-[10px] text-muted-foreground mt-1 opacity-80">Internacional</span>
                       </button>
                   </div>
 
                   <Separator className="my-6 bg-blue-100 dark:bg-blue-900/50" />
 
-                  {/* FLUJO SPEI / OXXO */}
+                  {/* FLUJO TARJETA CRÉDITO / DÉBITO (OPENPAY BBVA) */}
+                  {paymentMethod === 'openpay_card' && (
+                    <form id="openpay-payment-form" onSubmit={handleOpenpayCardPayment} className="space-y-5 animate-in fade-in duration-300">
+                      <input type="hidden" name="deviceIdHiddenFieldName" value={deviceSessionId} />
+
+                      {/* Encabezado de marcas aceptadas */}
+                      <div className="flex flex-wrap items-center justify-between gap-3 bg-muted/30 p-3.5 rounded-xl border border-border/60">
+                        <div>
+                          <p className="text-xs font-bold uppercase tracking-wider text-foreground">Tarjetas de Crédito y Débito</p>
+                          <p className="text-[11px] text-muted-foreground">Visa, Mastercard, American Express, Carnet (BBVA, Banamex, Santander, Banorte, HSBC)</p>
+                        </div>
+                        <div className="flex items-center gap-1.5 text-xs font-bold">
+                          <span className="px-2 py-1 rounded bg-blue-900 text-white tracking-wider">VISA</span>
+                          <span className="px-2 py-1 rounded bg-orange-600 text-white tracking-wider">MC</span>
+                          <span className="px-2 py-1 rounded bg-sky-600 text-white tracking-wider">AMEX</span>
+                        </div>
+                      </div>
+
+                      {/* Botones rápidos de prueba en modo Sandbox para Certificación */}
+                      {OPENPAY_IS_SANDBOX && (
+                        <div className="p-3 rounded-xl bg-amber-500/10 border border-amber-500/30 space-y-2">
+                          <p className="text-xs font-bold text-amber-700 dark:text-amber-300">
+                            Modo Pruebas (Certificación Sandbox Openpay) — Autocompletar tarjeta de prueba:
+                          </p>
+                          <div className="flex flex-wrap gap-2">
+                            <Button
+                              type="button"
+                              variant="outline"
+                              size="sm"
+                              className="h-7 text-xs border-green-500/40 text-green-700 dark:text-green-400"
+                              onClick={() => {
+                                setCardHolderName(`${getFinalAddress().firstName || 'Juan'} ${getFinalAddress().lastName || 'Perez'}`.trim());
+                                setCardNumber('4111 1111 1111 1111');
+                                setCardExpMonth('12');
+                                setCardExpYear('28');
+                                setCardCvv('123');
+                              }}
+                            >
+                              ✓ Tarjeta Aprobada (Visa)
+                            </Button>
+                            <Button
+                              type="button"
+                              variant="outline"
+                              size="sm"
+                              className="h-7 text-xs border-red-500/40 text-red-700 dark:text-red-400"
+                              onClick={() => {
+                                setCardHolderName(`${getFinalAddress().firstName || 'Juan'} ${getFinalAddress().lastName || 'Perez'}`.trim());
+                                setCardNumber('4222 2222 2222 2220');
+                                setCardExpMonth('12');
+                                setCardExpYear('28');
+                                setCardCvv('123');
+                              }}
+                            >
+                              ✕ Tarjeta Declinada (3001)
+                            </Button>
+                            <Button
+                              type="button"
+                              variant="outline"
+                              size="sm"
+                              className="h-7 text-xs border-orange-500/40 text-orange-700 dark:text-orange-400"
+                              onClick={() => {
+                                setCardHolderName(`${getFinalAddress().firstName || 'Juan'} ${getFinalAddress().lastName || 'Perez'}`.trim());
+                                setCardNumber('4444 4444 4444 4448');
+                                setCardExpMonth('12');
+                                setCardExpYear('28');
+                                setCardCvv('123');
+                              }}
+                            >
+                              ✕ Sin Fondos (3003)
+                            </Button>
+                          </div>
+                        </div>
+                      )}
+
+                      <div className="space-y-4">
+                        <div className="space-y-1.5">
+                          <Label htmlFor="op-holder" className="text-xs font-semibold">Nombre del titular (como aparece en la tarjeta) *</Label>
+                          <Input
+                            id="op-holder"
+                            data-openpay-card="holder_name"
+                            placeholder="Ej. JUAN PEREZ LOPEZ"
+                            value={cardHolderName}
+                            onChange={e => setCardHolderName(e.target.value.toUpperCase())}
+                            autoComplete="cc-name"
+                            required
+                            className="bg-background uppercase font-medium"
+                          />
+                        </div>
+
+                        <div className="space-y-1.5">
+                          <Label htmlFor="op-number" className="text-xs font-semibold">Número de tarjeta *</Label>
+                          <div className="relative">
+                            <CreditCard className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-primary" />
+                            <Input
+                              id="op-number"
+                              data-openpay-card="card_number"
+                              placeholder="0000 0000 0000 0000"
+                              inputMode="numeric"
+                              maxLength={19}
+                              value={cardNumber}
+                              onChange={e => {
+                                const digits = e.target.value.replace(/\D/g, '').slice(0, 16);
+                                const formatted = digits.replace(/(\d{4})(?=\d)/g, '$1 ');
+                                setCardNumber(formatted);
+                              }}
+                              autoComplete="cc-number"
+                              required
+                              className="pl-10 bg-background font-mono tracking-wider text-base"
+                            />
+                          </div>
+                        </div>
+
+                        <div className="grid grid-cols-3 gap-3">
+                          <div className="space-y-1.5">
+                            <Label htmlFor="op-month" className="text-xs font-semibold">Mes (MM) *</Label>
+                            <Input
+                              id="op-month"
+                              data-openpay-card="expiration_month"
+                              placeholder="MM"
+                              inputMode="numeric"
+                              maxLength={2}
+                              value={cardExpMonth}
+                              onChange={e => setCardExpMonth(e.target.value.replace(/\D/g, '').slice(0, 2))}
+                              autoComplete="cc-exp-month"
+                              required
+                              className="bg-background font-mono text-center"
+                            />
+                          </div>
+                          <div className="space-y-1.5">
+                            <Label htmlFor="op-year" className="text-xs font-semibold">Año (AA) *</Label>
+                            <Input
+                              id="op-year"
+                              data-openpay-card="expiration_year"
+                              placeholder="AA"
+                              inputMode="numeric"
+                              maxLength={2}
+                              value={cardExpYear}
+                              onChange={e => setCardExpYear(e.target.value.replace(/\D/g, '').slice(0, 2))}
+                              autoComplete="cc-exp-year"
+                              required
+                              className="bg-background font-mono text-center"
+                            />
+                          </div>
+                          <div className="space-y-1.5">
+                            <Label htmlFor="op-cvv" className="text-xs font-semibold">CVV2 *</Label>
+                            <Input
+                              id="op-cvv"
+                              data-openpay-card="cvv2"
+                              type="password"
+                              placeholder="123"
+                              inputMode="numeric"
+                              maxLength={4}
+                              value={cardCvv}
+                              onChange={e => setCardCvv(e.target.value.replace(/\D/g, '').slice(0, 4))}
+                              autoComplete="cc-csc"
+                              required
+                              className="bg-background font-mono text-center"
+                            />
+                          </div>
+                        </div>
+                      </div>
+
+                      <Button
+                        type="submit"
+                        disabled={isProcessingOpenpayCard}
+                        className="w-full h-14 font-black text-lg shadow-xl bg-blue-600 hover:bg-blue-700 text-white rounded-xl transition-all"
+                      >
+                        {isProcessingOpenpayCard ? (
+                          <>
+                            <Loader2 className="w-5 h-5 animate-spin mr-2" />
+                            Procesando cargo seguro con Openpay...
+                          </>
+                        ) : (
+                          <>
+                            <Lock className="w-5 h-5 mr-2" />
+                            Pagar {formatCurrency(finalTotal!)} MXN
+                          </>
+                        )}
+                      </Button>
+
+                      {/* Sellos Oficiales requeridos para la Certificación de Openpay */}
+                      <div className="pt-4 border-t border-border/50 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-muted-foreground">
+                        <div className="flex items-center gap-2">
+                          <span className="text-[11px]">Transacciones realizadas vía:</span>
+                          <span className="font-black tracking-tight text-sm text-[#004481] dark:text-blue-400">
+                            Openpay <span className="font-semibold text-xs opacity-80">by BBVA</span>
+                          </span>
+                        </div>
+                        <div className="flex items-center gap-2 text-[11px]">
+                          <ShieldCheck className="w-4 h-4 text-green-600 shrink-0" />
+                          <span>Tus pagos se realizan de forma segura con encriptación de 256 bits</span>
+                        </div>
+                      </div>
+                    </form>
+                  )}
+
+                  {/* FLUJO SPEI / EFECTIVO PAYNET */}
                   {(paymentMethod === 'spei' || paymentMethod === 'oxxo') && (
                      <div className="text-center space-y-6 py-4 animate-in fade-in duration-500">
                          <div className="bg-primary/5 p-4 rounded-xl border border-primary/20 max-w-lg mx-auto">
                              <p className="text-sm font-medium text-foreground mb-1">
-                                {paymentMethod === 'spei' ? 'Realizarás una transferencia a cuenta BANCOMER.' : 'Depositarás en caja OXXO hacia tarjeta SANTANDER.'}
+                                {paymentMethod === 'spei'
+                                  ? 'Realizarás una transferencia interbancaria SPEI a cuenta BBVA.'
+                                  : 'Generarás una ficha oficial Paynet (Openpay) con código de barras para pagar en efectivo en tiendas afiliadas (7-Eleven, Farmacias del Ahorro, Walmart, Sam\'s, Bodega Aurrera, Circle K).'}
                              </p>
-                             <p className="text-xs text-muted-foreground">Tu orden se generará y podrás ver los datos completos para hacer el pago y subir tu ticket desde la zona de Historial de Pedidos.</p>
+                             <p className="text-xs text-muted-foreground">
+                                {paymentMethod === 'spei'
+                                  ? 'Tu orden se generará y podrás ver la CLABE para transferir y subir tu comprobante desde tu Historial de Pedidos.'
+                                  : 'Al confirmar se generará tu código de barras y recibo oficial en PDF de Openpay.'}
+                             </p>
                          </div>
                          <Button 
                             className="h-14 font-black shadow-xl hover:scale-105 transition-all text-lg px-10 w-full sm:w-auto"
@@ -714,7 +1240,11 @@ export default function CheckoutPage() {
                             disabled={isProcessingManualPayment}
                          >
                             {isProcessingManualPayment ? <Loader2 className="w-5 h-5 animate-spin mr-2"/> : <Clock className="w-5 h-5 mr-2" />}
-                            {isProcessingManualPayment ? 'Generando Orden...' : 'Generar Orden y Ver Ficha de Pago'}
+                            {isProcessingManualPayment
+                              ? 'Generando Ficha...'
+                              : paymentMethod === 'oxxo'
+                              ? 'Generar Ficha Oficial Paynet (PDF)'
+                              : 'Generar Orden y Ver Ficha SPEI'}
                          </Button>
                      </div>
                   )}
