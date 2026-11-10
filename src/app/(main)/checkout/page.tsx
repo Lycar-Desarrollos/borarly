@@ -518,7 +518,7 @@ export default function CheckoutPage() {
           amount: finalTotal,
           description: `Pedido Borarly ${orderRef} (${cartItems.length} art.)`,
           order_id: orderRef,
-          use_3d_secure: true,
+          use_3d_secure: !OPENPAY_IS_SANDBOX,
           redirect_url: returnUrl,
           customer: {
             name: finalAddr.firstName || cardHolderName.trim(),

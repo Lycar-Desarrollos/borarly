@@ -41,8 +41,12 @@ const money = (n: number) =>
   new Intl.NumberFormat('es-MX', { style: 'currency', currency: 'MXN' }).format(Number(n) || 0);
 
 const paymentLabel = (m: string) =>
-  ({ paypal: 'PayPal / Tarjeta (pagado)', spei: 'Transferencia SPEI (pendiente de pago)', oxxo: 'Depósito OXXO (pendiente de pago)' } as Record<string, string>)[m] ||
-  m.toUpperCase();
+  ({
+    openpay_card: 'Tarjeta Crédito / Débito Openpay BBVA (pagado)',
+    paypal: 'PayPal / Tarjeta (pagado)',
+    spei: 'Transferencia SPEI (pendiente de pago)',
+    oxxo: 'Efectivo en Tiendas Paynet / Openpay (pendiente de pago)',
+  } as Record<string, string>)[m] || m.toUpperCase();
 
 export function buildOrderEmailSubject(d: OrderEmailData) {
   const first = d.items[0]?.name || 'Pedido';
@@ -52,7 +56,10 @@ export function buildOrderEmailSubject(d: OrderEmailData) {
 }
 
 export function buildOrderEmailHtml(d: OrderEmailData) {
-  const isPaid = d.paymentMethod === 'paypal';
+  const isPaid =
+    d.paymentMethod === 'paypal' ||
+    d.paymentMethod === 'openpay_card' ||
+    d.status === 'paid';
   const headline = isPaid ? 'Prepara el paquete para enviarlo' : 'Nuevo pedido en espera de pago';
   const subline = isPaid
     ? 'El pago fue confirmado. Prepara los productos y coordina el envío al cliente.'
